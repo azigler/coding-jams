@@ -69,13 +69,9 @@ EndScene.prototype.create = function (
     if (completed) {
       // Reset game and start from level 1
       levelManager.resetGame()
-      this.scene.stop()
-      this.scene.start("game", { level: 1 })
     } else if (success) {
       // Continue to next level - this will handle game completion
       levelManager.nextLevel()
-      this.scene.stop()
-      this.scene.start("game", { level: levelManager.getCurrentLevelNumber() })
     } else {
       // Retry current level
       const currentLevel = levelManager.getCurrentLevelNumber()

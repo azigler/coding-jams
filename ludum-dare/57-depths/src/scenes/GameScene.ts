@@ -73,15 +73,10 @@ GameScene.prototype.create = function (
   )
   this.timerText.setOrigin(1, 0) // Align right
 
-  // Start timer
-  const startTime = Date.now()
-  const timeLimit = currentLevel.timeLimit * 1000 // Convert to milliseconds
-
   // Update handler for timer
   this.updateHandler = () => {
-    const elapsed = Date.now() - startTime
-    const remaining = Math.max(0, timeLimit - elapsed)
-    const seconds = Math.ceil(remaining / 1000)
+    // Get time from penalty tracker
+    const seconds = Math.ceil(this.penaltyTracker.getTimeRemaining())
 
     // Update timer text
     if (this.timerText) {
@@ -90,11 +85,6 @@ GameScene.prototype.create = function (
       if (seconds <= 10) {
         this.timerText.setColor("#ff0000")
       }
-    }
-
-    // Check for time up
-    if (remaining <= 0) {
-      this.handleGameComplete(false)
     }
   }
 
