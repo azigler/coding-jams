@@ -1,8 +1,14 @@
 import { BaseScene } from "./BaseScene"
 
+interface EndSceneData {
+  success: boolean
+}
+
 export const EndScene = BaseScene.create("end")
 
-EndScene.prototype.create = function () {
+EndScene.prototype.create = function (
+  this: Phaser.Scene & { scene: { settings: { data: EndSceneData } } }
+) {
   // Call parent create method
   BaseScene.prototype.create.call(this)
 
