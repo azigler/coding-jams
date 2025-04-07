@@ -1,0 +1,156 @@
+---
+description: Standards for managing and loading assets in Phaser games
+globs: src/assets/**/*.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser Asset Management Standards
+
+## Description
+
+Establishes standards for organizing, loading, and managing game assets in a type-safe and efficient manner.
+
+## Rule
+
+1. Asset Directory Structure:
+   - MUST organize assets by type:
+
+     ```
+     src/assets/
+     ├── sprites/
+     ├── audio/
+     │   ├── sfx/
+     │   └── music/
+     ├── tilemaps/
+     └── fonts/
+     ```
+
+   - MUST use lowercase filenames with hyphens
+   - MUST include optimized and source versions
+
+2. Asset Registry:
+   - MUST define type-safe asset registry:
+
+     ```typescript
+     export const AssetRegistry = {
+       sprites: {
+         [key: string]: {
+           path: string;
+           frameWidth?: number;
+           frameHeight?: number;
+         }
+       },
+       audio: {
+         sfx: { [key: string]: string },
+         music: { [key: string]: string }
+       },
+       tilemaps: { [key: string]: string },
+       fonts: { [key: string]: string }
+     } as const;
+     ```
+
+3. Asset Loading:
+   - MUST implement progressive loading:
+
+     ```typescript
+     export class AssetLoader {
+       static loadBootAssets(scene: Phaser.Scene): void;
+       static loadMenuAssets(scene: Phaser.Scene): void;
+       static loadGameAssets(scene: Phaser.Scene): void;
+       static showProgressBar(scene: Phaser.Scene): void;
+     }
+     ```
+
+4. Asset Optimization:
+   - MUST compress sprites and audio
+   - MUST use texture atlases for sprites
+   - MUST implement asset preloading
+   - MUST implement asset cleanup
+
+5. Asset Access:
+   - MUST use type-safe asset keys:
+
+     ```typescript
+     export type AssetKey = keyof typeof AssetRegistry;
+     export type SpriteKey = keyof typeof AssetRegistry.sprites;
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate asset directory structure
+- Check asset registry completeness
+- Verify asset optimization
+- Ensure type-safe asset access
+- Monitor asset loading patterns
+
+## Benefits
+
+- Type-safe asset management
+- Optimized loading times
+- Reduced memory usage
+- Progressive asset loading
+- Clear asset organization
+- Simplified asset access
+- Better development experience
+
+## Examples
+
+✅ Correct:
+
+```typescript
+// Asset registry
+export const AssetRegistry = {
+  sprites: {
+    player: {
+      path: 'sprites/player.png',
+      frameWidth: 32,
+      frameHeight: 48
+    },
+    enemies: {
+      path: 'sprites/enemies.atlas'
+    }
+  },
+  audio: {
+    sfx: {
+      jump: 'audio/sfx/jump.mp3',
+      collect: 'audio/sfx/collect.mp3'
+    },
+    music: {
+      theme: 'audio/music/theme.ogg'
+    }
+  }
+} as const;
+
+// Asset loading
+export class GameScene extends Phaser.Scene {
+  preload(): void {
+    AssetLoader.showProgressBar(this);
+    AssetLoader.loadGameAssets(this);
+  }
+
+  create(): void {
+    const player = this.add.sprite(0, 0, 'player');
+    this.sound.play('sfx/jump');
+  }
+}
+```
+
+❌ Incorrect:
+
+```typescript
+// Unstructured asset loading
+class GameScene extends Phaser.Scene {
+  preload() {
+    this.load.image('player', 'player.png');
+    this.load.audio('jump', 'jump.mp3');
+  }
+
+  create() {
+    this.add.sprite(0, 0, 'Player.png'); // Inconsistent naming
+    this.sound.play('jumpSound'); // Key mismatch
+  }
+}
+```
