@@ -1,0 +1,128 @@
+# Specification Authoring Standards
+
+## Description
+
+Establishes standards for writing clear, consistent, and maintainable specification documents for game prototypes and features.
+
+## Rule
+
+1. **Document Structure**
+   - MUST have a clear title using H1 (`#`)
+   - MUST have sections using H2 (`##`)
+   - MAY have subsections using H3 (`###`)
+   - MUST use proper markdown formatting
+
+2. **Content Organization**
+
+   ```plaintext
+   specs/
+   ├── SPECS.md           # Overview and index
+   └── domain/            # Domain-specific specs
+       ├── technical.md
+       ├── gameplay.md
+       └── etc.
+   ```
+
+3. **Code Block Standards**
+   - MUST specify language for all code blocks
+   - MUST use appropriate language identifiers:
+
+     ```plaintext
+     typescript   # For TypeScript code
+     javascript   # For JavaScript code
+     plaintext    # For directory structures
+     json         # For configuration
+     shell        # For commands
+     ```
+
+   - MUST indent code properly
+   - MUST include comments for clarity
+
+4. **Specification Components**
+   - MUST include overview section
+   - MUST define scope and constraints
+   - MUST list technical requirements
+   - MUST provide examples where applicable
+   - MAY include diagrams or mockups
+
+5. **Writing Style**
+   - MUST use active voice
+   - MUST be concise and clear
+   - MUST use consistent terminology
+   - MUST follow RFC 2119 for requirements:
+     - MUST (required)
+     - SHOULD (recommended)
+     - MAY (optional)
+
+6. **Version Control**
+   - MUST commit specs atomically
+   - MUST use descriptive commit messages
+   - MUST follow gitmoji standards
+   - SHOULD update SPECS.md when adding specs
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate markdown formatting
+- Check code block language specifiers
+- Ensure proper document structure
+- Verify RFC 2119 keyword usage
+- Monitor specification organization
+
+## Benefits
+
+- Consistent documentation
+- Clear requirements
+- Easy maintenance
+- Better collaboration
+- Simplified reviews
+- Reusable patterns
+- Clear expectations
+
+## Examples
+
+✅ Correct:
+
+```markdown
+# Technical Specification
+
+## Overview
+Clear description of the technical requirements.
+
+## Implementation
+```typescript
+export class GameSystem {
+  // Implementation details
+  constructor() {
+    this.initialize();
+  }
+}
+```
+
+## Requirements
+
+- MUST implement error handling
+- SHOULD optimize for performance
+- MAY include additional features
+
+```
+
+❌ Incorrect:
+
+```markdown
+Technical Specs
+
+Some requirements:
+```
+
+// Bad code block with no language
+class Game {
+}
+
+```
+
+Things to do:
+* Must do this
+* Maybe do that
+```
