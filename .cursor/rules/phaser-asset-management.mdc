@@ -16,7 +16,7 @@ Establishes standards for organizing, loading, and managing game assets in a typ
 1. Asset Directory Structure:
    - MUST organize assets by type:
 
-     ```
+     ```plaintext
      src/assets/
      ├── sprites/
      ├── audio/
