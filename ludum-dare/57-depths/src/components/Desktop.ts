@@ -1,10 +1,12 @@
 import "phaser"
 import { MailApp } from "./MailApp"
 import { ServerApp } from "./ServerApp"
+import { PenaltyTracker } from "../effects/PenaltyTracker"
 
 export class Desktop extends Phaser.GameObjects.Container {
   private mailApp: MailApp
   private serverApp: ServerApp
+  private penaltyTracker?: PenaltyTracker
   public declare scene: Phaser.Scene
 
   constructor(scene: Phaser.Scene) {
@@ -40,7 +42,12 @@ export class Desktop extends Phaser.GameObjects.Container {
     scene.add.existing(this)
   }
 
-  private makeWindowDraggable(window: Phaser.GameObjects.Container): void {
+  setPenaltyTracker(tracker: PenaltyTracker): void {
+    this.penaltyTracker = tracker
+    this.serverApp.setPenaltyTracker(tracker)
+  }
+
+  private makeWindowDraggable(window: MailApp | ServerApp): void {
     // Create a hit area for the window's title bar
     const hitArea = new Phaser.Geom.Rectangle(
       0,
@@ -56,7 +63,7 @@ export class Desktop extends Phaser.GameObjects.Container {
       "drag",
       (
         _pointer: Phaser.Input.Pointer,
-        gameObject: Phaser.GameObjects.Container,
+        gameObject: MailApp | ServerApp,
         dragX: number,
         dragY: number
       ) => {

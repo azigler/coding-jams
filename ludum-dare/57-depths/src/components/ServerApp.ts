@@ -1,5 +1,6 @@
 import "phaser"
 import { FolderGen } from "../utils/FolderGen"
+import { PenaltyTracker } from "../effects/PenaltyTracker"
 
 export class ServerApp extends Phaser.GameObjects.Container {
   public static readonly WIDTH = 400
@@ -11,6 +12,7 @@ export class ServerApp extends Phaser.GameObjects.Container {
   private folderStructure: any
   private pathText: Phaser.GameObjects.Text
   private contentContainer: Phaser.GameObjects.Container
+  private penaltyTracker?: PenaltyTracker
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0)
@@ -63,6 +65,10 @@ export class ServerApp extends Phaser.GameObjects.Container {
 
     // Update display
     this.updateDisplay()
+  }
+
+  setPenaltyTracker(tracker: PenaltyTracker): void {
+    this.penaltyTracker = tracker
   }
 
   private updateDisplay(): void {
@@ -147,12 +153,21 @@ export class ServerApp extends Phaser.GameObjects.Container {
           bg.setAlpha(0)
           sprite.clearTint()
         })
-      } else if (name === ServerApp.TARGET_FILE) {
-        // Make target file clickable
+      } else {
+        // Make all files clickable
+        const handleFileClick = () => {
+          if (name === ServerApp.TARGET_FILE) {
+            this.scene.scene.start("end", { success: true })
+          } else {
+            // Wrong file clicked
+            if (this.penaltyTracker) {
+              this.penaltyTracker.trackMistake()
+            }
+          }
+        }
+
         sprite.setInteractive({ cursor: "pointer" })
-        sprite.on("pointerdown", () =>
-          this.scene.scene.start("end", { success: true })
-        )
+        sprite.on("pointerdown", handleFileClick)
         sprite.on("pointerover", () => {
           bg.setAlpha(0.3)
           sprite.setTint(0xdddddd)
@@ -164,9 +179,7 @@ export class ServerApp extends Phaser.GameObjects.Container {
 
         // Make text clickable too
         text.setInteractive({ cursor: "pointer" })
-        text.on("pointerdown", () =>
-          this.scene.scene.start("end", { success: true })
-        )
+        text.on("pointerdown", handleFileClick)
         text.on("pointerover", () => {
           bg.setAlpha(0.3)
           sprite.setTint(0xdddddd)
@@ -183,6 +196,17 @@ export class ServerApp extends Phaser.GameObjects.Container {
   }
 
   private navigateDown(folder: string): void {
+    // Check if this folder leads to the target file
+    let currentFolder = this.folderStructure
+    for (const f of [...this.currentPath, folder]) {
+      currentFolder = currentFolder[f]
+    }
+
+    // Apply penalty if this folder doesn't contain the target file
+    if (!this.hasTargetFile(currentFolder) && this.penaltyTracker) {
+      this.penaltyTracker.trackMistake()
+    }
+
     this.currentPath.push(folder)
     this.updateDisplay()
     this.scene.sound.play("click")
@@ -194,5 +218,21 @@ export class ServerApp extends Phaser.GameObjects.Container {
       this.updateDisplay()
       this.scene.sound.play("click")
     }
+  }
+
+  private hasTargetFile(folder: any): boolean {
+    // Check if the target file is in this folder
+    if (ServerApp.TARGET_FILE in folder) {
+      return true
+    }
+
+    // Recursively check subfolders
+    for (const [name, content] of Object.entries(folder)) {
+      if (typeof content === "object" && this.hasTargetFile(content)) {
+        return true
+      }
+    }
+
+    return false
   }
 }

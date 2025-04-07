@@ -1,5 +1,6 @@
 import { BaseScene } from "./BaseScene"
 import { Desktop } from "../components/Desktop"
+import { PenaltyTracker } from "../effects/PenaltyTracker"
 
 export const GameScene = BaseScene.create("game")
 
@@ -11,23 +12,27 @@ GameScene.prototype.create = function () {
   const desktop = new Desktop(this)
   this.add.existing(desktop)
 
-  // Start game timer (60 seconds)
+  // Initialize penalty tracker with 60 seconds
+  const penaltyTracker = new PenaltyTracker(this, 60)
+
+  // Create timer display
   const timerText = this.add.text(10, 10, "60", {
     font: "32px monospace",
     color: "#ffffff",
   })
 
-  let timeLeft = 60
-  this.time.addEvent({
-    delay: 1000,
-    callback: () => {
-      timeLeft--
-      timerText.setText(timeLeft.toString())
+  // Update timer every frame
+  this.events.on("update", () => {
+    penaltyTracker.update()
+    const timeLeft = penaltyTracker.getTimeRemaining()
+    timerText.setText(Math.ceil(timeLeft).toString())
 
-      if (timeLeft <= 0) {
-        this.scene.start("end", { success: false })
-      }
-    },
-    repeat: timeLeft - 1,
+    // Flash red when low on time
+    if (timeLeft <= 10) {
+      timerText.setColor("#ff0000")
+    }
   })
+
+  // Share penalty tracker with desktop for wrong clicks
+  desktop.setPenaltyTracker(penaltyTracker)
 }

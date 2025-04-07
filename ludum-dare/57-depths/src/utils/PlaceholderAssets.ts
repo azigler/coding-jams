@@ -59,7 +59,7 @@ export class PlaceholderAssets {
             loadedCount++
             if (loadedCount === totalSprites) {
               // Generate placeholder audio
-              const audioKeys = ["fail", "success", "tick", "click"]
+              const audioKeys = ["fail", "success", "tick", "click", "error"]
               audioKeys.forEach((key) => this.createEmptyAudio(scene, key))
               resolve()
             }
