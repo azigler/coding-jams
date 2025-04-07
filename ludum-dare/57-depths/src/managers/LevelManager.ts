@@ -89,10 +89,7 @@ export class LevelManager {
   nextLevel(): void {
     if (this.currentLevel < Object.keys(LEVELS).length) {
       this.currentLevel++
-      if (this.scene) {
-        this.scene.scene.stop()
-        this.loadLevel(this.currentLevel)
-      }
+      this.loadLevel(this.currentLevel)
     } else if (this.scene) {
       // Game completed!
       this.scene.scene.stop()
@@ -113,9 +110,6 @@ export class LevelManager {
 
   resetGame(): void {
     this.currentLevel = 1
-    if (this.scene) {
-      this.scene.scene.stop()
-      this.loadLevel(1)
-    }
+    this.loadLevel(1)
   }
 }
