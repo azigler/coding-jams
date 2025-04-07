@@ -1,0 +1,175 @@
+# Phaser Development Standards
+
+## Description
+
+This rule provides standards and best practices for developing Phaser applications in the coding jams monorepo, with a focus on rapid prototyping and experimentation.
+
+## Project Structure
+
+1. Each Phaser project MUST follow this structure:
+
+   ```
+   project-name/
+   ├── src/
+   │   ├── scenes/          # Game scenes
+   │   ├── objects/         # Game objects/entities
+   │   ├── assets/         # Game assets (sprites, audio, etc.)
+   │   └── config.ts       # Game configuration
+   ├── index.html          # Entry point
+   ├── package.json        # Dependencies
+   └── README.md          # Project documentation
+   ```
+
+2. Scene files MUST:
+   - Be placed in `src/scenes/`
+   - Follow the naming pattern: `[SceneName]Scene.ts`
+   - Extend `Phaser.Scene`
+   - Include lifecycle methods in order: `preload`, `create`, `update`
+
+## Code Standards
+
+1. TypeScript MUST be used for all Phaser projects
+   - Enables better IDE support
+   - Provides type safety
+   - Improves code maintainability
+
+2. Asset Loading:
+   - MUST be done in `preload()`
+   - MUST use unique asset keys
+   - MUST use constant enums for asset keys
+
+   ```typescript
+   enum TextureKeys {
+     Player = 'player',
+     Enemy = 'enemy'
+   }
+   ```
+
+3. Scene Management:
+   - Each scene MUST have a unique key
+   - Scene transitions MUST use type-safe scene keys
+   - Scene data passing MUST use typed interfaces
+
+4. Game Objects:
+   - Complex game objects SHOULD be in separate classes
+   - SHOULD extend appropriate Phaser classes
+   - MUST implement clean-up in `destroy()` method
+
+## Rapid Prototyping Guidelines
+
+1. Development Flow:
+   - Start with minimal viable scene
+   - Implement core mechanics first
+   - Add polish incrementally
+   - Use debug mode during development
+
+2. Debug Features MUST include:
+   - FPS counter
+   - Physics debug rendering
+   - Object bounds visualization
+
+   ```typescript
+   const config: Phaser.Types.Core.GameConfig = {
+     physics: {
+       default: 'arcade',
+       arcade: {
+         debug: true
+       }
+     }
+   };
+   ```
+
+3. Asset Placeholders:
+   - Use geometric shapes for rapid prototyping
+   - Implement color-coded placeholder sprites
+   - Use debug text for UI prototyping
+
+## Performance Optimization
+
+1. Object Pooling:
+   - Use `Group` for similar objects
+   - Implement `Pool` for frequently created/destroyed objects
+   - Reuse game objects when possible
+
+2. Asset Management:
+   - Use texture atlases for sprites
+   - Implement asset unloading between scenes
+   - Use audio sprites for sound effects
+
+## Implementation
+
+The Cursor IDE will:
+
+- Scaffold new Phaser projects with correct structure
+- Provide snippets for common Phaser patterns
+- Validate TypeScript types
+- Enforce code organization standards
+
+## Examples
+
+✅ Correct Scene Structure:
+
+```typescript
+export class GameScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'GameScene' });
+  }
+
+  preload(): void {
+    // Asset loading
+  }
+
+  create(): void {
+    // Scene setup
+  }
+
+  update(time: number, delta: number): void {
+    // Game loop logic
+  }
+}
+```
+
+❌ Incorrect Scene Structure:
+
+```typescript
+class Game {
+  // Not extending Phaser.Scene
+  constructor() {}
+  
+  // Missing lifecycle methods
+  run() {}
+}
+```
+
+## Debugging Tools
+
+1. Required Debug Utilities:
+
+   ```typescript
+   // Debug panel configuration
+   const debugPanel = this.add.graphics();
+   debugPanel.setScrollFactor(0);
+   
+   // FPS counter
+   this.add.text(10, 10, '', { color: '#00ff00' })
+     .setScrollFactor(0)
+     .setDepth(999)
+     .setText(`FPS: ${Math.round(this.game.loop.actualFps)}`);
+   ```
+
+2. Performance Monitoring:
+   - Track frame rate
+   - Monitor memory usage
+   - Count active game objects
+
+## Version Control Integration
+
+1. Asset Management:
+   - Large binary assets SHOULD be in Git LFS
+   - Generated assets MUST be in .gitignore
+   - Asset sources SHOULD be in separate directory
+
+2. Branch Strategy:
+   - Feature branches for new game mechanics
+   - Prototype branches for experiments
+   - Main branch must be playable
