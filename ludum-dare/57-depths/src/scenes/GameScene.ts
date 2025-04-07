@@ -1,6 +1,6 @@
 import { BaseScene } from "./BaseScene"
 import { Desktop } from "../components/Desktop"
-import { PenaltyTracker } from "../components/PenaltyTracker"
+import { PenaltyTracker } from "../effects/PenaltyTracker"
 import { LevelManager } from "../managers/LevelManager"
 
 interface GameSceneData {
@@ -34,28 +34,35 @@ GameScene.prototype.create = function (
   // Call parent create method
   BaseScene.prototype.create.call(this)
 
-  // Create desktop environment
-  this.desktop = new Desktop(this)
-  this.desktop.create()
-
-  // Create penalty tracker
-  this.penaltyTracker = new PenaltyTracker(this)
-  this.penaltyTracker.create()
-
-  // Configure penalties based on level settings
+  // Configure level settings
   const currentLevel = this.levelManager.getCurrentLevel()
-  if (currentLevel.penaltiesEnabled) {
-    this.desktop.setPenaltiesEnabled(true)
-  }
 
-  // Add level text
-  this.levelText = this.add.text(16, 16, `Level: ${currentLevel.number}`, {
-    font: "32px monospace",
-    color: "#ffffff",
+  // Create desktop environment with level settings
+  this.desktop = new Desktop(this, {
+    minTargetDepth: currentLevel.minDepth,
+    maxTargetDepth: currentLevel.maxDepth,
+    movingFolders: currentLevel.movingFolders,
   })
 
+  // Create penalty tracker with level time limit
+  this.penaltyTracker = new PenaltyTracker(this, currentLevel.timeLimit)
+
+  // Connect penalty tracker to desktop
+  this.desktop.setPenaltyTracker(this.penaltyTracker)
+
+  // Add level text
+  this.levelText = this.add.text(
+    16,
+    16,
+    `Level: ${this.levelManager.getCurrentLevelNumber()}`,
+    {
+      font: "32px monospace",
+      color: "#ffffff",
+    }
+  )
+
   // Add timer text
-  this.timerText = this.add.text(16, 56, "Time: 60", {
+  this.timerText = this.add.text(16, 56, `Time: ${currentLevel.timeLimit}`, {
     font: "32px monospace",
     color: "#ffffff",
   })

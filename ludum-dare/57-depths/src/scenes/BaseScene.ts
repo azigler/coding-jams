@@ -1,4 +1,7 @@
 import Phaser from "phaser"
+import { LevelManager } from "../managers/LevelManager"
+import { Desktop } from "../components/Desktop"
+import { PenaltyTracker } from "../effects/PenaltyTracker"
 
 // Ensure process.env.DEBUG is properly typed
 declare const process: {
@@ -17,6 +20,11 @@ export class BaseScene extends Phaser.Scene {
 
   protected updateHandler: (() => void) | null = null
   protected sceneData: any = null
+  protected levelManager: LevelManager | null = null
+  protected desktop: Desktop | null = null
+  protected penaltyTracker: PenaltyTracker | null = null
+  protected timerText: Phaser.GameObjects.Text | null = null
+  protected levelText: Phaser.GameObjects.Text | null = null
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config)
@@ -54,5 +62,9 @@ export class BaseScene extends Phaser.Scene {
         super(key)
       }
     }
+  }
+
+  protected handleGameComplete(success: boolean): void {
+    // Base implementation - should be overridden by child scenes
   }
 }
