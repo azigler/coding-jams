@@ -2,7 +2,6 @@
 description: Standards for structuring Phaser scenes for rapid prototyping and maintainability
 globs: src/scenes/**/*.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser Scene Structure Standards

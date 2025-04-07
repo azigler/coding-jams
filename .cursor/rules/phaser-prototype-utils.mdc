@@ -2,7 +2,6 @@
 description: Standards for rapid prototyping utilities in Phaser games
 globs: src/utils/**/*.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser Prototyping Utilities Standards

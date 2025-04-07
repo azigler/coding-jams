@@ -2,7 +2,6 @@
 description: Standards for Phaser game configuration and initialization
 globs: src/game.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser Game Configuration Standards

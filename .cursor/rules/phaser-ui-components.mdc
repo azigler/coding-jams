@@ -2,7 +2,6 @@
 description: Standards for creating and managing UI components in Phaser games
 globs: src/ui/**/*.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser UI Component Standards

@@ -2,7 +2,6 @@
 description: Standards for rapid graphics prototyping in Phaser games using shapes and emojis
 globs: src/scenes/**/*.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser Graphics Prototyping Standards

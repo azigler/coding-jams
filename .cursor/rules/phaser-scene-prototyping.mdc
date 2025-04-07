@@ -2,7 +2,6 @@
 description: Standards for rapid scene prototyping in Phaser games
 globs: src/scenes/**/*.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser Scene Prototyping Standards

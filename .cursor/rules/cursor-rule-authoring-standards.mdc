@@ -1,7 +1,7 @@
 ---
 description: Standards for authoring Cursor rules in the coding jams monorepo
 globs: *.mdc
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Cursor Rules Authoring Standards

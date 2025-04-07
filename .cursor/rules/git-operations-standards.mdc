@@ -1,0 +1,88 @@
+---
+description: Standards for performing git operations in the coding jams monorepo
+globs: 
+alwaysApply: true
+---
+
+# Git Operations Standards
+
+## Description
+
+Establishes standards for performing git operations in the coding jams monorepo to prevent common mistakes and ensure consistent version control practices.
+
+## Rule
+
+1. Repository Path Standards:
+   - MUST use absolute paths for git operations with Cursor tools
+   - MUST use workspace root path (e.g. `/Users/username/path/to/repo`)
+   - MUST verify correct directory path before operations
+   - MUST obtain absolute path from user info or workspace context
+
+2. Directory Verification:
+   - MUST check current directory with `list_dir` or `pwd` before git operations
+   - MUST navigate to correct directory if not already there
+   - MUST verify repository status after directory change
+   - MUST check for `.git` directory presence
+
+3. Git Status Checks:
+   - MUST check both staged and unstaged changes
+   - MUST verify current branch
+   - MUST check remote tracking status
+   - MUST use `git status` before commits
+
+4. Change Management:
+   - MUST stage changes from correct directory
+   - MUST verify staged changes before commit
+   - MUST follow commit message standards
+   - MUST clean up any unintended staging
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate git operation paths
+- Ensure absolute path usage
+- Verify directory context
+- Monitor git command patterns
+- Flag potential path issues
+
+## Benefits
+
+- Prevents path-related mistakes
+- Ensures consistent git operations
+- Improves version control reliability
+- Reduces commit errors
+- Maintains clean git history
+- Simplifies troubleshooting
+- Enhances collaboration
+
+## Examples
+
+✅ Correct:
+
+```typescript
+// Get workspace root from user info
+const WORKSPACE_ROOT = "/Users/username/path/to/repo";
+
+// Use absolute paths for git operations
+git_status({ repo_path: WORKSPACE_ROOT });
+git_add({ repo_path: WORKSPACE_ROOT, files: ["file.txt"] });
+git_commit({ repo_path: WORKSPACE_ROOT, message: "✨ Add new feature" });
+
+// For terminal commands, relative paths are still fine
+run_terminal_cmd("cd subdirectory");
+run_terminal_cmd("git status");
+```
+
+❌ Incorrect:
+
+```typescript
+// NEVER use relative paths with git tools
+git_status({ repo_path: "." });
+
+// NEVER use root path
+git_add({ repo_path: "/", files: ["file.txt"] });
+
+// NEVER skip workspace root verification
+git_commit({ repo_path: "./some/path", message: "Add files" });
+```

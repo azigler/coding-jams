@@ -2,7 +2,6 @@
 description: Standards for managing and loading assets in Phaser games
 globs: src/assets/**/*.ts
 alwaysApply: true
-domain: phaser
 ---
 
 # Phaser Asset Management Standards

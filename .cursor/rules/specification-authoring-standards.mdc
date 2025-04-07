@@ -1,3 +1,9 @@
+---
+description: Standards for writing clear, consistent, and maintainable specification documents for game prototypes and features
+globs: 
+alwaysApply: false
+---
+
 # Specification Authoring Standards
 
 ## Description
@@ -84,7 +90,7 @@ The Cursor IDE will:
 
 ✅ Correct:
 
-```markdown
+````markdown
 # Technical Specification
 
 ## Overview
@@ -105,12 +111,11 @@ export class GameSystem {
 - MUST implement error handling
 - SHOULD optimize for performance
 - MAY include additional features
-
-```
+````
 
 ❌ Incorrect:
 
-```markdown
+````markdown
 Technical Specs
 
 Some requirements:
@@ -125,4 +130,4 @@ class Game {
 Things to do:
 * Must do this
 * Maybe do that
-```
+````
