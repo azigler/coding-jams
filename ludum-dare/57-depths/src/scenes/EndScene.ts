@@ -4,72 +4,81 @@ import { LevelManager } from "../managers/LevelManager"
 interface EndSceneData {
   success: boolean
   completed?: boolean
+  finalScore?: number
 }
 
-export class EndScene extends BaseScene {
-  private sceneData: EndSceneData | null = null
-  private levelManager: LevelManager | null = null
+export const EndScene = BaseScene.create("end")
 
-  init(data: EndSceneData): void {
-    this.sceneData = data
-    this.levelManager = new LevelManager(this)
+EndScene.prototype.init = function (data: EndSceneData): void {
+  // Call parent init method to handle cleanup
+  BaseScene.prototype.init.call(this, data)
+  this.sceneData = data
+  this.levelManager = new LevelManager(this)
+}
+
+EndScene.prototype.create = function (
+  this: Phaser.Scene & {
+    sceneData: EndSceneData
+    levelManager: LevelManager | null
   }
+) {
+  // Call parent create method
+  BaseScene.prototype.create.call(this)
 
-  create(): void {
-    const { width, height } = this.scale
+  const { width, height } = this.scale
 
-    const message = this.sceneData?.success
-      ? this.sceneData.completed
-        ? "Congratulations! You've completed all levels!"
-        : "Level Complete!"
-      : "Level Failed!"
+  const message = this.sceneData?.success
+    ? this.sceneData.completed
+      ? `Congratulations!\nYou've mastered all ${this.sceneData.finalScore} levels!\nYou're promoted to Senior File Finder!`
+      : "Level Complete!"
+    : "Level Failed!"
 
-    this.add
-      .text(width / 2, height / 2 - 50, message, {
-        fontSize: "32px",
-        color: this.sceneData?.success ? "#00ff00" : "#ff0000",
+  this.add
+    .text(width / 2, height / 2 - 50, message, {
+      fontSize: "32px",
+      color: this.sceneData?.success ? "#00ff00" : "#ff0000",
+      align: "center",
+    })
+    .setOrigin(0.5)
+
+  if (this.sceneData?.success && !this.sceneData?.completed) {
+    const nextButton = this.add
+      .text(width / 2, height / 2 + 50, "Next Level", {
+        fontSize: "24px",
+        color: "#ffffff",
       })
       .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
 
-    if (this.sceneData?.success && !this.sceneData?.completed) {
-      const nextButton = this.add
-        .text(width / 2, height / 2 + 50, "Next Level", {
+    nextButton.on("pointerdown", () => {
+      nextButton.removeInteractive()
+      this.levelManager?.nextLevel()
+    })
+  } else {
+    const restartButton = this.add
+      .text(
+        width / 2,
+        height / 2 + 50,
+        this.sceneData?.completed ? "Play Again" : "Try Again",
+        {
           fontSize: "24px",
           color: "#ffffff",
-        })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
+        }
+      )
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true })
 
-      nextButton.on("pointerdown", () => {
-        nextButton.removeInteractive()
-        this.levelManager?.nextLevel()
-      })
-    } else {
-      const restartButton = this.add
-        .text(
-          width / 2,
-          height / 2 + 50,
-          this.sceneData?.completed ? "Play Again" : "Try Again",
-          {
-            fontSize: "24px",
-            color: "#ffffff",
-          }
-        )
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
-
-      restartButton.on("pointerdown", () => {
-        restartButton.removeInteractive()
-        this.levelManager?.resetGame()
-      })
-    }
+    restartButton.on("pointerdown", () => {
+      restartButton.removeInteractive()
+      this.levelManager?.resetGame()
+    })
   }
+}
 
-  shutdown(): void {
-    // Clean up all game objects and event listeners
-    this.children.removeAll(true)
-    this.events.removeAllListeners()
-    this.sceneData = null
-    this.levelManager = null
-  }
+EndScene.prototype.shutdown = function (): void {
+  // Clean up all game objects and event listeners
+  this.children.removeAll(true)
+  this.events.removeAllListeners()
+  this.sceneData = null
+  this.levelManager = null
 }
