@@ -35,10 +35,10 @@ A whimsical game about navigating deep folder structures under time pressure. Pl
 
 | Enhancement | Description | Link |
 |-------------|-------------|------|
-| Consequences | Penalties and effects for wrong clicks | [Consequences](specs/enhancement-consequences.md) |
-| Progressive Difficulty | Level system and power-ups | [Progressive](specs/enhancement-progressive.md) |
-| Directory Structure | Deep, branching folder hierarchies | [Directory](specs/enhancement-directory.md) |
-| Easter Eggs | Hidden content and special interactions | [Easter Eggs](specs/enhancement-easter-eggs.md) |
+| Consequences | Penalties and effects for wrong clicks | [Consequences](specs/enhancement-plan-consequences.md) |
+| Progressive Difficulty | Level system and power-ups | [Progressive](specs/enhancement-plan-progressive.md) |
+| Directory Structure | Deep, branching folder hierarchies | [Directory](specs/enhancement-plan-directory.md) |
+| Easter Eggs | Hidden content and special interactions | [Easter Eggs](specs/enhancement-plan-easter-eggs.md) |
 | Content Generation | Procedural content and file generation | [Content](specs/enhancement-plan-content.md) |
 | Theme Generator | Dynamic company theme system | [Theme](specs/enhancement-plan-theme.md) |
 
