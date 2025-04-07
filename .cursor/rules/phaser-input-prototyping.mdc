@@ -1,0 +1,218 @@
+---
+description: Standards for rapid input prototyping in Phaser games
+globs: src/scenes/**/*.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser Input Prototyping Standards
+
+## Description
+
+Establishes standards for quickly implementing and testing input interactions in Phaser games, with a focus on rapid prototyping for game jams.
+
+## Rule
+
+1. Basic Click/Tap Handling:
+   - MUST use pointer events for cross-device compatibility:
+
+     ```typescript
+     export class ClickHandler {
+       static onClick(
+         scene: Phaser.Scene,
+         target: Phaser.GameObjects.GameObject,
+         callback: () => void
+       ): void {
+         target.setInteractive();
+         target.on('pointerdown', callback);
+       }
+
+       static onClickArea(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         width: number,
+         height: number,
+         callback: () => void
+       ): Phaser.GameObjects.Zone {
+         const zone = scene.add.zone(x, y, width, height);
+         zone.setInteractive();
+         zone.on('pointerdown', callback);
+         return zone;
+       }
+     }
+     ```
+
+2. Quick Shape Drawing:
+   - MUST provide utilities for rapid visual feedback:
+
+     ```typescript
+     export class ShapeDrawer {
+       static circle(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         radius: number,
+         color = 0xffffff
+       ): Phaser.GameObjects.Arc {
+         return scene.add.circle(x, y, radius, color);
+       }
+
+       static clickableCircle(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         radius: number,
+         onClick: () => void,
+         color = 0xffffff
+       ): Phaser.GameObjects.Arc {
+         const circle = this.circle(scene, x, y, radius, color);
+         ClickHandler.onClick(scene, circle, onClick);
+         return circle;
+       }
+
+       static rectangle(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         width: number,
+         height: number,
+         color = 0xffffff
+       ): Phaser.GameObjects.Rectangle {
+         return scene.add.rectangle(x, y, width, height, color);
+       }
+     }
+     ```
+
+3. Debug Visualization:
+   - MUST show click/tap locations during development:
+
+     ```typescript
+     export class InputDebug {
+       static showClicks(scene: Phaser.Scene): void {
+         scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+           const marker = ShapeDrawer.circle(scene, pointer.x, pointer.y, 5, 0xff0000);
+           scene.tweens.add({
+             targets: marker,
+             alpha: 0,
+             duration: 300,
+             onComplete: () => marker.destroy()
+           });
+         });
+       }
+
+       static showHitAreas(scene: Phaser.Scene): void {
+         scene.input.enableDebug();
+       }
+     }
+     ```
+
+4. Input State Tracking:
+   - MUST track basic game state based on input:
+
+     ```typescript
+     export class InputState {
+       private static state = new Map<string, any>();
+
+       static increment(key: string, amount = 1): number {
+         const current = this.state.get(key) || 0;
+         const newValue = current + amount;
+         this.state.set(key, newValue);
+         return newValue;
+       }
+
+       static get<T>(key: string, defaultValue?: T): T {
+         return this.state.get(key) ?? defaultValue;
+       }
+
+       static set<T>(key: string, value: T): void {
+         this.state.set(key, value);
+       }
+     }
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate input handler implementation
+- Check for proper event cleanup
+- Ensure debug visualization in development
+- Monitor input state management
+- Flag potential memory leaks
+
+## Benefits
+
+- Rapid input prototyping
+- Cross-device compatibility
+- Visual debugging tools
+- Simple state tracking
+- Quick visual feedback
+- Memory leak prevention
+- Fast iteration cycles
+
+## Examples
+
+✅ Correct:
+
+```typescript
+export class ClickingGame extends Phaser.Scene {
+  create(): void {
+    // Show click locations in debug
+    if (process.env.DEBUG) {
+      InputDebug.showClicks(this);
+    }
+
+    // Create clickable target
+    const target = ShapeDrawer.clickableCircle(
+      this,
+      400,
+      300,
+      50,
+      () => {
+        const score = InputState.increment('score');
+        this.events.emit('score-changed', score);
+      },
+      0x00ff00
+    );
+
+    // Track clicks in specific area
+    const clickArea = ClickHandler.onClickArea(
+      this,
+      100,
+      100,
+      200,
+      200,
+      () => console.log('Area clicked!')
+    );
+  }
+
+  destroy(): void {
+    InputState.set('score', 0);
+  }
+}
+```
+
+❌ Incorrect:
+
+```typescript
+export class ClickingGame extends Phaser.Scene {
+  score = 0;  // Don't use instance variables for game state
+
+  create() {
+    const circle = this.add.circle(400, 300, 50, 0x00ff00);
+    
+    // Don't use raw DOM events
+    document.addEventListener('click', () => {
+      this.score++;
+    });
+    
+    // Don't use direct mouse coordinates
+    this.input.on('pointerdown', (pointer) => {
+      if (pointer.x > 100 && pointer.y > 100) {
+        // Handle click
+      }
+    });
+  }
+}
+```
