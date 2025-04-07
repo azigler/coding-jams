@@ -2,8 +2,8 @@ export class FolderGen {
   private static readonly MAX_DEPTH = 10
   private static readonly MAX_ITEMS = 50
   private static readonly TARGET_FILE = "important-client-file.txt"
-  private static readonly MIN_TARGET_DEPTH = 3 // Minimum depth for target file
-  private static readonly MAX_TARGET_DEPTH = 6 // Maximum depth for target file
+  private static readonly DEFAULT_MIN_TARGET_DEPTH = 3 // Default minimum depth for target file
+  private static readonly DEFAULT_MAX_TARGET_DEPTH = 6 // Default maximum depth for target file
 
   private static readonly FOLDER_NAMES = [
     "Documents",
@@ -42,41 +42,77 @@ export class FolderGen {
     "template.xlsx",
   ]
 
-  static generate(): Record<string, any> {
-    // Generate initial structure
+  static generate(
+    minTargetDepth?: number,
+    maxTargetDepth?: number
+  ): Record<string, any> {
+    // Use provided values or defaults
+    const effectiveMinDepth = minTargetDepth ?? this.DEFAULT_MIN_TARGET_DEPTH
+    const effectiveMaxDepth = maxTargetDepth ?? this.DEFAULT_MAX_TARGET_DEPTH
+
+    // Generate initial structure without target file
     const structure = this.generateFolder(1)
 
     // Determine target depth
     const targetDepth = Math.floor(
-      Math.random() * (this.MAX_TARGET_DEPTH - this.MIN_TARGET_DEPTH + 1) +
-        this.MIN_TARGET_DEPTH
+      Math.random() * (effectiveMaxDepth - effectiveMinDepth + 1) +
+        effectiveMinDepth
     )
 
-    // Create path to target file
-    const targetPath: string[] = []
-    let currentFolder = structure
+    // Find all valid folders at the target depth
+    const validFolders: { folder: Record<string, any>; path: string[] }[] = []
+    this.findFoldersAtDepth(structure, targetDepth, [], validFolders)
 
-    // Force creation of path to target depth
-    for (let i = 0; i < targetDepth; i++) {
-      // Get or create a folder at this level
-      const availableFolders = this.FOLDER_NAMES.filter(
-        (name) => !(name in currentFolder)
-      )
-      if (availableFolders.length === 0) {
-        break // Shouldn't happen with our folder name pool size
+    // If no valid folders found, create a new path
+    if (validFolders.length === 0) {
+      let currentFolder = structure
+      const path: string[] = []
+
+      for (let i = 0; i < targetDepth; i++) {
+        const availableFolders = this.FOLDER_NAMES.filter(
+          (name) => !(name in currentFolder)
+        )
+        if (availableFolders.length === 0) break
+
+        const folderName =
+          availableFolders[Math.floor(Math.random() * availableFolders.length)]
+        currentFolder[folderName] = this.generateFolder(i + 2)
+        path.push(folderName)
+        currentFolder = currentFolder[folderName]
       }
 
-      const folderName =
-        availableFolders[Math.floor(Math.random() * availableFolders.length)]
-      currentFolder[folderName] = this.generateFolder(i + 2)
-      targetPath.push(folderName)
-      currentFolder = currentFolder[folderName]
+      validFolders.push({ folder: currentFolder, path })
     }
 
-    // Insert target file at the chosen depth
-    currentFolder[this.TARGET_FILE] = false
+    // Choose a random valid folder and add the target file
+    const { folder } =
+      validFolders[Math.floor(Math.random() * validFolders.length)]
+    folder[this.TARGET_FILE] = false
 
     return structure
+  }
+
+  private static findFoldersAtDepth(
+    folder: Record<string, any>,
+    targetDepth: number,
+    currentPath: string[],
+    result: { folder: Record<string, any>; path: string[] }[]
+  ): void {
+    if (currentPath.length === targetDepth) {
+      result.push({ folder, path: [...currentPath] })
+      return
+    }
+
+    for (const [name, content] of Object.entries(folder)) {
+      if (typeof content === "object") {
+        this.findFoldersAtDepth(
+          content,
+          targetDepth,
+          [...currentPath, name],
+          result
+        )
+      }
+    }
   }
 
   private static generateFolder(depth: number): Record<string, any> {
