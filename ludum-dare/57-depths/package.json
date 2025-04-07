@@ -1,6 +1,7 @@
 {
   "name": "depths",
-  "version": "0.1.0",
+  "private": true,
+  "version": "0.0.0",
   "description": "A game about navigating deep folder structures - Ludum Dare 57 entry",
   "type": "module",
   "scripts": {
@@ -9,11 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "phaser": "^3.60.0"
+    "phaser": "^3.70.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.11.30",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6"
   }
 }

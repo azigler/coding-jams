@@ -1,25 +1,32 @@
 export const AssetRegistry = {
   sprites: {
-    // UI elements
-    window: {
-      path: "sprites/window.png",
+    file: {
+      path: "sprites/file.png",
+      frameWidth: 32,
+      frameHeight: 32,
     },
     folder: {
       path: "sprites/folder.png",
+      frameWidth: 32,
+      frameHeight: 32,
     },
-    file: {
-      path: "sprites/file.png",
+    window: {
+      path: "sprites/window.png",
+      frameWidth: 32,
+      frameHeight: 32,
     },
     back: {
       path: "sprites/back.png",
+      frameWidth: 32,
+      frameHeight: 32,
     },
   },
   audio: {
     sfx: {
-      click: "audio/sfx/click.mp3",
-      success: "audio/sfx/success.mp3",
       fail: "audio/sfx/fail.mp3",
+      success: "audio/sfx/success.mp3",
       tick: "audio/sfx/tick.mp3",
+      click: "audio/sfx/click.mp3",
     },
     music: {
       theme: "audio/music/theme.ogg",
@@ -32,6 +39,4 @@ export const AssetRegistry = {
 
 export type AssetKey = keyof typeof AssetRegistry
 export type SpriteKey = keyof typeof AssetRegistry.sprites
-export type AudioKey =
-  | keyof typeof AssetRegistry.audio.sfx
-  | keyof typeof AssetRegistry.audio.music
+export type AudioKey = keyof typeof AssetRegistry.audio.sfx

@@ -5,6 +5,13 @@ import { EndScene } from "./scenes/EndScene"
 export const GAME_WIDTH = 800
 export const GAME_HEIGHT = 600
 
+// Ensure process.env.DEBUG is properly typed
+declare const process: {
+  env: {
+    DEBUG: boolean
+  }
+}
+
 export const GameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: "game",
@@ -17,8 +24,8 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
   physics: {
     default: "arcade",
     arcade: {
-      debug: process.env.DEBUG === "true",
-      gravity: { y: 0 },
+      debug: process.env.DEBUG,
+      gravity: { x: 0, y: 0 },
     },
   },
   render: {

@@ -1,9 +1,11 @@
+import "phaser"
 import { MailApp } from "./MailApp"
 import { ServerApp } from "./ServerApp"
 
 export class Desktop extends Phaser.GameObjects.Container {
   private mailApp: MailApp
   private serverApp: ServerApp
+  public declare scene: Phaser.Scene
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0)
@@ -33,10 +35,21 @@ export class Desktop extends Phaser.GameObjects.Container {
     // Make windows draggable
     this.makeWindowDraggable(this.mailApp)
     this.makeWindowDraggable(this.serverApp)
+
+    // Add this container to the scene
+    scene.add.existing(this)
   }
 
   private makeWindowDraggable(window: Phaser.GameObjects.Container): void {
-    window.setInteractive()
+    // Create a hit area for the window's title bar
+    const hitArea = new Phaser.Geom.Rectangle(
+      0,
+      0,
+      window instanceof MailApp ? MailApp.WIDTH : ServerApp.WIDTH,
+      30
+    )
+    window.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains)
+
     this.scene.input.setDraggable(window)
 
     this.scene.input.on(
