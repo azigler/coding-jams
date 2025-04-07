@@ -55,23 +55,19 @@ EndScene.prototype.create = function (
   button.setOrigin(0.5)
   button.setInteractive({ cursor: "pointer" })
   button.on("pointerdown", () => {
+    // Get the existing level manager to maintain state
+    const levelManager = new LevelManager(this)
+
     if (completed) {
       // Reset game and start from level 1
-      const levelManager = new LevelManager(this)
       levelManager.resetGame()
-      this.scene.start("game", { level: 1 })
+    } else if (success) {
+      // Continue to next level - this will handle game completion
+      levelManager.nextLevel()
     } else {
-      // Get the existing level manager to maintain state
-      const levelManager = new LevelManager(this)
+      // Retry current level
       const currentLevel = levelManager.getCurrentLevelNumber()
-      if (success) {
-        // Continue to next level
-        levelManager.advanceLevel()
-        this.scene.start("game", { level: currentLevel + 1 })
-      } else {
-        // Retry current level
-        this.scene.start("game", { level: currentLevel })
-      }
+      this.scene.start("game", { level: currentLevel })
     }
   })
 

@@ -112,9 +112,8 @@ export class GameScene extends BaseScene {
         finalScore: this.levelManager!.getCurrentLevelNumber(),
       })
     }
-    // If player won the level but not the game, advance to next level
+    // If player won the level but not the game, show level complete screen
     else if (success) {
-      this.levelManager!.advanceLevel()
       this.scene.start("end", { success: true, completed: false })
     }
     // If player lost, show failure screen
