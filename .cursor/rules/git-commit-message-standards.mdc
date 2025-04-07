@@ -17,13 +17,19 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
 3. Commit messages MUST follow the gitmoji specification format:
 
    ```
-   <intention> [scope][:?] <message>
+   <intention> (scope): <message>
    ```
 
    Where:
    - `intention`: The gitmoji shortcode (e.g. `:sparkles:`, `:bug:`)
-   - `scope`: Optional context in parentheses (e.g. `(gameplay)`, `(ui)`)
+   - `(scope)`: Optional context in parentheses, NOT brackets (e.g. `(gameplay)`, `(ui)`)
    - `message`: Brief description in present tense
+
+   Note: The scope MUST:
+   - Use parentheses `()`, not brackets `[]` or braces `{}`
+   - Be lowercase
+   - Use hyphens for multi-word scopes (e.g. `(game-logic)`)
+   - Be one of the predefined scopes listed below
 
 4. Common gitmoji usage:
    - `:sparkles:` - New feature/component
@@ -34,7 +40,7 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
    - `:white_check_mark:` - Add/update tests
    - `:wrench:` - Configuration changes
 
-5. Common scopes:
+5. Predefined scopes:
    - `(game)` - Core game functionality
    - `(gameplay)` - Game mechanics and features
    - `(ui)` - User interface components
@@ -48,12 +54,13 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
 
 ## Implementation
 
-- The Cursor IDE will:
-  - Prompt for commit after file changes
-  - Validate commit message format
-  - Suggest appropriate gitmoji based on changes
-  - Suggest appropriate scope based on changed files
-  - Prevent multi-line commit messages
+The Cursor IDE will:
+
+- Validate git commit message format
+- Ensure scopes use parentheses
+- Verify scope is from predefined list
+- Check gitmoji shortcode validity
+- Prevent multi-line commit messages
 
 ## Benefits
 
@@ -69,30 +76,43 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
 ✅ Correct:
 
 ```shell
-:sparkles: (gameplay): Add user authentication component
-:bug: (ui): Fix navigation menu overflow
-:memo: (docs): Update API documentation
-:recycle: (game): Refactor game loop for better performance
-:art: (scene): Improve scene transition structure
+:sparkles: (gameplay): add user authentication component
+:bug: (ui): fix navigation menu overflow
+:memo: (docs): update API documentation
+:recycle: (game): refactor game loop for performance
+:art: (scene): improve scene transition structure
 ```
 
 ❌ Incorrect:
 
 ```shell
-# Missing gitmoji
-Add new feature
+# Wrong scope format (using brackets)
+:bug: [gameplay]: fix infinite loop issue
 
-# Using emoji instead of shortcode
-🐛 Fix the bug
+# Wrong scope format (using braces)
+:sparkles: {ui}: add new button component
 
-# Missing scope
-:sparkles: Add new component
+# Missing parentheses around scope
+:memo: docs: update readme
 
-# Wrong format
-:bug: - Fixed UI issue
+# Invalid scope (not from predefined list)
+:bug: (fixes): resolve timing issue
 
-# Multiple lines
-:memo: Update documentation
-With more details
-And examples
+# Missing colon after scope
+:art: (ui) improve button layout
+
+# Missing space after gitmoji
+:sparkles:(gameplay): add new feature
+
+# Missing space before message
+:bug: (ui):fix layout issue
+
+# Uppercase scope
+:memo: (DOCS): update changelog
+
+# Multiple scopes
+:bug: (ui)(gameplay): fix player controls
+
+# Wrong emoji format
+🐛 (gameplay): fix bug
 ```
