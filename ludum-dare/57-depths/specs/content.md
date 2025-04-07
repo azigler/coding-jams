@@ -4,7 +4,7 @@
 
 1. **Boss Email**
 
-   ```
+   ```plaintext
    Subject: URGENT!!! Need file ASAP!!!
    From: Boss McBossface
    To: You
@@ -55,7 +55,7 @@
 
 1. **Success**
 
-   ```
+   ```plaintext
    YOU DID IT!
    Crisis averted! Boss is happy!
    The client probably won't fire us now!
@@ -63,7 +63,7 @@
 
 2. **Failure**
 
-   ```
+   ```plaintext
    TIME'S UP!
    The client left in anger!
    Boss is not impressed...

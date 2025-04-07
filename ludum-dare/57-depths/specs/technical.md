@@ -9,7 +9,7 @@
 
 ## Project Structure
 
-```
+```plaintext
 src/
   scenes/
     BootScene.ts     # Asset loading and game initialization

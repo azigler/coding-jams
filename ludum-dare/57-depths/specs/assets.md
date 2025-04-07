@@ -51,7 +51,7 @@
 
 ## Asset Organization
 
-```
+```plaintext
 assets/
   sprites/
     icons/        # Game icons
