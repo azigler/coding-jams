@@ -9,13 +9,21 @@ interface EndSceneData {
 
 export const EndScene = BaseScene.create("end")
 
+EndScene.prototype.init = function (data: EndSceneData): void {
+  // Store scene data
+  this.sceneData = data
+}
+
 EndScene.prototype.create = function (
-  this: Phaser.Scene & { scene: { settings: { data: EndSceneData } } }
+  this: Phaser.Scene & {
+    scene: { settings: { data: EndSceneData } }
+    sceneData: EndSceneData
+  }
 ) {
   // Call parent create method
   BaseScene.prototype.create.call(this)
 
-  const { success, completed, finalScore } = this.scene.settings.data
+  const { success, completed, finalScore } = this.sceneData
 
   // Display result message
   let message
@@ -61,12 +69,17 @@ EndScene.prototype.create = function (
     if (completed) {
       // Reset game and start from level 1
       levelManager.resetGame()
+      this.scene.stop()
+      this.scene.start("game", { level: 1 })
     } else if (success) {
       // Continue to next level - this will handle game completion
       levelManager.nextLevel()
+      this.scene.stop()
+      this.scene.start("game", { level: levelManager.getCurrentLevelNumber() })
     } else {
       // Retry current level
       const currentLevel = levelManager.getCurrentLevelNumber()
+      this.scene.stop()
       this.scene.start("game", { level: currentLevel })
     }
   })
@@ -74,4 +87,9 @@ EndScene.prototype.create = function (
   // Add hover effect
   button.on("pointerover", () => button.setColor("#66b3ff"))
   button.on("pointerout", () => button.setColor("#4a90e2"))
+}
+
+EndScene.prototype.shutdown = function (): void {
+  // Clean up all game objects
+  this.children.removeAll(true)
 }

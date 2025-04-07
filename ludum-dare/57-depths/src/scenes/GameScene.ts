@@ -1,148 +1,147 @@
 import { BaseScene } from "./BaseScene"
 import { Desktop } from "../components/Desktop"
-import { PenaltyTracker } from "../effects/PenaltyTracker"
+import { PenaltyTracker } from "../components/PenaltyTracker"
 import { LevelManager } from "../managers/LevelManager"
 
-export class GameScene extends BaseScene {
-  private desktop: Desktop | null = null
-  private penaltyTracker: PenaltyTracker | null = null
-  private timerText: Phaser.GameObjects.Text | null = null
-  private updateHandler: (() => void) | null = null
-  private levelManager: LevelManager | null = null
+interface GameSceneData {
+  level?: number
+}
 
-  constructor() {
-    super({ key: "game" })
+export const GameScene = BaseScene.create("game")
+
+GameScene.prototype.init = function (data: GameSceneData): void {
+  // Call parent init method to handle cleanup
+  BaseScene.prototype.init.call(this, data)
+
+  // Initialize level manager with this scene
+  this.levelManager = new LevelManager(this)
+
+  // Set level if provided
+  if (data.level) {
+    this.levelManager.setLevel(data.level)
+  }
+}
+
+GameScene.prototype.create = function (
+  this: Phaser.Scene & {
+    levelManager: LevelManager
+    desktop: Desktop
+    penaltyTracker: PenaltyTracker
+    timerText: Phaser.GameObjects.Text
+    levelText: Phaser.GameObjects.Text
+  }
+) {
+  // Call parent create method
+  BaseScene.prototype.create.call(this)
+
+  // Create desktop environment
+  this.desktop = new Desktop(this)
+  this.desktop.create()
+
+  // Create penalty tracker
+  this.penaltyTracker = new PenaltyTracker(this)
+  this.penaltyTracker.create()
+
+  // Configure penalties based on level settings
+  const currentLevel = this.levelManager.getCurrentLevel()
+  if (currentLevel.penaltiesEnabled) {
+    this.desktop.setPenaltiesEnabled(true)
   }
 
-  init(data?: any): void {
-    // Clear any existing update handler
-    if (this.updateHandler) {
-      this.events.off("update", this.updateHandler)
-      this.updateHandler = null
-    }
+  // Add level text
+  this.levelText = this.add.text(16, 16, `Level: ${currentLevel.number}`, {
+    font: "32px monospace",
+    color: "#ffffff",
+  })
 
-    // Initialize level manager if not already done
-    if (!this.levelManager) {
-      this.levelManager = new LevelManager(this)
-    }
+  // Add timer text
+  this.timerText = this.add.text(16, 56, "Time: 60", {
+    font: "32px monospace",
+    color: "#ffffff",
+  })
 
-    // Set level if provided
-    if (data?.level) {
-      this.levelManager.setLevel(data.level)
-    }
-  }
+  // Start timer
+  const startTime = Date.now()
+  const timeLimit = currentLevel.timeLimit * 1000 // Convert to milliseconds
 
-  create(): void {
-    super.create()
+  // Update handler for timer
+  this.updateHandler = () => {
+    const elapsed = Date.now() - startTime
+    const remaining = Math.max(0, timeLimit - elapsed)
+    const seconds = Math.ceil(remaining / 1000)
 
-    const currentLevel = this.levelManager!.getCurrentLevel()
-
-    // Create desktop environment
-    this.desktop = new Desktop(this, {
-      minTargetDepth: currentLevel.minDepth,
-      maxTargetDepth: currentLevel.maxDepth,
-      movingFolders: currentLevel.movingFolders,
-    })
-
-    // Initialize penalty tracker
-    this.penaltyTracker = new PenaltyTracker(this, currentLevel.timeLimit)
-
-    // Create timer display
-    this.timerText = this.add.text(
-      this.cameras.main.width - 10,
-      10,
-      currentLevel.timeLimit.toString(),
-      {
-        font: "32px monospace",
-        color: "#ffffff",
-      }
-    )
-    this.timerText.setOrigin(1, 0)
-
-    // Create level display
-    const levelText = this.add.text(
-      10,
-      10,
-      `Level ${this.levelManager!.getCurrentLevelNumber()}`,
-      {
-        font: "32px monospace",
-        color: "#ffffff",
-      }
-    )
-
-    // Set up penalty tracking
-    if (this.desktop && this.penaltyTracker) {
-      this.desktop.setPenaltyTracker(this.penaltyTracker)
-    }
-
-    // Create update handler
-    this.updateHandler = () => {
-      if (this.penaltyTracker && this.timerText && this.timerText.active) {
-        this.penaltyTracker.update()
-        const timeLeft = this.penaltyTracker.getTimeRemaining()
-        this.timerText.setText(Math.ceil(timeLeft).toString())
-
-        if (timeLeft <= 10) {
-          this.timerText.setColor("#ff0000")
-        }
-      }
-    }
-
-    // Register update handler
-    this.events.on("update", this.updateHandler)
-
-    // Listen for game completion
-    this.events.on("gameComplete", this.handleGameComplete, this)
-  }
-
-  private handleGameComplete(success: boolean): void {
-    // Remove update handler before restarting scene
-    if (this.updateHandler) {
-      this.events.off("update", this.updateHandler)
-      this.updateHandler = null
-    }
-
-    const completed = success && this.levelManager!.isLastLevel()
-
-    // If player won the game (completed last level), show winning screen
-    if (completed) {
-      this.scene.start("end", {
-        success: true,
-        completed: true,
-        finalScore: this.levelManager!.getCurrentLevelNumber(),
-      })
-    }
-    // If player won the level but not the game, show level complete screen
-    else if (success) {
-      this.scene.start("end", { success: true, completed: false })
-    }
-    // If player lost, show failure screen
-    else {
-      this.scene.start("end", { success: false, completed: false })
-    }
-  }
-
-  destroy(): void {
-    // Clean up event listeners
-    this.events.off("gameComplete", this.handleGameComplete, this)
-    if (this.updateHandler) {
-      this.events.off("update", this.updateHandler)
-      this.updateHandler = null
-    }
-
-    // Clean up game objects
-    if (this.desktop) {
-      this.desktop.destroy()
-      this.desktop = null
-    }
-
-    if (this.penaltyTracker) {
-      this.penaltyTracker = null
-    }
-
+    // Update timer text
     if (this.timerText) {
-      this.timerText.destroy()
-      this.timerText = null
+      this.timerText.setText(`Time: ${seconds}`)
+      // Change color to red when time is low
+      if (seconds <= 10) {
+        this.timerText.setColor("#ff0000")
+      }
+    }
+
+    // Check for time up
+    if (remaining <= 0) {
+      this.handleGameComplete(false)
     }
   }
+
+  // Register update handler
+  this.events.on("update", this.updateHandler)
+
+  // Listen for game complete event
+  this.desktop.on("gameComplete", () => this.handleGameComplete(true))
+}
+
+GameScene.prototype.handleGameComplete = function (success: boolean) {
+  // Stop update handler
+  if (this.updateHandler) {
+    this.events.off("update", this.updateHandler)
+    this.updateHandler = null
+  }
+
+  // Stop current scene
+  this.scene.stop()
+
+  // Get current level number for final score
+  const currentLevel = this.levelManager.getCurrentLevelNumber()
+
+  // Check if this was the last level
+  const isLastLevel = currentLevel >= 5
+
+  // Show appropriate end screen
+  if (success && isLastLevel) {
+    // Show winning screen with final score
+    this.scene.start("end", {
+      success: true,
+      completed: true,
+      finalScore: currentLevel,
+    })
+  } else if (success) {
+    // Show level complete screen
+    this.scene.start("end", { success: true })
+  } else {
+    // Show failure screen
+    this.scene.start("end", { success: false })
+  }
+}
+
+GameScene.prototype.shutdown = function () {
+  // Call parent shutdown method
+  BaseScene.prototype.shutdown.call(this)
+
+  // Clean up desktop
+  if (this.desktop) {
+    this.desktop.destroy()
+  }
+
+  // Clean up penalty tracker
+  if (this.penaltyTracker) {
+    this.penaltyTracker.destroy()
+  }
+
+  // Clear references
+  this.desktop = null
+  this.penaltyTracker = null
+  this.timerText = null
+  this.levelText = null
 }
