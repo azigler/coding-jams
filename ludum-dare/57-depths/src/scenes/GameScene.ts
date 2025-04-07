@@ -75,6 +75,9 @@ GameScene.prototype.create = function (
 
   // Update handler for timer
   this.updateHandler = () => {
+    // Update penalty tracker to tick down time
+    this.penaltyTracker.update()
+
     // Get time from penalty tracker
     const seconds = Math.ceil(this.penaltyTracker.getTimeRemaining())
 
@@ -127,22 +130,31 @@ GameScene.prototype.handleGameComplete = function (success: boolean) {
 }
 
 GameScene.prototype.shutdown = function () {
-  // Call parent shutdown method
+  // Call parent shutdown method to clean up event listeners
   BaseScene.prototype.shutdown.call(this)
 
   // Clean up desktop
   if (this.desktop) {
     this.desktop.destroy()
+    this.desktop = null
   }
 
   // Clean up penalty tracker
   if (this.penaltyTracker) {
-    this.penaltyTracker.destroy()
+    this.penaltyTracker = null
   }
 
-  // Clear references
-  this.desktop = null
-  this.penaltyTracker = null
-  this.timerText = null
-  this.levelText = null
+  // Clean up text objects
+  if (this.timerText) {
+    this.timerText.destroy()
+    this.timerText = null
+  }
+
+  if (this.levelText) {
+    this.levelText.destroy()
+    this.levelText = null
+  }
+
+  // Remove all event listeners
+  this.events.removeAllListeners()
 }

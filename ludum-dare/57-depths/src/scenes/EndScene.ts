@@ -88,4 +88,18 @@ EndScene.prototype.create = function (
 EndScene.prototype.shutdown = function (): void {
   // Clean up all game objects
   this.children.removeAll(true)
+
+  // Remove all event listeners
+  this.events.removeAllListeners()
+
+  // Clear scene data
+  this.sceneData = null
+}
+
+EndScene.prototype.destroy = function (): void {
+  // Call shutdown to clean up
+  this.shutdown()
+
+  // Call parent destroy
+  BaseScene.prototype.destroy.call(this)
 }
