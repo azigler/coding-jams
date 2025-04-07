@@ -12,20 +12,31 @@ This rule establishes standards for creating and maintaining MDC (Model-Driven C
 
 ## Rule
 
-When creating new MDC rules:
+1. Rule Location and Naming:
+   - All rules MUST be stored in the `.cursor/rules` directory
+   - Rule files MUST use the `.mdc` extension
+   - Rule names MUST follow domain-based namespace scheme:
+     - Format: `{domain}-{subdomain}-{descriptor}.mdc`
+     - Example: `frontend-components-structure.mdc`
+     - Example: `backend-api-endpoints.mdc`
+     - Example: `database-schema-naming.mdc`
 
-1. Each rule file MUST include a metadata header with:
+2. Each rule file MUST include a metadata header with:
    - `description`: Brief summary of the rule's purpose
    - `globs`: File patterns this rule applies to
    - `alwaysApply`: Boolean indicating if rule should be automatically applied
-2. Each rule MUST contain these sections in order:
+   - `domain`: Primary domain this rule belongs to (e.g., frontend, backend, database)
+
+3. Each rule MUST contain these sections in order:
    - `Description`: Overview of what the rule does
    - `Rule`: Specific requirements and constraints
    - `Implementation`: How to apply and enforce the rule
    - `Benefits`: Why this rule exists and its advantages
    - `Examples`: Clear demonstrations of correct and incorrect usage
-3. All sections MUST use proper markdown formatting
-4. Examples MUST show both correct (✅) and incorrect (❌) cases
+
+4. All sections MUST use proper markdown formatting
+
+5. Examples MUST show both correct (✅) and incorrect (❌) cases
 
 ## Implementation
 
@@ -34,6 +45,8 @@ When creating new MDC rules:
   - Checking for required sections in correct order
   - Ensuring proper markdown formatting
   - Verifying presence of both correct and incorrect examples
+  - Validating domain-based namespace compliance
+  - Confirming rule location in `.cursor/rules` directory
 
 ## Benefits
 
@@ -42,6 +55,8 @@ When creating new MDC rules:
 - Easy validation of rule compliance
 - Simplified maintenance and updates
 - Better onboarding for new contributors
+- Organized rule structure through domain-based namespacing
+- Centralized rule location for easier discovery and management
 
 ## Examples
 
@@ -49,10 +64,13 @@ When creating new MDC rules:
 
 ```markdown
 ---
-description: Example rule for component structure
+description: Standardizes React component structure and organization
 globs: src/components/**/*.tsx
 alwaysApply: true
+domain: frontend
 ---
+
+# frontend-components-structure
 
 ## Description
 Standardizes component file organization.
@@ -74,6 +92,9 @@ Standardizes component file organization.
 
 ```markdown
 # Component Structure
+---
+description: Rules for components
+---
 
 Put components in src/components.
 Use good names.
