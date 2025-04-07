@@ -34,7 +34,15 @@ This rule establishes standards for creating and maintaining MDC (Model-Driven C
    - `Benefits`: Why this rule exists and its advantages
    - `Examples`: Clear demonstrations of correct and incorrect usage
 
-4. All sections MUST use proper markdown formatting
+4. All sections MUST use proper markdown formatting:
+   - Code blocks MUST have a language specifier:
+     - `typescript` for TypeScript/JavaScript code
+     - `plaintext` for directory structures and plain text
+     - `markdown` for markdown examples
+     - `json` for JSON/configuration examples
+     - `shell` for command line examples
+   - Code blocks MUST NOT have empty lines before or after the markers
+   - Code blocks MUST be indented to match the list level
 
 5. Examples MUST show both correct (✅) and incorrect (❌) cases
 
