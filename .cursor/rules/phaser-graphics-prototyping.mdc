@@ -1,0 +1,247 @@
+---
+description: Standards for rapid graphics prototyping in Phaser games using shapes and emojis
+globs: src/scenes/**/*.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser Graphics Prototyping Standards
+
+## Description
+
+Establishes standards for quickly creating placeholder graphics in Phaser games using geometric shapes and emojis, enabling rapid visual prototyping without asset creation.
+
+## Rule
+
+1. Basic Shape Drawing:
+   - MUST provide essential shape utilities:
+
+     ```typescript
+     export class ShapeFactory {
+       static circle(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         radius: number,
+         options = { color: 0xffffff, alpha: 1 }
+       ): Phaser.GameObjects.Arc {
+         return scene.add.circle(x, y, radius, options.color, options.alpha);
+       }
+
+       static rect(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         width: number,
+         height: number,
+         options = { color: 0xffffff, alpha: 1 }
+       ): Phaser.GameObjects.Rectangle {
+         return scene.add.rectangle(x, y, width, height, options.color, options.alpha);
+       }
+
+       static polygon(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         points: number[],
+         options = { color: 0xffffff, alpha: 1 }
+       ): Phaser.GameObjects.Polygon {
+         return scene.add.polygon(x, y, points, options.color, options.alpha);
+       }
+     }
+     ```
+
+2. Emoji Text Objects:
+   - MUST provide emoji-based graphics:
+
+     ```typescript
+     export class EmojiFactory {
+       static readonly COMMON_EMOJIS = {
+         player: '🟡',
+         enemy: '👾',
+         coin: '💰',
+         heart: '❤️',
+         star: '⭐',
+         gem: '💎',
+         key: '🔑',
+         door: '🚪',
+         tree: '🌳',
+         rock: '🪨',
+         fire: '🔥',
+         water: '💧',
+         sword: '⚔️',
+         shield: '🛡️',
+         skull: '💀',
+         target: '🎯'
+       } as const;
+
+       static create(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         emoji: keyof typeof EmojiFactory.COMMON_EMOJIS | string,
+         options = { size: 32, origin: 0.5 }
+       ): Phaser.GameObjects.Text {
+         const text = scene.add.text(x, y, 
+           emoji in EmojiFactory.COMMON_EMOJIS 
+             ? EmojiFactory.COMMON_EMOJIS[emoji as keyof typeof EmojiFactory.COMMON_EMOJIS]
+             : emoji,
+           { fontSize: `${options.size}px` }
+         );
+         text.setOrigin(options.origin);
+         return text;
+       }
+     }
+     ```
+
+3. Composite Placeholders:
+   - MUST provide common game object templates:
+
+     ```typescript
+     export class PlaceholderFactory {
+       static button(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         text: string,
+         options = { width: 200, height: 50, color: 0x4a90e2 }
+       ): Phaser.GameObjects.Container {
+         const container = scene.add.container(x, y);
+         const bg = ShapeFactory.rect(scene, 0, 0, options.width, options.height, { color: options.color });
+         const label = scene.add.text(0, 0, text, { fontSize: '24px' })
+           .setOrigin(0.5);
+         container.add([bg, label]);
+         return container;
+       }
+
+       static healthBar(
+         scene: Phaser.Scene,
+         x: number,
+         y: number,
+         options = { width: 100, height: 10, color: 0x00ff00 }
+       ): { container: Phaser.GameObjects.Container; update: (value: number) => void } {
+         const container = scene.add.container(x, y);
+         const bg = ShapeFactory.rect(scene, 0, 0, options.width, options.height, { color: 0x333333 });
+         const bar = ShapeFactory.rect(scene, 0, 0, options.width, options.height, { color: options.color });
+         container.add([bg, bar]);
+         
+         return {
+           container,
+           update: (value: number) => {
+             bar.setScale(Math.max(0, Math.min(1, value)), 1);
+             bar.setOrigin(0, 0);
+           }
+         };
+       }
+     }
+     ```
+
+4. Debug Visualization:
+   - MUST provide debug drawing utilities:
+
+     ```typescript
+     export class DebugGraphics {
+       static drawHitbox(
+         scene: Phaser.Scene,
+         gameObject: Phaser.GameObjects.GameObject,
+         options = { color: 0xff0000 }
+       ): Phaser.GameObjects.Rectangle {
+         const bounds = gameObject.getBounds();
+         return ShapeFactory.rect(
+           scene,
+           bounds.x + bounds.width / 2,
+           bounds.y + bounds.height / 2,
+           bounds.width,
+           bounds.height,
+           { color: options.color, alpha: 0.3 }
+         );
+       }
+
+       static drawPath(
+         scene: Phaser.Scene,
+         points: { x: number; y: number }[],
+         options = { color: 0x00ff00, thickness: 2 }
+       ): Phaser.GameObjects.Graphics {
+         const graphics = scene.add.graphics();
+         graphics.lineStyle(options.thickness, options.color);
+         graphics.beginPath();
+         graphics.moveTo(points[0].x, points[0].y);
+         points.slice(1).forEach(point => graphics.lineTo(point.x, point.y));
+         graphics.strokePath();
+         return graphics;
+       }
+     }
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate shape creation
+- Check emoji text rendering
+- Monitor placeholder cleanup
+- Track debug graphics
+- Ensure proper object disposal
+
+## Benefits
+
+- Rapid visual prototyping
+- No art assets needed
+- Cross-platform emoji support
+- Quick UI mockups
+- Easy debug visualization
+- Fast iteration cycles
+- Clear placeholder intent
+
+## Examples
+
+✅ Correct:
+
+```typescript
+export class GameScene extends Phaser.Scene {
+  create(): void {
+    // Create player with emoji
+    const player = EmojiFactory.create(this, 400, 300, 'player');
+    
+    // Add collectible items
+    const coin = EmojiFactory.create(this, 500, 300, 'coin', { size: 24 });
+    
+    // Create UI elements
+    const startButton = PlaceholderFactory.button(this, 400, 400, 'Start Game');
+    const health = PlaceholderFactory.healthBar(this, 10, 10);
+    
+    // Show debug info
+    if (process.env.DEBUG) {
+      DebugGraphics.drawHitbox(this, player);
+      DebugGraphics.drawPath(this, [
+        { x: 400, y: 300 },
+        { x: 500, y: 300 }
+      ]);
+    }
+    
+    // Update health on coin collect
+    this.physics.add.overlap(player, coin, () => {
+      coin.destroy();
+      health.update(0.5);
+    });
+  }
+}
+```
+
+❌ Incorrect:
+
+```typescript
+export class GameScene extends Phaser.Scene {
+  create() {
+    // Don't create raw shapes without factory
+    const player = this.add.circle(400, 300, 20, 0xff0000);
+    
+    // Don't use raw text for placeholders
+    const coin = this.add.text(500, 300, '$');
+    
+    // Don't manually draw debug info
+    const graphics = this.add.graphics();
+    graphics.strokeRect(400, 300, 40, 40);
+  }
+}
+```
