@@ -5,6 +5,7 @@ export class ServerApp extends Phaser.GameObjects.Container {
   public static readonly WIDTH = 400
   public static readonly HEIGHT = 500
   public declare scene: Phaser.Scene
+  private static readonly TARGET_FILE = "important-client-file.txt"
 
   private currentPath: string[] = []
   private folderStructure: any
@@ -138,6 +139,34 @@ export class ServerApp extends Phaser.GameObjects.Container {
         // Make the text clickable too
         text.setInteractive({ cursor: "pointer" })
         text.on("pointerdown", () => this.navigateDown(name))
+        text.on("pointerover", () => {
+          bg.setAlpha(0.3)
+          sprite.setTint(0xdddddd)
+        })
+        text.on("pointerout", () => {
+          bg.setAlpha(0)
+          sprite.clearTint()
+        })
+      } else if (name === ServerApp.TARGET_FILE) {
+        // Make target file clickable
+        sprite.setInteractive({ cursor: "pointer" })
+        sprite.on("pointerdown", () =>
+          this.scene.scene.start("end", { success: true })
+        )
+        sprite.on("pointerover", () => {
+          bg.setAlpha(0.3)
+          sprite.setTint(0xdddddd)
+        })
+        sprite.on("pointerout", () => {
+          bg.setAlpha(0)
+          sprite.clearTint()
+        })
+
+        // Make text clickable too
+        text.setInteractive({ cursor: "pointer" })
+        text.on("pointerdown", () =>
+          this.scene.scene.start("end", { success: true })
+        )
         text.on("pointerover", () => {
           bg.setAlpha(0.3)
           sprite.setTint(0xdddddd)
