@@ -8,25 +8,43 @@ alwaysApply: true
 
 ## Description
 
-This rule ensures atomic commits with standardized commit messages using gitmoji for clear version control history.
+This rule ensures atomic commits with standardized commit messages using gitmoji for clear version control history, following the official gitmoji specification.
 
 ## Rule
 
 1. MUST commit after each file modification
 2. Each commit MUST be atomic (single logical change)
-3. Commit messages MUST:
-   - Start with a gitmoji
-   - Be a single line
-   - Use present tense
-   - Be descriptive but concise
+3. Commit messages MUST follow the gitmoji specification format:
+
+   ```
+   <intention> [scope][:?] <message>
+   ```
+
+   Where:
+   - `intention`: The gitmoji shortcode (e.g. `:sparkles:`, `:bug:`)
+   - `scope`: Optional context in parentheses (e.g. `(gameplay)`, `(ui)`)
+   - `message`: Brief description in present tense
+
 4. Common gitmoji usage:
-   - ✨ `:sparkles:` - New feature/component
-   - 🐛 `:bug:` - Bug fix
-   - 📝 `:memo:` - Documentation updates
-   - ♻️ `:recycle:` - Code refactoring
-   - 🎨 `:art:` - Code style/structure improvements
-   - ✅ `:white_check_mark:` - Add/update tests
-   - 🔧 `:wrench:` - Configuration changes
+   - `:sparkles:` - New feature/component
+   - `:bug:` - Bug fix
+   - `:memo:` - Documentation updates
+   - `:recycle:` - Code refactoring
+   - `:art:` - Code style/structure improvements
+   - `:white_check_mark:` - Add/update tests
+   - `:wrench:` - Configuration changes
+
+5. Common scopes:
+   - `(game)` - Core game functionality
+   - `(gameplay)` - Game mechanics and features
+   - `(ui)` - User interface components
+   - `(scene)` - Scene management
+   - `(input)` - Input handling
+   - `(physics)` - Physics system
+   - `(audio)` - Sound and music
+   - `(assets)` - Game assets and resources
+   - `(config)` - Configuration and settings
+   - `(docs)` - Documentation
 
 ## Implementation
 
@@ -34,6 +52,7 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
   - Prompt for commit after file changes
   - Validate commit message format
   - Suggest appropriate gitmoji based on changes
+  - Suggest appropriate scope based on changed files
   - Prevent multi-line commit messages
 
 ## Benefits
@@ -43,23 +62,37 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
 - Better collaboration through standardized practices
 - Simplified code review process
 - Easier to revert specific changes
+- Clear indication of change scope and impact
 
 ## Examples
 
 ✅ Correct:
 
 ```shell
-✨ Add user authentication component
-🐛 Fix navigation menu overflow
-📝 Update API documentation
+:sparkles: (gameplay): Add user authentication component
+:bug: (ui): Fix navigation menu overflow
+:memo: (docs): Update API documentation
+:recycle: (game): Refactor game loop for better performance
+:art: (scene): Improve scene transition structure
 ```
 
 ❌ Incorrect:
 
 ```shell
-added stuff
-fixed the thing that was broken
-multiple line
-commit message
-with details
+# Missing gitmoji
+Add new feature
+
+# Using emoji instead of shortcode
+🐛 Fix the bug
+
+# Missing scope
+:sparkles: Add new component
+
+# Wrong format
+:bug: - Fixed UI issue
+
+# Multiple lines
+:memo: Update documentation
+With more details
+And examples
 ```
