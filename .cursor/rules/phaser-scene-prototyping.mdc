@@ -1,0 +1,212 @@
+---
+description: Standards for rapid scene prototyping in Phaser games
+globs: src/scenes/**/*.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser Scene Prototyping Standards
+
+## Description
+
+Establishes standards for quickly creating and testing game scenes in Phaser, with minimal boilerplate and maximum flexibility for rapid prototyping.
+
+## Rule
+
+1. Quick Scene Setup:
+   - MUST use minimal scene template:
+
+     ```typescript
+     export class BaseScene extends Phaser.Scene {
+       static create(key: string): typeof BaseScene {
+         return class extends BaseScene {
+           constructor() {
+             super({ key });
+           }
+         };
+       }
+
+       init(data?: any): void {
+         // Optional data from previous scene
+       }
+
+       create(): void {
+         if (process.env.DEBUG) {
+           this.add.text(10, 10, this.scene.key, { color: '#fff' });
+         }
+       }
+     }
+     ```
+
+2. Scene Transitions:
+   - MUST provide simple transition helpers:
+
+     ```typescript
+     export class SceneManager {
+       static switchTo(
+         scene: Phaser.Scene,
+         key: string,
+         data?: any
+       ): void {
+         scene.scene.start(key, data);
+       }
+
+       static overlay(
+         scene: Phaser.Scene,
+         key: string,
+         data?: any
+       ): void {
+         scene.scene.launch(key, data);
+       }
+
+       static pop(scene: Phaser.Scene): void {
+         scene.scene.stop();
+         scene.scene.wake(scene.scene.get('previous'));
+       }
+     }
+     ```
+
+3. Debug Tools:
+   - MUST include scene debugging utilities:
+
+     ```typescript
+     export class SceneDebug {
+       static showInfo(scene: Phaser.Scene): void {
+         const info = scene.add.text(10, 10, '', { color: '#ff0' });
+         
+         info.setText([
+           `Scene: ${scene.scene.key}`,
+           `Active: ${scene.scene.isActive()}`,
+           `Visible: ${scene.scene.isVisible()}`
+         ].join('\n'));
+       }
+
+       static listScenes(scene: Phaser.Scene): void {
+         const sceneList = scene.scene.manager.scenes
+           .map(s => s.scene.key)
+           .join(', ');
+         
+         console.log('Active Scenes:', sceneList);
+       }
+     }
+     ```
+
+4. Scene Communication:
+   - MUST use simple event system:
+
+     ```typescript
+     export class SceneEvents {
+       static emit(
+         scene: Phaser.Scene,
+         event: string,
+         data?: any
+       ): void {
+         scene.game.events.emit(event, data);
+       }
+
+       static listen(
+         scene: Phaser.Scene,
+         event: string,
+         callback: (data?: any) => void
+       ): void {
+         scene.game.events.on(event, callback);
+       }
+
+       static cleanup(
+         scene: Phaser.Scene,
+         event: string,
+         callback?: (data?: any) => void
+       ): void {
+         if (callback) {
+           scene.game.events.off(event, callback);
+         } else {
+           scene.game.events.off(event);
+         }
+       }
+     }
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate scene structure
+- Check for proper event cleanup
+- Monitor scene transitions
+- Track active scenes
+- Flag memory leaks
+
+## Benefits
+
+- Minimal boilerplate
+- Quick scene creation
+- Easy debugging
+- Simple communication
+- Fast transitions
+- Memory safety
+- Rapid iteration
+
+## Examples
+
+✅ Correct:
+
+```typescript
+// Menu Scene
+const MenuScene = BaseScene.create('menu');
+
+MenuScene.prototype.create = function() {
+  ShapeDrawer.clickableCircle(
+    this,
+    400,
+    300,
+    100,
+    () => SceneManager.switchTo(this, 'game', { level: 1 }),
+    0x00ff00
+  );
+
+  if (process.env.DEBUG) {
+    SceneDebug.showInfo(this);
+  }
+};
+
+// Game Scene
+const GameScene = BaseScene.create('game');
+
+GameScene.prototype.init = function(data) {
+  this.level = data.level;
+};
+
+GameScene.prototype.create = function() {
+  SceneEvents.emit(this, 'game-started', { level: this.level });
+  
+  // Back to menu on click
+  this.input.on('pointerdown', () => {
+    SceneManager.switchTo(this, 'menu');
+  });
+};
+
+GameScene.prototype.destroy = function() {
+  SceneEvents.cleanup(this, 'game-started');
+};
+```
+
+❌ Incorrect:
+
+```typescript
+export class GameScene extends Phaser.Scene {
+  constructor() {
+    super();  // Missing scene key
+  }
+
+  create() {
+    // Direct scene manipulation without manager
+    this.scene.start('menu');
+    
+    // Global event listeners without cleanup
+    this.game.events.on('game-over', () => {});
+    
+    // Manual scene tracking
+    this.previousScene = 'menu';
+  }
+}
+```
