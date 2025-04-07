@@ -1,0 +1,81 @@
+---
+description: Standards for authoring Cursor rules in the coding jams monorepo
+globs: *.mdc
+alwaysApply: false
+---
+
+# Cursor Rules Authoring Standards
+
+## Description
+
+This rule establishes standards for creating and maintaining MDC (Model-Driven Code) rules in the coding jams monorepo, ensuring consistency and clarity across all rules.
+
+## Rule
+
+When creating new MDC rules:
+
+1. Each rule file MUST include a metadata header with:
+   - `description`: Brief summary of the rule's purpose
+   - `globs`: File patterns this rule applies to
+   - `alwaysApply`: Boolean indicating if rule should be automatically applied
+2. Each rule MUST contain these sections in order:
+   - `Description`: Overview of what the rule does
+   - `Rule`: Specific requirements and constraints
+   - `Implementation`: How to apply and enforce the rule
+   - `Benefits`: Why this rule exists and its advantages
+   - `Examples`: Clear demonstrations of correct and incorrect usage
+3. All sections MUST use proper markdown formatting
+4. Examples MUST show both correct (✅) and incorrect (❌) cases
+
+## Implementation
+
+- The Cursor IDE will enforce this structure by:
+  - Validating presence of required metadata fields
+  - Checking for required sections in correct order
+  - Ensuring proper markdown formatting
+  - Verifying presence of both correct and incorrect examples
+
+## Benefits
+
+- Consistent rule documentation across the monorepo
+- Clear understanding of rule purpose and implementation
+- Easy validation of rule compliance
+- Simplified maintenance and updates
+- Better onboarding for new contributors
+
+## Examples
+
+✅ Correct:
+
+```markdown
+---
+description: Example rule for component structure
+globs: src/components/**/*.tsx
+alwaysApply: true
+---
+
+## Description
+Standardizes component file organization.
+
+## Rule
+[Clear rule requirements]
+
+## Implementation
+[Implementation details]
+
+## Benefits
+[List of benefits]
+
+## Examples
+[Both correct and incorrect examples]
+```
+
+❌ Incorrect:
+
+```markdown
+# Component Structure
+
+Put components in src/components.
+Use good names.
+Make sure they work.
+```

@@ -1,0 +1,65 @@
+---
+description: Standards for committing changes in the coding jams monorepo
+globs:
+alwaysApply: true
+---
+
+# Git Commit Standards
+
+## Description
+
+This rule ensures atomic commits with standardized commit messages using gitmoji for clear version control history.
+
+## Rule
+
+1. MUST commit after each file modification
+2. Each commit MUST be atomic (single logical change)
+3. Commit messages MUST:
+   - Start with a gitmoji
+   - Be a single line
+   - Use present tense
+   - Be descriptive but concise
+4. Common gitmoji usage:
+   - ✨ `:sparkles:` - New feature/component
+   - 🐛 `:bug:` - Bug fix
+   - 📝 `:memo:` - Documentation updates
+   - ♻️ `:recycle:` - Code refactoring
+   - 🎨 `:art:` - Code style/structure improvements
+   - ✅ `:white_check_mark:` - Add/update tests
+   - 🔧 `:wrench:` - Configuration changes
+
+## Implementation
+
+- The Cursor IDE will:
+  - Prompt for commit after file changes
+  - Validate commit message format
+  - Suggest appropriate gitmoji based on changes
+  - Prevent multi-line commit messages
+
+## Benefits
+
+- Clear and consistent commit history
+- Easy to understand changes at a glance
+- Better collaboration through standardized practices
+- Simplified code review process
+- Easier to revert specific changes
+
+## Examples
+
+✅ Correct:
+
+```shell
+✨ Add user authentication component
+🐛 Fix navigation menu overflow
+📝 Update API documentation
+```
+
+❌ Incorrect:
+
+```shell
+added stuff
+fixed the thing that was broken
+multiple line
+commit message
+with details
+```
