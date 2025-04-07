@@ -1,0 +1,179 @@
+---
+description: Standards for Phaser game configuration and initialization
+globs: src/game.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser Game Configuration Standards
+
+## Description
+
+Establishes standards for configuring and initializing Phaser games with optimal settings for rapid prototyping and development.
+
+## Rule
+
+1. Game Configuration Structure:
+   - MUST export a type-safe game config:
+
+     ```typescript
+     export const GameConfig: Phaser.Types.Core.GameConfig = {
+       // Configuration
+     };
+     ```
+
+   - MUST use constants for common values:
+
+     ```typescript
+     export const GAME_WIDTH = 800;
+     export const GAME_HEIGHT = 600;
+     export const GAME_SCALE = 1;
+     ```
+
+2. Required Configuration:
+   - MUST specify render type (AUTO, CANVAS, or WEBGL)
+   - MUST define parent element
+   - MUST set explicit dimensions
+   - MUST configure scale manager:
+
+     ```typescript
+     scale: {
+       mode: Phaser.Scale.FIT,
+       autoCenter: Phaser.Scale.CENTER_BOTH,
+       width: GAME_WIDTH,
+       height: GAME_HEIGHT
+     }
+     ```
+
+3. Development Settings:
+   - MUST enable development features in debug mode:
+
+     ```typescript
+     physics: {
+       default: 'arcade',
+       arcade: {
+         debug: process.env.DEBUG,
+         gravity: { y: 300 }
+       }
+     }
+     ```
+
+   - MUST configure dev tools when appropriate:
+
+     ```typescript
+     plugins: {
+       scene: [
+         {
+           key: 'PhaserDebug',
+           plugin: PhaserDebug,
+           mapping: 'debug'
+         }
+       ]
+     }
+     ```
+
+4. Performance Settings:
+   - MUST set appropriate pixel art settings:
+
+     ```typescript
+     render: {
+       pixelArt: true,
+       antialias: false
+     }
+     ```
+
+   - MUST configure asset loading timeout:
+
+     ```typescript
+     loader: {
+       timeout: 10000
+     }
+     ```
+
+5. Scene Management:
+   - MUST declare all scenes in config
+   - MUST specify default scene
+   - MAY use scene plugin for transitions
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate game configuration structure
+- Check for required settings
+- Verify development tools setup
+- Ensure proper scene declaration
+- Flag potential performance issues
+
+## Benefits
+
+- Consistent game initialization
+- Optimized development workflow
+- Better debugging capabilities
+- Proper scaling across devices
+- Improved performance defaults
+- Faster prototyping setup
+- Enhanced development experience
+
+## Examples
+
+✅ Correct:
+
+```typescript
+import { GameScene } from './scenes/game-scene';
+import { MenuScene } from './scenes/menu-scene';
+
+export const GAME_WIDTH = 800;
+export const GAME_HEIGHT = 600;
+
+export const GameConfig: Phaser.Types.Core.GameConfig = {
+  type: Phaser.AUTO,
+  parent: 'game',
+  width: GAME_WIDTH,
+  height: GAME_HEIGHT,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: process.env.DEBUG,
+      gravity: { y: 300 }
+    }
+  },
+  render: {
+    pixelArt: true,
+    antialias: false
+  },
+  scene: [MenuScene, GameScene],
+  loader: {
+    timeout: 10000
+  },
+  plugins: process.env.DEBUG
+    ? {
+        scene: [
+          {
+            key: 'PhaserDebug',
+            plugin: PhaserDebug,
+            mapping: 'debug'
+          }
+        ]
+      }
+    : undefined
+};
+
+new Phaser.Game(GameConfig);
+```
+
+❌ Incorrect:
+
+```typescript
+const config = {
+  width: 800,
+  height: 600,
+  scene: GameScene
+};
+
+new Phaser.Game(config);
+```

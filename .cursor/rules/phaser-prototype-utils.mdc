@@ -1,0 +1,140 @@
+---
+description: Standards for rapid prototyping utilities in Phaser games
+globs: src/utils/**/*.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser Prototyping Utilities Standards
+
+## Description
+
+Establishes standards for utility functions and classes that accelerate game prototyping and experimentation in Phaser games.
+
+## Rule
+
+1. Debug Overlay Utility:
+   - MUST provide a debug overlay class:
+
+     ```typescript
+     export class DebugOverlay {
+       static create(scene: Phaser.Scene): void;
+       static log(message: string): void;
+       static watch(label: string, getValue: () => any): void;
+     }
+     ```
+
+2. Input Prototyping:
+   - MUST provide quick input setup:
+
+     ```typescript
+     export class InputHelper {
+       static setupWASD(scene: Phaser.Scene): Phaser.Types.Input.Keyboard.CursorKeys;
+       static setupDragAndDrop(gameObject: Phaser.GameObjects.GameObject): void;
+       static setupMouseFollow(gameObject: Phaser.GameObjects.GameObject): void;
+     }
+     ```
+
+3. Quick Physics Setup:
+   - MUST provide physics presets:
+
+     ```typescript
+     export class PhysicsPresets {
+       static setupPlatformer(sprite: Phaser.Physics.Arcade.Sprite): void;
+       static setupTopDown(sprite: Phaser.Physics.Arcade.Sprite): void;
+       static setupBouncy(sprite: Phaser.Physics.Arcade.Sprite): void;
+     }
+     ```
+
+4. Asset Placeholders:
+   - MUST provide placeholder generators:
+
+     ```typescript
+     export class PlaceholderAssets {
+       static createColoredBox(scene: Phaser.Scene, width: number, height: number, color: number): string;
+       static createCircle(scene: Phaser.Scene, radius: number, color: number): string;
+       static createGradient(scene: Phaser.Scene, width: number, height: number, colors: number[]): string;
+     }
+     ```
+
+5. State Management:
+   - MUST provide simple state tracking:
+
+     ```typescript
+     export class GameState {
+       static set(key: string, value: any): void;
+       static get<T>(key: string, defaultValue?: T): T;
+       static watch(key: string, callback: (value: any) => void): void;
+     }
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate utility class structures
+- Check for required methods
+- Ensure proper type safety
+- Verify debug functionality
+- Flag missing implementations
+
+## Benefits
+
+- Rapid game prototyping
+- Quick placeholder creation
+- Easy debug visualization
+- Simple state management
+- Fast input setup
+- Reusable physics presets
+- Accelerated development
+
+## Examples
+
+✅ Correct:
+
+```typescript
+// Debug overlay usage
+export class GameScene extends Phaser.Scene {
+  create(): void {
+    const player = this.add.sprite(400, 300, 'player');
+    
+    // Setup debug overlay
+    DebugOverlay.create(this);
+    DebugOverlay.watch('Player X', () => player.x);
+    DebugOverlay.watch('Player Y', () => player.y);
+    
+    // Quick input setup
+    const controls = InputHelper.setupWASD(this);
+    InputHelper.setupDragAndDrop(player);
+    
+    // Physics preset
+    PhysicsPresets.setupPlatformer(player);
+    
+    // Placeholder for missing asset
+    const tempPlatform = PlaceholderAssets.createColoredBox(this, 200, 20, 0x00ff00);
+    
+    // State management
+    GameState.set('score', 0);
+    GameState.watch('score', (value) => {
+      DebugOverlay.log(`Score: ${value}`);
+    });
+  }
+}
+```
+
+❌ Incorrect:
+
+```typescript
+export class GameScene extends Phaser.Scene {
+  create() {
+    const player = this.add.sprite(400, 300, 'player');
+    console.log('Player created');  // Using console.log instead of debug overlay
+    
+    // Direct key creation instead of helper
+    this.input.keyboard.createCursorKeys();
+    
+    // Manual physics setup without presets
+    player.body.setVelocity(0, 0);
+  }
+}
+```

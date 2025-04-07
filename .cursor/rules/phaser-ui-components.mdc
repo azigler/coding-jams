@@ -1,1 +1,172 @@
- 
+---
+description: Standards for creating and managing UI components in Phaser games
+globs: src/ui/**/*.ts
+alwaysApply: true
+domain: phaser
+---
+
+# Phaser UI Component Standards
+
+## Description
+
+Establishes standards for creating reusable, maintainable UI components in Phaser games with a focus on rapid prototyping and iteration.
+
+## Rule
+
+1. UI Component Structure:
+   - MUST extend base UI component class:
+
+     ```typescript
+     export abstract class UIComponent extends Phaser.GameObjects.Container {
+       protected scene: Phaser.Scene;
+       
+       constructor(scene: Phaser.Scene, x: number, y: number) {
+         super(scene, x, y);
+         this.scene = scene;
+         this.init();
+       }
+       
+       protected abstract init(): void;
+       public abstract update(): void;
+       public abstract destroy(): void;
+     }
+     ```
+
+2. Common Components:
+   - MUST implement standard UI components:
+
+     ```typescript
+     export class Button extends UIComponent {
+       static create(scene: Phaser.Scene, x: number, y: number, text: string): Button;
+     }
+     
+     export class ProgressBar extends UIComponent {
+       static create(scene: Phaser.Scene, x: number, y: number, width: number): ProgressBar;
+     }
+     
+     export class Dialog extends UIComponent {
+       static show(scene: Phaser.Scene, text: string, options?: DialogOptions): Dialog;
+     }
+     ```
+
+3. Layout Management:
+   - MUST provide layout utilities:
+
+     ```typescript
+     export class UILayout {
+       static grid(items: UIComponent[], cols: number, padding: number): void;
+       static stack(items: UIComponent[], spacing: number, vertical?: boolean): void;
+       static center(item: UIComponent): void;
+     }
+     ```
+
+4. Theme System:
+   - MUST use centralized theme configuration:
+
+     ```typescript
+     export const UITheme = {
+       colors: {
+         primary: 0x4a90e2,
+         secondary: 0x50e3c2,
+         background: 0x2c3e50
+       },
+       fonts: {
+         default: 'Arial',
+         title: 'GameFont'
+       },
+       sizes: {
+         small: 12,
+         medium: 16,
+         large: 24
+       }
+     } as const;
+     ```
+
+5. Rapid Prototyping:
+   - MUST provide quick UI creation methods:
+
+     ```typescript
+     export class UIFactory {
+       static quickMenu(scene: Phaser.Scene, items: string[]): Menu;
+       static quickDialog(scene: Phaser.Scene, text: string): Dialog;
+       static quickHUD(scene: Phaser.Scene): HUD;
+     }
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate UI component structure
+- Check theme compliance
+- Verify layout usage
+- Ensure proper cleanup
+- Monitor component lifecycle
+
+## Benefits
+
+- Consistent UI appearance
+- Rapid UI prototyping
+- Reusable components
+- Flexible layouts
+- Theme customization
+- Better performance
+- Simplified maintenance
+
+## Examples
+
+✅ Correct:
+
+```typescript
+export class GameHUD extends UIComponent {
+  private scoreText: Phaser.GameObjects.Text;
+  private healthBar: ProgressBar;
+
+  protected init(): void {
+    // Create score display
+    this.scoreText = new Text(this.scene, 0, 0, '0', {
+      color: UITheme.colors.primary.toString(16),
+      fontSize: UITheme.sizes.medium
+    });
+
+    // Create health bar
+    this.healthBar = ProgressBar.create(this.scene, 0, 30, 100);
+    
+    // Add to container
+    this.add([this.scoreText, this.healthBar]);
+    
+    // Apply layout
+    UILayout.stack([this.scoreText, this.healthBar], 10);
+  }
+
+  public update(): void {
+    this.scoreText.setText(GameState.get('score', 0).toString());
+    this.healthBar.setValue(GameState.get('health', 100));
+  }
+
+  public destroy(): void {
+    this.scoreText.destroy();
+    this.healthBar.destroy();
+    super.destroy();
+  }
+}
+```
+
+❌ Incorrect:
+
+```typescript
+class GameHUD {
+  constructor(scene) {
+    // Direct text creation without theme
+    this.score = scene.add.text(10, 10, '0', { color: '#fff' });
+    
+    // Manual positioning without layout
+    this.health = scene.add.rectangle(10, 30, 100, 10, 0xff0000);
+  }
+  
+  // Missing proper cleanup
+  destroy() {
+    this.score.destroy();
+  }
+}
+```
