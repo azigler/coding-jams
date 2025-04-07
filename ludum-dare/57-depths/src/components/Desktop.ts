@@ -6,7 +6,6 @@ import { PenaltyTracker } from "../effects/PenaltyTracker"
 export class Desktop extends Phaser.GameObjects.Container {
   private mailApp: MailApp
   private serverApp: ServerApp
-  private penaltyTracker?: PenaltyTracker
   public declare scene: Phaser.Scene
 
   constructor(scene: Phaser.Scene) {
@@ -43,7 +42,6 @@ export class Desktop extends Phaser.GameObjects.Container {
   }
 
   setPenaltyTracker(tracker: PenaltyTracker): void {
-    this.penaltyTracker = tracker
     this.serverApp.setPenaltyTracker(tracker)
   }
 

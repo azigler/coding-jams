@@ -227,7 +227,7 @@ export class ServerApp extends Phaser.GameObjects.Container {
     }
 
     // Recursively check subfolders
-    for (const [name, content] of Object.entries(folder)) {
+    for (const [_, content] of Object.entries(folder)) {
       if (typeof content === "object" && this.hasTargetFile(content)) {
         return true
       }

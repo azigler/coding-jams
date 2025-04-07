@@ -23,7 +23,7 @@ export abstract class BaseScene extends Phaser.Scene {
     }
   }
 
-  init(data?: any): void {
+  init(_data?: any): void {
     // Optional data from previous scene
   }
 
