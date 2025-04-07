@@ -1,6 +1,9 @@
+import "phaser"
+
 export class MailApp extends Phaser.GameObjects.Container {
-  private static readonly WIDTH = 400
-  private static readonly HEIGHT = 300
+  public static readonly WIDTH = 400
+  public static readonly HEIGHT = 300
+  public declare scene: Phaser.Scene
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0)
@@ -36,14 +39,17 @@ export class MailApp extends Phaser.GameObjects.Container {
         "",
         "Hey there!",
         "",
-        "The client needs that important file RIGHT NOW!",
-        "You know, the one about the thing?",
+        "The client needs 'important-client-file.txt' RIGHT NOW!",
+        "You know, that super important file?",
         "It's somewhere in the server...",
         "",
         "Find it ASAP or we're in trouble!",
         "",
         "Thanks!",
         "Boss",
+        "",
+        "P.S. Don't ask why it's buried in random folders.",
+        'IT said something about "security through obscurity"...',
       ].join("\n"),
       {
         font: "14px monospace",
