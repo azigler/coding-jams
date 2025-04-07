@@ -61,11 +61,17 @@ GameScene.prototype.create = function (
     }
   )
 
-  // Add timer text
-  this.timerText = this.add.text(16, 56, `Time: ${currentLevel.timeLimit}`, {
-    font: "32px monospace",
-    color: "#ffffff",
-  })
+  // Add timer text in top right corner
+  this.timerText = this.add.text(
+    this.cameras.main.width - 16,
+    16,
+    `Time: ${currentLevel.timeLimit}`,
+    {
+      font: "32px monospace",
+      color: "#ffffff",
+    }
+  )
+  this.timerText.setOrigin(1, 0) // Align right
 
   // Start timer
   const startTime = Date.now()
@@ -110,10 +116,8 @@ GameScene.prototype.handleGameComplete = function (success: boolean) {
   this.scene.stop()
 
   // Get current level number for final score
-  const currentLevel = this.levelManager.getCurrentLevelNumber()
-
-  // Check if this was the last level
-  const isLastLevel = currentLevel >= 5
+  const currentLevel = this.levelManager?.getCurrentLevelNumber() || 0
+  const isLastLevel = this.levelManager?.isLastLevel() || false
 
   // Show appropriate end screen
   if (success && isLastLevel) {
