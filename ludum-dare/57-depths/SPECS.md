@@ -42,6 +42,12 @@ A whimsical game about navigating deep folder structures under time pressure. Pl
 | Content Generation | Procedural content and file generation | [Content](specs/enhancement-plan-content.md) |
 | Theme Generator | Dynamic company theme system | [Theme](specs/enhancement-plan-theme.md) |
 
+## Workflow Enhancements
+
+| Enhancement | Description | Link |
+|-------------|-------------|------|
+| Simple DevOps | GitHub Actions deployment to Pages | [DevOps](specs/devops-plan-simple.md) |
+
 ## Enhancement Priority
 
 1. **Consequences System** (5 hours)

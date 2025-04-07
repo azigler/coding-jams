@@ -2,42 +2,60 @@
 
 A whimsical game about navigating deep folder structures under time pressure. Players take on the role of an office worker who must find a specific file in a chaotic company server within a strict time limit.
 
+## Play Now
+
+🎮 [Play the latest version on GitHub Pages](https://azigler.github.io/coding-jams)
+
 ## Development
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) 1.0+
+- Node.js 20 or later
+- npm 10 or later
 
 ### Setup
 
-1. Clone the repository
-2. Navigate to the project directory:
+1. Clone the repository:
 
    ```bash
-   cd ludum-dare/57-depths
+   git clone https://github.com/azigler/coding-jams.git
+   cd coding-jams/ludum-dare/57-depths
    ```
 
-3. Install dependencies:
+2. Install dependencies:
 
    ```bash
-   bun install
+   npm install
    ```
 
-4. Start development server:
+3. Start development server:
 
    ```bash
-   bun run dev
+   npm run dev
    ```
+
+4. Open <http://localhost:5173> in your browser
 
 ## Building
 
 To create a production build:
 
 ```bash
-bun run build
+npm run build
 ```
 
 The build output will be in the `dist` directory.
+
+### Deployment
+
+The game is automatically deployed to GitHub Pages when changes are pushed to the `main` branch. The deployment process:
+
+1. Runs TypeScript compilation
+2. Builds the project with Vite
+3. Uploads the build artifact
+4. Deploys to GitHub Pages
+
+Manual deployment can be triggered from the Actions tab in the GitHub repository.
 
 ## Project Structure
 

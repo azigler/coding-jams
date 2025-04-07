@@ -1,20 +1,32 @@
 {
   "name": "depths",
-  "private": true,
-  "version": "0.0.0",
-  "description": "A game about navigating deep folder structures - Ludum Dare 57 entry",
+  "version": "1.0.0",
+  "description": "A game about navigating deep folder structures - Ludum Dare 57",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "test": "echo \"No tests yet\" && exit 0"
   },
+  "keywords": [
+    "game",
+    "phaser",
+    "typescript",
+    "ludum-dare"
+  ],
+  "author": "Andrew Zigler",
+  "license": "MIT",
   "dependencies": {
     "phaser": "^3.70.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30",
-    "typescript": "^5.2.2",
-    "vite": "^5.1.6"
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
   }
 }
