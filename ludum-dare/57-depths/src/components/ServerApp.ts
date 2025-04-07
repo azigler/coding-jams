@@ -2,6 +2,12 @@ import "phaser"
 import { FolderGen } from "../utils/FolderGen"
 import { PenaltyTracker } from "../effects/PenaltyTracker"
 
+interface ServerAppConfig {
+  minTargetDepth?: number
+  maxTargetDepth?: number
+  movingFolders?: boolean
+}
+
 export class ServerApp extends Phaser.GameObjects.Container {
   public static readonly WIDTH = 400
   public static readonly HEIGHT = 500
@@ -13,12 +19,18 @@ export class ServerApp extends Phaser.GameObjects.Container {
   private pathText: Phaser.GameObjects.Text
   private contentContainer: Phaser.GameObjects.Container
   private penaltyTracker?: PenaltyTracker
+  private config: ServerAppConfig
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, config: ServerAppConfig = {}) {
     super(scene, 0, 0)
 
+    this.config = config
+
     // Generate folder structure
-    this.folderStructure = FolderGen.generate()
+    this.folderStructure = FolderGen.generate(
+      config.minTargetDepth,
+      config.maxTargetDepth
+    )
 
     // Create window background
     const bg = scene.add.rectangle(
@@ -65,6 +77,11 @@ export class ServerApp extends Phaser.GameObjects.Container {
 
     // Update display
     this.updateDisplay()
+
+    // Start folder movement if enabled
+    if (config.movingFolders) {
+      this.startFolderMovement()
+    }
   }
 
   setPenaltyTracker(tracker: PenaltyTracker): void {
@@ -234,5 +251,34 @@ export class ServerApp extends Phaser.GameObjects.Container {
     }
 
     return false
+  }
+
+  private startFolderMovement(): void {
+    // Add update event listener for folder movement
+    this.scene.events.on("update", () => {
+      if (this.contentContainer) {
+        this.contentContainer.each((child: Phaser.GameObjects.GameObject) => {
+          if (child instanceof Phaser.GameObjects.Container) {
+            // Only move folders
+            const sprite = child.list[1] as Phaser.GameObjects.Sprite
+            if (sprite.texture.key === "folder") {
+              // Random movement
+              child.x += (Math.random() - 0.5) * 2
+              child.y += (Math.random() - 0.5) * 2
+
+              // Keep within bounds
+              child.x = Phaser.Math.Clamp(child.x, 0, ServerApp.WIDTH - 60)
+              child.y = Phaser.Math.Clamp(child.y, 0, ServerApp.HEIGHT - 150)
+            }
+          }
+        })
+      }
+    })
+  }
+
+  destroy(): void {
+    // Clean up event listeners
+    this.scene.events.off("update")
+    super.destroy()
   }
 }

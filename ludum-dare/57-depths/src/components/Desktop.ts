@@ -3,12 +3,18 @@ import { MailApp } from "./MailApp"
 import { ServerApp } from "./ServerApp"
 import { PenaltyTracker } from "../effects/PenaltyTracker"
 
+interface DesktopConfig {
+  minTargetDepth?: number
+  maxTargetDepth?: number
+  movingFolders?: boolean
+}
+
 export class Desktop extends Phaser.GameObjects.Container {
   private mailApp: MailApp
   private serverApp: ServerApp
   public declare scene: Phaser.Scene
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, config: DesktopConfig = {}) {
     super(scene, 0, 0)
 
     // Create desktop background
@@ -24,7 +30,11 @@ export class Desktop extends Phaser.GameObjects.Container {
 
     // Create applications
     this.mailApp = new MailApp(scene)
-    this.serverApp = new ServerApp(scene)
+    this.serverApp = new ServerApp(scene, {
+      minTargetDepth: config.minTargetDepth,
+      maxTargetDepth: config.maxTargetDepth,
+      movingFolders: config.movingFolders,
+    })
 
     // Position windows
     this.mailApp.setPosition(50, 50)

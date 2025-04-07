@@ -8,33 +8,59 @@ alwaysApply: true
 
 ## Description
 
-This rule ensures atomic commits with standardized commit messages using gitmoji for clear version control history.
+This rule ensures atomic commits with standardized commit messages using gitmoji for clear version control history, following the official gitmoji specification.
 
 ## Rule
 
 1. MUST commit after each file modification
 2. Each commit MUST be atomic (single logical change)
-3. Commit messages MUST:
-   - Start with a gitmoji
-   - Be a single line
-   - Use present tense
-   - Be descriptive but concise
+3. Commit messages MUST follow the gitmoji specification format:
+
+   ```
+   <intention> (scope): <message>
+   ```
+
+   Where:
+   - `intention`: The gitmoji shortcode (e.g. `:sparkles:`, `:bug:`)
+   - `(scope)`: Optional context in parentheses, NOT brackets (e.g. `(gameplay)`, `(ui)`)
+   - `message`: Brief description in present tense
+
+   Note: The scope MUST:
+   - Use parentheses `()`, not brackets `[]` or braces `{}`
+   - Be lowercase
+   - Use hyphens for multi-word scopes (e.g. `(game-logic)`)
+   - Be one of the predefined scopes listed below
+
 4. Common gitmoji usage:
-   - ✨ `:sparkles:` - New feature/component
-   - 🐛 `:bug:` - Bug fix
-   - 📝 `:memo:` - Documentation updates
-   - ♻️ `:recycle:` - Code refactoring
-   - 🎨 `:art:` - Code style/structure improvements
-   - ✅ `:white_check_mark:` - Add/update tests
-   - 🔧 `:wrench:` - Configuration changes
+   - `:sparkles:` - New feature/component
+   - `:bug:` - Bug fix
+   - `:memo:` - Documentation updates
+   - `:recycle:` - Code refactoring
+   - `:art:` - Code style/structure improvements
+   - `:white_check_mark:` - Add/update tests
+   - `:wrench:` - Configuration changes
+
+5. Predefined scopes:
+   - `(game)` - Core game functionality
+   - `(gameplay)` - Game mechanics and features
+   - `(ui)` - User interface components
+   - `(scene)` - Scene management
+   - `(input)` - Input handling
+   - `(physics)` - Physics system
+   - `(audio)` - Sound and music
+   - `(assets)` - Game assets and resources
+   - `(config)` - Configuration and settings
+   - `(docs)` - Documentation
 
 ## Implementation
 
-- The Cursor IDE will:
-  - Prompt for commit after file changes
-  - Validate commit message format
-  - Suggest appropriate gitmoji based on changes
-  - Prevent multi-line commit messages
+The Cursor IDE will:
+
+- Validate git commit message format
+- Ensure scopes use parentheses
+- Verify scope is from predefined list
+- Check gitmoji shortcode validity
+- Prevent multi-line commit messages
 
 ## Benefits
 
@@ -43,23 +69,50 @@ This rule ensures atomic commits with standardized commit messages using gitmoji
 - Better collaboration through standardized practices
 - Simplified code review process
 - Easier to revert specific changes
+- Clear indication of change scope and impact
 
 ## Examples
 
 ✅ Correct:
 
 ```shell
-✨ Add user authentication component
-🐛 Fix navigation menu overflow
-📝 Update API documentation
+:sparkles: (gameplay): add user authentication component
+:bug: (ui): fix navigation menu overflow
+:memo: (docs): update API documentation
+:recycle: (game): refactor game loop for performance
+:art: (scene): improve scene transition structure
 ```
 
 ❌ Incorrect:
 
 ```shell
-added stuff
-fixed the thing that was broken
-multiple line
-commit message
-with details
+# Wrong scope format (using brackets)
+:bug: [gameplay]: fix infinite loop issue
+
+# Wrong scope format (using braces)
+:sparkles: {ui}: add new button component
+
+# Missing parentheses around scope
+:memo: docs: update readme
+
+# Invalid scope (not from predefined list)
+:bug: (fixes): resolve timing issue
+
+# Missing colon after scope
+:art: (ui) improve button layout
+
+# Missing space after gitmoji
+:sparkles:(gameplay): add new feature
+
+# Missing space before message
+:bug: (ui):fix layout issue
+
+# Uppercase scope
+:memo: (DOCS): update changelog
+
+# Multiple scopes
+:bug: (ui)(gameplay): fix player controls
+
+# Wrong emoji format
+🐛 (gameplay): fix bug
 ```
