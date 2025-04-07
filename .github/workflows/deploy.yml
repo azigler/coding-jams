@@ -37,6 +37,13 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: List Build Output
+        run: |
+          echo "Contents of dist directory:"
+          ls -la dist/
+          echo "Contents of dist/assets directory:"
+          ls -la dist/assets/
+
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
