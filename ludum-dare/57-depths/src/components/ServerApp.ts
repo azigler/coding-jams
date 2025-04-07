@@ -1,11 +1,15 @@
+import "phaser"
 import { FolderGen } from "../utils/FolderGen"
 
 export class ServerApp extends Phaser.GameObjects.Container {
-  private static readonly WIDTH = 400
-  private static readonly HEIGHT = 500
+  public static readonly WIDTH = 400
+  public static readonly HEIGHT = 500
+  public declare scene: Phaser.Scene
 
   private currentPath: string[] = []
   private folderStructure: any
+  private pathText: Phaser.GameObjects.Text
+  private contentContainer: Phaser.GameObjects.Container
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0)
@@ -34,31 +38,46 @@ export class ServerApp extends Phaser.GameObjects.Container {
     this.add([titleBg, title])
 
     // Create path display
-    const pathText = scene.add.text(10, 40, "/", {
+    this.pathText = scene.add.text(10, 40, "/", {
       font: "14px monospace",
       color: "#ffffff",
     })
-    this.add(pathText)
+    this.add(this.pathText)
 
     // Create back button
     const backBtn = scene.add.sprite(10, 70, "back")
     backBtn.setOrigin(0)
-    backBtn.setInteractive()
+    backBtn.setInteractive({ cursor: "pointer" })
     backBtn.on("pointerdown", () => this.navigateUp())
+    backBtn.on("pointerover", () => backBtn.setTint(0xdddddd))
+    backBtn.on("pointerout", () => backBtn.clearTint())
     this.add(backBtn)
 
     // Create content container
-    const content = scene.add.container(10, 100)
-    this.add(content)
+    this.contentContainer = scene.add.container(10, 100)
+    this.add(this.contentContainer)
+
+    // Add this container to the scene
+    scene.add.existing(this)
 
     // Update display
     this.updateDisplay()
   }
 
   private updateDisplay(): void {
-    // Clear current content
-    const content = this.getAt(this.length - 1) as Phaser.GameObjects.Container
-    content.removeAll()
+    // Destroy all existing content
+    this.contentContainer.each((child: Phaser.GameObjects.GameObject) => {
+      if (child instanceof Phaser.GameObjects.Container) {
+        child.each((grandChild: Phaser.GameObjects.GameObject) =>
+          grandChild.destroy()
+        )
+      }
+      child.destroy()
+    })
+    this.contentContainer.removeAll()
+
+    // Update path display
+    this.pathText.setText("/" + this.currentPath.join("/"))
 
     // Get current folder
     let currentFolder = this.folderStructure
@@ -69,20 +88,67 @@ export class ServerApp extends Phaser.GameObjects.Container {
     // Display items
     let y = 0
     Object.entries(currentFolder).forEach(([name, isFolder]) => {
-      const sprite = this.scene.add.sprite(0, y, isFolder ? "folder" : "file")
+      const itemContainer = this.scene.add.container(0, y)
+
+      // Create background for hover effect
+      const bg = this.scene.add.rectangle(
+        0,
+        0,
+        ServerApp.WIDTH - 20,
+        32,
+        0x2c3e50
+      )
+      bg.setOrigin(0)
+      bg.setAlpha(0)
+
+      const sprite = this.scene.add.sprite(0, 0, isFolder ? "folder" : "file")
       sprite.setOrigin(0)
 
-      const text = this.scene.add.text(40, y + 8, name, {
+      const text = this.scene.add.text(40, 8, name, {
         font: "14px monospace",
         color: "#ffffff",
       })
 
+      itemContainer.add([bg, sprite, text])
+
       if (isFolder) {
-        sprite.setInteractive()
+        // Make both the sprite and background clickable for folders
+        sprite.setInteractive({ cursor: "pointer" })
         sprite.on("pointerdown", () => this.navigateDown(name))
+        sprite.on("pointerover", () => {
+          bg.setAlpha(0.3)
+          sprite.setTint(0xdddddd)
+        })
+        sprite.on("pointerout", () => {
+          bg.setAlpha(0)
+          sprite.clearTint()
+        })
+
+        bg.setInteractive({ cursor: "pointer" })
+        bg.on("pointerdown", () => this.navigateDown(name))
+        bg.on("pointerover", () => {
+          bg.setAlpha(0.3)
+          sprite.setTint(0xdddddd)
+        })
+        bg.on("pointerout", () => {
+          bg.setAlpha(0)
+          sprite.clearTint()
+        })
+
+        // Make the text clickable too
+        text.setInteractive({ cursor: "pointer" })
+        text.on("pointerdown", () => this.navigateDown(name))
+        text.on("pointerover", () => {
+          bg.setAlpha(0.3)
+          sprite.setTint(0xdddddd)
+        })
+        text.on("pointerout", () => {
+          bg.setAlpha(0)
+          sprite.clearTint()
+        })
       }
 
-      content.add([sprite, text])
+      this.contentContainer.add(itemContainer)
       y += 40
     })
   }
