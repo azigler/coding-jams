@@ -29,6 +29,8 @@ GameScene.prototype.create = function (
     penaltyTracker: PenaltyTracker
     timerText: Phaser.GameObjects.Text
     levelText: Phaser.GameObjects.Text
+    updateHandler: (() => void) | null
+    handleGameComplete: (success: boolean) => void
   }
 ) {
   // Call parent create method

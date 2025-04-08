@@ -56,6 +56,10 @@ export class BaseScene extends Phaser.Scene {
     this.children.removeAll(true)
   }
 
+  cleanupAndDestroy(): void {
+    this.shutdown()
+  }
+
   static create(key: string): typeof BaseScene {
     return class extends BaseScene {
       constructor() {
@@ -64,7 +68,7 @@ export class BaseScene extends Phaser.Scene {
     }
   }
 
-  protected handleGameComplete(success: boolean): void {
+  public handleGameComplete(_success: boolean): void {
     // Base implementation - should be overridden by child scenes
   }
 }

@@ -103,10 +103,10 @@ EndScene.prototype.shutdown = function (): void {
   this.sceneData = null
 }
 
-EndScene.prototype.destroy = function (): void {
+EndScene.prototype.cleanupAndDestroy = function (): void {
   // Call shutdown to clean up
   this.shutdown()
 
   // Call parent destroy
-  BaseScene.prototype.destroy.call(this)
+  BaseScene.prototype.cleanupAndDestroy.call(this)
 }
