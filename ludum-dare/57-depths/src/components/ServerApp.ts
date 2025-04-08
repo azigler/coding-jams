@@ -19,12 +19,9 @@ export class ServerApp extends Phaser.GameObjects.Container {
   private pathText: Phaser.GameObjects.Text
   private contentContainer: Phaser.GameObjects.Container
   private penaltyTracker?: PenaltyTracker
-  private config: ServerAppConfig
 
   constructor(scene: Phaser.Scene, config: ServerAppConfig = {}) {
     super(scene, 0, 0)
-
-    this.config = config
 
     // Generate folder structure
     this.folderStructure = FolderGen.generate(
