@@ -1,0 +1,198 @@
+---
+description: Establishes standards for error handling, logging, and debugging in Phaser games
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Phaser Error Handling Standards
+
+## Description
+
+Establishes standards for error handling, logging, and debugging in Phaser games to ensure consistent error management and recovery.
+
+## Rule
+
+1. Error Types:
+   - MUST define custom error types:
+
+     ```typescript
+     export class GameError extends Error {
+       constructor(message: string, public readonly code: string) {
+         super(message);
+         this.name = 'GameError';
+       }
+     }
+
+     export class AssetError extends GameError {
+       constructor(message: string) {
+         super(message, 'ASSET_ERROR');
+         this.name = 'AssetError';
+       }
+     }
+
+     export class SceneError extends GameError {
+       constructor(message: string) {
+         super(message, 'SCENE_ERROR');
+         this.name = 'SceneError';
+       }
+     }
+     ```
+
+2. Error Handling:
+   - MUST implement error recovery:
+
+     ```typescript
+     export class ErrorHandler {
+       static handle(error: Error, scene: Phaser.Scene): void {
+         if (error instanceof AssetError) {
+           // Handle missing or corrupt assets
+           scene.scene.start('error-scene', { 
+             message: 'Failed to load game assets',
+             retry: true 
+           });
+         } else if (error instanceof SceneError) {
+           // Handle scene initialization failures
+           scene.scene.start('menu-scene');
+         } else {
+           // Handle unknown errors
+           console.error('[GameError]', error);
+           scene.scene.start('error-scene', { 
+             message: 'An unexpected error occurred',
+             retry: false 
+           });
+         }
+       }
+     }
+     ```
+
+3. Debug Logging:
+   - MUST use structured logging:
+
+     ```typescript
+     export class GameLogger {
+       static log(level: 'info' | 'warn' | 'error', message: string, data?: any): void {
+         if (!process.env.DEBUG) return;
+
+         const timestamp = new Date().toISOString();
+         const logData = {
+           timestamp,
+           level,
+           message,
+           ...data
+         };
+
+         console.log(`[${level.toUpperCase()}] ${JSON.stringify(logData)}`);
+       }
+
+       static error(error: Error, context?: any): void {
+         this.log('error', error.message, {
+           name: error.name,
+           stack: error.stack,
+           ...context
+         });
+       }
+     }
+     ```
+
+4. Scene Error Recovery:
+   - MUST implement error boundaries:
+
+     ```typescript
+     export class ErrorBoundaryScene extends Phaser.Scene {
+       private errorCount: number = 0;
+       private readonly MAX_RETRIES: number = 3;
+
+       create(): void {
+         try {
+           this.setupScene();
+         } catch (error) {
+           this.handleSceneError(error);
+         }
+       }
+
+       private handleSceneError(error: Error): void {
+         this.errorCount++;
+         
+         if (this.errorCount >= this.MAX_RETRIES) {
+           ErrorHandler.handle(error, this);
+         } else {
+           GameLogger.error(error, { retryCount: this.errorCount });
+           this.scene.restart();
+         }
+       }
+
+       protected abstract setupScene(): void;
+     }
+     ```
+
+## Implementation
+
+The Cursor IDE will:
+
+- Validate error handling patterns
+- Check logging implementation
+- Monitor error recovery
+- Track error boundaries
+- Verify debug logging
+
+## Benefits
+
+- Consistent error handling
+- Graceful error recovery
+- Structured logging
+- Debug support
+- Error boundaries
+- Better user experience
+- Easier debugging
+
+## Examples
+
+✅ Correct:
+
+```typescript
+export class GameScene extends ErrorBoundaryScene {
+  protected setupScene(): void {
+    try {
+      this.load.image('player', 'assets/player.png');
+    } catch (error) {
+      throw new AssetError('Failed to load player sprite');
+    }
+
+    GameLogger.log('info', 'Game scene initialized', {
+      assets: this.cache.getKeys()
+    });
+  }
+
+  update(): void {
+    try {
+      this.updateGameState();
+    } catch (error) {
+      GameLogger.error(error, { 
+        scene: this.scene.key,
+        gameTime: this.time.now 
+      });
+    }
+  }
+}
+```
+
+❌ Incorrect:
+
+```typescript
+export class GameScene extends Phaser.Scene {
+  create() {
+    // Don't use try-catch without proper error handling
+    try {
+      this.setupGame();
+    } catch (e) {
+      console.error(e);  // Don't just log errors
+    }
+    
+    // Don't use console.log for debugging
+    console.log('Game started');
+    
+    // Don't ignore errors
+    this.load.image('player', 'missing.png');
+  }
+}
+```

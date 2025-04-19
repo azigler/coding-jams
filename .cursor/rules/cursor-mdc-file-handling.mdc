@@ -1,0 +1,124 @@
+---
+description: Standards for safely creating and editing MDC rule files while preserving metadata integrity
+globs: [".cursor/rules/**/*.mdc"]
+alwaysApply: true
+---
+
+# Cursor MDC File Handling Standards
+
+## Description
+
+Establishes standards for safely creating and modifying MDC (Model-Driven Code) rule files while preserving metadata integrity and preventing corruption.
+
+## Rule
+
+1. File Creation Pattern:
+   - MUST create new rules as .md first:
+
+     ```shell
+     # Create as .md initially
+     touch .cursor/rules/my-rule.md
+     ```
+
+   - MUST include exact 5-line metadata header:
+
+     ```markdown
+     ---
+     description: Brief description of the rule's purpose
+     globs: ["pattern/to/match/*.ext"]
+     alwaysApply: true
+     ---
+     ```
+
+2. Metadata Handling:
+   - MUST preserve metadata header format
+   - MUST NOT add empty lines in metadata section
+   - MUST NOT modify metadata structure
+   - MUST include required fields:
+     - description
+     - globs
+     - alwaysApply
+
+3. File Conversion Process:
+   - MUST verify metadata format before conversion
+   - MUST use mv command for conversion:
+
+     ```shell
+     # Convert from .md to .mdc
+     mv .cursor/rules/my-rule.md .cursor/rules/my-rule.mdc
+     ```
+
+4. Content Updates:
+   - MUST create temporary .md for major changes
+   - MUST preserve existing metadata when updating
+   - MUST follow rename pattern for updates:
+
+     ```shell
+     # Update existing rule
+     mv rule.mdc rule.md
+     # Edit content
+     mv rule.md rule.mdc
+     ```
+
+5. Metadata Validation:
+   - MUST validate metadata before conversion:
+     - Exact 5-line format
+     - No empty lines
+     - Required fields present
+     - Valid YAML syntax
+
+## Implementation
+
+The Cursor IDE will:
+
+- Enforce MDC file extension
+- Validate metadata structure
+- Prevent direct metadata modification
+- Track file conversions
+- Monitor content changes
+
+## Benefits
+
+- Prevents metadata corruption
+- Maintains rule integrity
+- Enables safe updates
+- Preserves file structure
+- Simplifies rule management
+- Reduces editing errors
+- Ensures format consistency
+
+## Examples
+
+✅ Correct:
+
+```shell
+# Creating new rule
+echo "---
+description: My new rule description
+globs: [\"src/**/*.ts\"]
+alwaysApply: true
+---
+
+# Rule Content" > .cursor/rules/new-rule.md
+
+mv .cursor/rules/new-rule.md .cursor/rules/new-rule.mdc
+
+# Updating existing rule
+mv existing-rule.mdc existing-rule.md
+# Edit content
+mv existing-rule.md existing-rule.mdc
+```
+
+❌ Incorrect:
+
+```shell
+# Don't create .mdc directly
+touch .cursor/rules/my-rule.mdc
+
+# Don't modify metadata directly
+sed -i '' 's/description:.*/description: new description/' rule.mdc
+
+# Don't use wrong metadata format
+echo "description: Invalid format
+alwaysApply: true" > rule.mdc
+```
