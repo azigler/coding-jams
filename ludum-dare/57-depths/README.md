@@ -3,6 +3,8 @@
 > [!NOTE]
 > April 4–7, 2025 (72 hours)
 
+![Depths gameplay](https://github.com/user-attachments/assets/456ba902-92a7-4820-abc9-54fcf6148ca5)
+
 - **Demo:** [Play the latest version](https://azigler.github.io/coding-jams)
 - **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/ludum-dare/57-depths)
 - **Ludum Dare Entry:** [View on LDJam](https://ldjam.com/events/ludum-dare/57/folder-depth)
