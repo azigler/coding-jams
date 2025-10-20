@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Slay Calculator ✨</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="calculator-universe">
+        <div class="cosmic-particles"></div>
+        
+        <div class="vibe-indicator">
+            ✨ it's giving calculator ✨
+        </div>
+
+        <div class="calculator-container animate__animated animate__bounceInDown">
+            <div class="calculator-frame">
+                <div class="display-section">
+                    <div class="vibe-check">🌟</div>
+                    <div class="display-decorations">
+                        <div class="led-indicator"></div>
+                        <div class="mood-emoji">😌</div>
+                    </div>
+                    <div class="main-display">
+                        <div class="calculation-history"></div>
+                        <div class="current-calculation">0</div>
+                        <div class="binary-display">0000 0000</div>
+                        <div class="reaction-bubble"></div>
+                    </div>
+                </div>
+
+                <div class="button-grid">
+                    <button class="btn special" data-action="clear">AC</button>
+                    <button class="btn special" data-action="toggle-sign">±</button>
+                    <button class="btn special" data-action="percentage">%</button>
+                    <button class="btn operator" data-action="divide">÷</button>
+
+                    <button class="btn number" data-value="7">7</button>
+                    <button class="btn number" data-value="8">8</button>
+                    <button class="btn number" data-value="9">9</button>
+                    <button class="btn operator" data-action="multiply">×</button>
+
+                    <button class="btn number" data-value="4">4</button>
+                    <button class="btn number" data-value="5">5</button>
+                    <button class="btn number" data-value="6">6</button>
+                    <button class="btn operator" data-action="subtract">-</button>
+
+                    <button class="btn number" data-value="1">1</button>
+                    <button class="btn number" data-value="2">2</button>
+                    <button class="btn number" data-value="3">3</button>
+                    <button class="btn operator" data-action="add">+</button>
+
+                    <button class="btn number zero" data-value="0">0</button>
+                    <button class="btn" data-action="decimal">.</button>
+                    <button class="btn operator" data-action="equals">=</button>
+                </div>
+
+                <div class="mood-indicator">
+                    <div class="mood-light"></div>
+                    <span class="mood-text">bestie is calculating...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="quote-container">
+            <div class="quote-text">no thoughts, just math ✨</div>
+        </div>
+
+        <div class="no-thoughts">
+            🧠💫
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="js/calculator.js"></script>
+    <script src="js/effects.js"></script>
+</body>
+</html>
