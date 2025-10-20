@@ -1,0 +1,3 @@
+[submodule "warp-coding-with-zach/partykit-quiz-game"]
+	path = warp-coding-with-zach/partykit-quiz-game
+	url = https://github.com/azigler/partykit-quiz-game
