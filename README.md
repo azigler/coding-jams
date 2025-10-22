@@ -23,7 +23,7 @@ A game about navigating deep folder structures under time pressure. Players take
 
 > September 3, 2025 (4 hours)
 
-![CodeTV clip](https://github.com/user-attachments/assets/18678d47-88e7-4289-85bb-9381db08f64b)
+![CodeTV clip](https://i.ibb.co/GQTFVfYR/Screenshot-2025-10-22-at-1-56-04-PM.png)
 
 A multiplayer marble game using phone tilt controls as an unconventional interface. Players control marbles by physically tilting their phones, leveraging the device orientation API for physical movement translation. Built in a two-person hackathon with [@billyjacobson](https://github.com/billyjacobson) for [CodeTV Web Dev Challenge](https://codetv.dev/) in collaboration with Block, filmed in Portland, OR.
 
@@ -37,7 +37,7 @@ A multiplayer marble game using phone tilt controls as an unconventional interfa
 
 > September 18, 2025 (1 hour)
 
-![Livestream clip](https://github.com/user-attachments/assets/44521385-121d-4e4a-bdee-7435e7bfd1f2)
+![Livestream clip](https://i.ibb.co/hxptXHps/Screenshot-2025-10-22-at-1-56-29-PM.png)
 
 A multiplayer, real-time quiz game built with PartyKit. Perfect as an icebreaker for group learning sessions with live cursor tracking, emoji reactions, and seamless WebSocket communication. I built the base, then [@zachlloyd](https://github.com/zachlloyd) shipped a new feature in a livestreamed coding session.
 
