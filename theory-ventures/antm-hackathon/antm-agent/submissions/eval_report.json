@@ -1,0 +1,653 @@
+{
+  "total_questions": 20,
+  "questions_with_answers": 20,
+  "correct": 0,
+  "accuracy": 0.0,
+  "results": [
+    {
+      "question_index": 0,
+      "title": "the quarter that succeeds most",
+      "question": "What was our most successful quarter by far (by total net profit)?",
+      "answer": {
+        "col_1": "2019",
+        "col_2": "Q4",
+        "col_3": "27311365.200000025",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "string",
+      "is_correct": false,
+      "score_details": {
+        "successful_quarter": {
+          "expected": "string",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 1,
+      "title": "the channel that generates least revenue",
+      "question": "What is the smallest channel in terms of percent of Revenue?",
+      "answer": {
+        "col_1": "web",
+        "col_2": "11.535678550794664",
+        "col_3": "76939734.62000036",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "smallest_channel": {
+          "expected": "string",
+          "actual": null,
+          "match": false
+        },
+        "store_revenue_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "web_revenue_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "catalog_revenue_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 2,
+      "title": "the item that sells most",
+      "question": "What is the top selling item of 2023? Give me the product name",
+      "answer": {
+        "col_1": "Jewelry",
+        "col_2": "82677.96",
+        "col_3": "8888",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "item_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 3,
+      "title": "the transaction that needs validation",
+      "question": "What is the highest single transaction for a store ever in terms of net profit?",
+      "answer": {
+        "col_1": "4",
+        "col_2": "139267.76",
+        "col_3": "63567",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "highest_net_profit": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "ticket_number": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "store_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 4,
+      "title": "the revenue that needs validation",
+      "question": "For that same transaction with the highest net profit, what was the total revenue (not including taxes)?",
+      "answer": {
+        "col_1": "94813.04",
+        "col_2": "1466.08",
+        "col_3": "",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "total_revenue": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "net_profit": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 5,
+      "title": "the stores that exist",
+      "question": "How many unique stores are there?",
+      "answer": {
+        "col_1": "6",
+        "col_2": "",
+        "col_3": "",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "unique_stores": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 6,
+      "title": "the store that has highest lifetime profit",
+      "question": "What stores has highest total net profit over its lifetime?",
+      "answer": {
+        "col_1": "5",
+        "col_2": "Store 5",
+        "col_3": "60963415.86",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "store_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 7,
+      "title": "the store that has lowest lifetime profit",
+      "question": "What store has the lowest net profit over its lifetime?",
+      "answer": {
+        "col_1": "4",
+        "col_2": "Store 4",
+        "col_3": "57207250.34",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "store_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 8,
+      "title": "the state that has most customers",
+      "question": "From which state do we have the most customers?",
+      "answer": {
+        "col_1": "MD",
+        "col_2": "1718",
+        "col_3": "",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "state": {
+          "expected": "string",
+          "actual": null,
+          "match": false
+        },
+        "customer_count": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 9,
+      "title": "the approver that misses signatures",
+      "question": "Our compliance audit found high-value purchase orders missing required approver signatures, creating financial liability. Purchase orders over $10,000 require both buyer and approver signatures per our procurement policy. What is the total value of unsigned purchase orders exceeding the $10,000 threshold, which approver has the highest total dollar value of unsigned orders, and what is that value?",
+      "answer": {
+        "col_1": "",
+        "col_2": "",
+        "col_3": "",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "total_unsigned_value": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "highest_value_approver": {
+          "expected": "string",
+          "actual": null,
+          "match": false
+        },
+        "highest_value_approver_total": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "Step SQL generation failed: SQL must have FROM clause",
+        "No SQL query to execute",
+        "Step 1 returned no results"
+      ],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 10,
+      "title": "the door dock that damages most",
+      "question": "Our warehouse operations team at Warehouse 2 has noticed an increase in damaged inventory during 2020. We suspect certain door docks may be causing more damage than others. Identify which door dock has the highest damage rate and quantify how much worse it is compared to the facility average.",
+      "answer": {},
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "highest_damage_dock": {
+          "expected": "string",
+          "actual": null,
+          "match": false
+        },
+        "highest_damage_rate_pct": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "avg_damage_rate_pct": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "rate_multiplier": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.\nFor troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"
+      ],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 11,
+      "title": "the subscriber who needs recurring orders",
+      "question": "Our largest customer in 2022 should sign up for a recurring order program. Which customer, which item, and how many months did they order that item?",
+      "answer": {
+        "col_1": "150013.81000000003",
+        "col_2": "6000",
+        "col_3": "6000",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "customer_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "item_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "num_months": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 12,
+      "title": "the promotion that drives signups",
+      "question": "We ran a signup promotion #102 in Q1 2020 for $20 off their first order. Calculate its ROI based on 12-mo value assuming all signups are incremental.",
+      "answer": {
+        "col_1": "5007",
+        "col_2": "6159540.69",
+        "col_3": "100140",
+        "col_4": "6050.929388855602",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "cohort_size": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "cohort_ltv": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "roi_pct": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "net_profit": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 13,
+      "title": "the transactions that look fraudulent",
+      "question": "We have fishy transactions in December 2022. Based on our fraud policy, how much total sales seem suspiciously close to our fraud spending limit?",
+      "answer": {
+        "col_1": "3",
+        "col_2": "Suspicious Transactions",
+        "col_3": "6.98",
+        "col_4": "2055",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "customer_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "transaction_count": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "total_value": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "Step SQL generation failed: SQL must have FROM clause",
+        "No SQL query to execute"
+      ],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 14,
+      "title": "the items that get returned most",
+      "question": "Identify the bottom decile of items (worst 10% by return rate). Calculate the net revenue impact from carrying these high-return items, accounting for sales revenue, customer refunds, and restocking costs. What is the total net revenue impact?",
+      "answer": {
+        "col_1": "11316704.18",
+        "col_2": "2140",
+        "col_3": "2140",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "bottom_decile_item_count": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "total_restocking_costs": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "net_revenue_impact": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "Step SQL generation failed: SQL must have FROM clause",
+        "No SQL query to execute"
+      ],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 15,
+      "title": "the item that sells seasonally",
+      "question": "Identify the item with the strongest seasonal sales pattern, where 3 consecutive calendar months account for the highest percentage of its annual sales. Report the item SK and the percentage of annual sales that these 3 peak months represent (rounded to nearest whole percent).",
+      "answer": {
+        "col_1": "8050",
+        "col_2": "121000.0",
+        "col_3": "",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "int",
+      "is_correct": false,
+      "score_details": {
+        "item_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "peak_months": {
+          "expected": "list[int]",
+          "actual": null,
+          "match": false
+        },
+        "percentage": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 16,
+      "title": "the item that exceeds baseline at discount",
+      "question": "One item was sold at exactly 4 different discount levels in 2022 (0%, 10%, 15%, 20%). Find this item and calculate: (1) the discount percentage where quantity sold first exceeds 2x the baseline, and (2) the discount level that maximizes revenue. Submit item SK, both discount percentages, and max revenue.",
+      "answer": {
+        "col_1": "49576.0",
+        "col_2": "667",
+        "col_3": "13",
+        "col_4": "",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "item_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "doubling_discount": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "max_revenue_discount": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "max_revenue": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "Query returned no results - may need to adjust filters or joins",
+        "Step 1 returned no results"
+      ],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 17,
+      "title": "the performance that needs validation",
+      "question": "Store #15 has highest revenue but lowest profit margin. Is our promotion strategy causing an issue? Quantify the impact.",
+      "answer": {
+        "col_1": "5346565.729999991",
+        "col_2": "1233822.2100000007",
+        "col_3": "19454456.257491317",
+        "col_4": "18220634.047491316",
+        "col_5": "93.65789414173479"
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "store_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "profit_margin_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "promotional_sales_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "lost_profit": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "SQL execution failed after 6 attempts: MCP query error: Error calling tool 'query': \u00e2\u009d\u008c Error executing query: Binder Error: No function matches the given name and argument types 'avg(VARCHAR)'. You might need to add explicit type casts.\n\tCandidate functions:\n\tavg(DECIMAL) -> DECIMAL\n\tavg(SMALLINT) -> DOUBLE\n\tavg(INTEGER) -> DOUBLE\n\tavg(BIGINT) -> DOUBLE\n\tavg(HUGEINT) -> DOUBLE\n\tavg(INTERVAL) -> INTERVAL\n\tavg(DOUBLE) -> DOUBLE\n\tavg(TIMESTAMP) -> TIMESTAMP\n\tavg(TIMESTAMP WITH TIME ZONE) -> TIMESTAMP WITH TIME ZONE\n\tavg(TIME) -> TIME\n\tavg(TIME WITH TIME ZONE) -> TIME WITH TIME ZONE\n\n\nLINE 8:     AVG(p.p_discount_active) as avg_discount_rate\n            ^"
+      ],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 18,
+      "title": "the customers who stay loyal to brands",
+      "question": "Long-tenure customers (active 24+ months) show monthly repeat purchase behavior concentrated in one brand. Calculate which brand and what percentage of long-tenure customers purchase from this brand each month on average.",
+      "answer": {
+        "col_1": "Brand #63",
+        "col_2": "1.4",
+        "col_3": "20",
+        "col_4": "6.999999999999999",
+        "col_5": ""
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "long_tenure_customer_count": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "loyalty_brand": {
+          "expected": "null",
+          "actual": null,
+          "match": false
+        },
+        "monthly_repurchase_rate_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [],
+      "difficulty": "int"
+    },
+    {
+      "question_index": 19,
+      "title": "the deviation that needs validation",
+      "question": "November 2022 month-over-month growth was below trend. Which store had the largest negative deviation from its 3-month linear trend? What percentage of the total shortfall in trend was this responsible for?",
+      "answer": {
+        "col_1": "1",
+        "col_2": "Store 1",
+        "col_3": "7528.335000000273",
+        "col_4": "205838.37499999756",
+        "col_5": "288650.0600000005"
+      },
+      "expected_answers": "float",
+      "is_correct": false,
+      "score_details": {
+        "worst_store_sk": {
+          "expected": "int",
+          "actual": null,
+          "match": false
+        },
+        "deviation_percentage_points": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        },
+        "contribution_percent": {
+          "expected": "float",
+          "actual": null,
+          "match": false
+        }
+      },
+      "errors": [
+        "Query returned no results - may need to adjust filters or joins",
+        "Step 3 returned no results",
+        "SQL execution failed after 6 attempts: MCP query error: Error calling tool 'query': \u00e2\u009d\u008c Error executing query: Binder Error: aggregate function calls cannot contain window function calls\n\nLINE 23:         SUM((month - 9.0) * (revenue - AVG(revenue) OVER (PARTITION BY s_store_sk))) / \n                                                ^",
+        "Query returned no results - may need to adjust filters or joins",
+        "Query returned no results - may need to adjust filters or joins",
+        "Step 4 returned no results",
+        "Query returned no results - may need to adjust filters or joins",
+        "Step 5 returned no results"
+      ],
+      "difficulty": "int"
+    }
+  ]
+}
