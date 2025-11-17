@@ -5,7 +5,7 @@
 
 ## Projects
 
-### [ANTM Hackathon](theory-ventures/antm-hackathon/README.md)
+### [America's Next Top Modeler Hackathon](theory-ventures/antm-hackathon/README.md)
 
 > November 15, 2025 (6 hours)
 
@@ -15,8 +15,8 @@ Participants competed to design and optimize context agents that navigate comple
 
 Placed 20th out of 100+ participants.
 
-- **Agent:** [Explore my agent's repository](theory-ventures/antm-hackathon/antm-agent/README.md)
-- **Hackathon:** [Explore the hackathon's repository](https://theoryvc.com/blog-posts/americas-next-top-modeler)
+- **Agent:** [Explore my agent repository](theory-ventures/antm-hackathon/antm-agent/README.md)
+- **Hackathon:** [Explore the hackathon repository](https://github.com/TheoryVentures/antm)
 - **Blog:** [Read the event announcement](https://theoryvc.com/blog-posts/americas-next-top-modeler)
 - **Hackathon:** [View the ANTM Hackathon by Theory Ventures](https://luma.com/7vg7u3mf?tk=x4Gdem)
 
