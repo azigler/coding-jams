@@ -1,0 +1,6 @@
+{
+  "name": "advent-of-code-harness",
+  "version": "1.0.0",
+  "description": "Advent of Code automation harness (Deno)",
+  "type": "module"
+}

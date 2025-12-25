@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "imports": {
+    "std/path": "https://deno.land/std@0.208.0/path/mod.ts"
+  },
+  "tasks": {
+    "harness": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts",
+    "day": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts --day",
+    "day:auto": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts --day \"$1\" --auto' _",
+    "day:fetch": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts --day \"$1\" --fetch-input' _",
+    "day:refresh": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts --day \"$1\" --refresh-stars' _"
+  }
+}

@@ -1,0 +1,4 @@
+.stars-cache.json
+.env
+*.log
+
