@@ -1,0 +1,30 @@
+<p>The sleigh’s GPS has gone crazy! 😱 Santa Claus has the <strong>segments of his trip</strong>, but they’re all out of order.</p>
+<p>Your mission is to <strong>reconstruct the complete route</strong> from the origin to the final destination.</p>
+<p>Keep in mind: <strong>The first element of the array is always the first segment of the trip</strong>. From there, you must keep connecting destinations to the next origins.</p>
+<pre><code class="javascript language-javascript">revealSantaRoute([
+  ['MEX', 'CAN'],
+  ['UK', 'GER'],
+  ['CAN', 'UK']
+])
+// → ['MEX', 'CAN', 'UK', 'GER']
+
+revealSantaRoute([
+  ['USA', 'BRA'],
+  ['JPN', 'PHL'],
+  ['BRA', 'UAE'],
+  ['UAE', 'JPN'],
+  ['CMX', 'HKN']
+])
+// → ['USA', 'BRA', 'UAE', 'JPN', 'PHL']
+
+revealSantaRoute([
+  ['STA', 'HYD'],
+  ['ESP', 'CHN']
+])
+// → ['STA', 'HYD']
+</code></pre>
+<p><strong>🔎 Keep in mind:</strong></p>
+<ul>
+<li>There are no duplicate routes or cycles in Santa’s path.</li>
+<li>There may be segments that don’t belong to the route; these must be ignored.</li>
+</ul>

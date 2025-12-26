@@ -1,0 +1,1350 @@
+{
+  "year": 2025,
+  "buildId": "KwIOcM2Z-xXBx5css-ld9",
+  "lastBuildIdFetch": 1766719220571,
+  "challenges": {
+    "1": {
+      "title": "🎁 Filter the defective gifts",
+      "stars": {
+        "total": 6,
+        "typescript": 6,
+        "python": 6,
+        "javascript": 6
+      },
+      "solved": {
+        "typescript": true,
+        "python": true,
+        "javascript": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "2": {
+      "title": "🏭 Manufacture the toys",
+      "stars": {
+        "total": 6,
+        "typescript": 6,
+        "python": 6,
+        "javascript": 6
+      },
+      "solved": {
+        "typescript": true,
+        "python": true,
+        "javascript": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 95,
+            "complexity": 90,
+            "style": 95,
+            "algorithmic_quality": 95,
+            "maintainability": 95
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "3": {
+      "title": "👶 Help the intern",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "4": {
+      "title": "🧮 Decipher the Santa PIN",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "5": {
+      "title": "⏱️ The countdown to take off",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "6": {
+      "title": "🧤 Matching gloves",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "7": {
+      "title": "🎄 Decorating the tree",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "8": {
+      "title": "🎁 Find the unique toy",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "9": {
+      "title": "🦌 The reno robot aspirator",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 5
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 80,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 97,
+            "algorithmic_quality": 100,
+            "maintainability": 95
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "10": {
+      "title": "📨 Depth of Christmas magic",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "11": {
+      "title": "📹 Unwatched gifts",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 80,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "12": {
+      "title": "⚔️ Elf battle",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 5
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 97,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 80,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "13": {
+      "title": "🏭 The assembly line",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "14": {
+      "title": "🗃️ Find the gift path",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 95,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 95,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "15": {
+      "title": "✏️ Drawing tables",
+      "stars": {
+        "typescript": 6,
+        "python": 6,
+        "javascript": 6,
+        "total": 6
+      },
+      "solved": {
+        "typescript": true,
+        "python": true,
+        "javascript": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 80,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 97,
+            "algorithmic_quality": 100,
+            "maintainability": 95
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "16": {
+      "title": "🎁 Packing gifts for Santa",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "17": {
+      "title": "🎄 The Christmas lights panel",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "wrongAnswers": [],
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 80,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      }
+    },
+    "18": {
+      "title": "🎄 Lights in line with diagonals",
+      "stars": {
+        "javascript": 6,
+        "typescript": 6,
+        "python": 6,
+        "total": 6
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "19": {
+      "title": "🎄 Santa's Secret Journey",
+      "stars": {
+        "javascript": 7,
+        "typescript": 7,
+        "python": 7,
+        "total": 7
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "20": {
+      "title": "🎁 Vertical warehouse",
+      "stars": {
+        "javascript": 7,
+        "typescript": 7,
+        "python": 7,
+        "total": 7
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 100,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "21": {
+      "title": "🤖 The cleaning robot",
+      "stars": {
+        "javascript": 7,
+        "python": 7,
+        "typescript": 7,
+        "total": 7
+      },
+      "solved": {
+        "javascript": true,
+        "python": true,
+        "typescript": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 95,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 95,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "22": {
+      "title": "🎄 The sleigh maze",
+      "stars": {
+        "javascript": 7,
+        "typescript": 7,
+        "python": 7,
+        "total": 7
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 80,
+            "style": 97,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 97,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "23": {
+      "title": "🎁 Gift route",
+      "stars": {
+        "javascript": 7,
+        "typescript": 7,
+        "python": 7,
+        "total": 7
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 85,
+            "style": 97,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "24": {
+      "title": "🪞 Check if trees are magical mirrors",
+      "stars": {
+        "javascript": 8,
+        "typescript": 8,
+        "python": 7,
+        "total": 8
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [
+            "The type definition for `left` and `right` properties uses `any`, which reduces type safety. It would be better to define a proper `TreeNode` type or use a recursive type definition."
+          ],
+          "action_items": [
+            "Define a more specific type for tree nodes instead of using `any` for `left` and `right` properties to improve type safety."
+          ]
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 95,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    },
+    "25": {
+      "title": "🪄 Execute the magical language",
+      "stars": {
+        "javascript": 8,
+        "typescript": 8,
+        "python": 8
+      },
+      "solved": {
+        "javascript": true,
+        "typescript": true,
+        "python": true
+      },
+      "advice": {
+        "javascript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "typescript": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 90,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        },
+        "python": {
+          "score": 5,
+          "breakdown": {
+            "correctness": 100,
+            "complexity": 95,
+            "style": 100,
+            "algorithmic_quality": 100,
+            "maintainability": 100
+          },
+          "weaknesses": [],
+          "action_items": []
+        }
+      },
+      "wrongAnswers": []
+    }
+  },
+  "achievements": {
+    "elfo-del-dom": true,
+    "santa-script": true,
+    "piton-festivo": true,
+    "rey-de-los-bastones-de-javascript": true,
+    "mago-de-las-nieves-en-typescript": true,
+    "maestro-de-las-serpientes-navidenas": true,
+    "rey-de-la-nieve-multilingue": true,
+    "estrella-fugaz-navidena": true,
+    "primer-trineo-estelar": true,
+    "constelacion-navidena": true,
+    "arbol-navidad-estelar": true,
+    "santa-supremo": true
+  },
+  "timestamp": 1766725115810
+}

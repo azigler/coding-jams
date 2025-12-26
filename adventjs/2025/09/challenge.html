@@ -1,0 +1,44 @@
+<p>The elves have built a <strong>robot vacuum reindeer 🦌</strong> (<code>@</code>) to tidy up the workshop a bit before Christmas.</p>
+<p>The reindeer moves on a board to <strong>pick things up off the floor</strong> (<code>*</code>) and must <strong>avoid obstacles</strong> (<code>#</code>).</p>
+<p>You will receive two parameters:</p>
+<ul>
+<li><code>board</code>: a <code>string</code> that represents the board.</li>
+<li><code>moves</code>: a <code>string</code> with the movements: <code>'L'</code> (left), <code>'R'</code> (right), <code>'U'</code> (up), <code>'D'</code> (down).</li>
+</ul>
+<p><strong>Movement rules:</strong></p>
+<ul>
+<li>If the reindeer <strong>picks something up off the floor</strong> (<code>*</code>) during the moves → return <code>'success'</code>.</li>
+<li>If the reindeer <strong>goes off the board</strong> or <strong>crashes into an obstacle</strong> (<code>#</code>) → return <code>'crash'</code>.</li>
+<li>If the reindeer <strong>neither picks anything up nor crashes</strong> → return <code>'fail'</code>.</li>
+</ul>
+<p>Keep in mind that if the reindeer <strong>picks something up off the floor</strong>, it is already <code>'success'</code>, regardless of whether in later moves it crashes into an obstacle or goes off the board.</p>
+<p><strong>Important:</strong> Keep in mind that in the <code>board</code> the first and last lines are blank and must be discarded.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="javascript language-javascript">const board = `
+.....
+.*#.*
+.@...
+.....
+`
+
+moveReno(board, 'D')
+// ➞ 'fail' -&gt; it moves but doesn't pick anything up
+
+moveReno(board, 'U')
+// ➞ 'success' -&gt; it picks something up (*) right above
+
+moveReno(board, 'RU')
+// ➞ 'crash' -&gt; it crashes into an obstacle (#)
+
+moveReno(board, 'RRRUU')
+// ➞ 'success' -&gt; it picks something up (*)
+
+moveReno(board, 'DD')
+// ➞ 'crash' -&gt; it crashes into the bottom of the board
+
+moveReno(board, 'UUU')
+// ➞ 'success' -&gt; it picks something up off the floor (*) and then crashes at the top
+
+moveReno(board, 'RR')
+// ➞ 'fail' -&gt; it moves but doesn't pick anything up
+</code></pre>

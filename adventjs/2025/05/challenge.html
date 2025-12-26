@@ -1,0 +1,18 @@
+<p>Elves have a <strong>secret timestamp</strong>: it’s the exact date and time when <strong>Santa Claus takes off with the sleigh</strong> 🛷 to deliver gifts around the world. But at the North Pole they use a super weird format to store the time: <code>YYYY*MM*DD@HH|mm|ss NP</code> (example: <code>2025*12*25@00|00|00 NP</code>).</p>
+<p>Your mission is to write a function that receives:</p>
+<ul>
+<li><code>fromTime</code> → reference date in elf format (<code>YYYY*MM*DD@HH|mm|ss NP</code>).</li>
+<li><code>takeOffTime</code> → the same takeoff date, also in elf format.</li>
+</ul>
+<p>The function must return:</p>
+<ul>
+<li>The <strong>full seconds</strong> remaining until takeoff.</li>
+<li>If we’re exactly at takeoff time → <code>0</code>.</li>
+<li>If takeoff already happened → a <strong>negative number</strong> indicating how many seconds have passed since then.</li>
+</ul>
+<h2 id="rules">🎯 Rules</h2>
+<ul>
+<li>First convert the elf format to a timestamp. The <code>NP</code> suffix indicates official North Pole time (no time zones or DST), so you can treat it as if it were UTC.</li>
+<li>Use differences in <strong>seconds</strong>, not milliseconds.</li>
+<li>Always round down (<code>floor</code>): only full seconds.</li>
+</ul>

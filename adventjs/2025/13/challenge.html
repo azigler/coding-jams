@@ -1,0 +1,48 @@
+<p>Simulate the path of a gift inside a factory and return how it ends. To do this, you must create a function <code>runFactory(factory)</code>.</p>
+<p><code>factory</code> is a <code>string[]</code> where each cell can be:</p>
+<ul>
+<li><code>&gt;</code> <code>&lt;</code> <code>^</code> <code>v</code> movements</li>
+<li><code>.</code> correct exit</li>
+</ul>
+<p>Keep in mind that <strong>all rows have the same length</strong> and that <strong>there will be no other symbols</strong>.</p>
+<p>The gift <strong>always starts at position (0,0)</strong> (top left). At each step it reads the current cell and moves according to the direction. If it reaches a cell with a dot (<code>.</code>) it means it has correctly exited the factory.</p>
+<p><strong>Result</strong></p>
+<p>Return one of these values:</p>
+<ul>
+<li><code>'completed'</code> if it reaches a <code>.</code></li>
+<li><code>'loop'</code> if it visits a position twice</li>
+<li><code>'broken'</code> if it goes outside the board</li>
+</ul>
+<p><strong>Examples</strong></p>
+<pre><code class="js language-js">runFactory([
+  '&gt;&gt;.'
+]) // 'completed'
+
+runFactory([
+  '&gt;&gt;&gt;'
+]) // 'broken'
+
+runFactory([
+  '&gt;&gt;&lt;'
+]) // 'loop'
+
+runFactory([
+  '&gt;&gt;v',
+  '..&lt;'
+]) // 'completed'
+
+runFactory([
+  '&gt;&gt;v',
+  '&lt;&lt;&lt;'
+]) // 'broken'
+
+runFactory([
+  '&gt;v.',
+  '^..'
+]) // 'completed'
+
+runFactory([
+  'v.',
+  '^.'
+]) // 'loop'
+</code></pre>

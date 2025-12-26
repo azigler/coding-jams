@@ -1,0 +1,21 @@
+<p>We have already distributed all the gifts! Back at the workshop, preparations for next year are already beginning.</p>
+<p>A genius elf is creating a magical programming language 🪄 that will help streamline the delivery of gifts to children in 2025.</p>
+<p>Programs always start with the value <code>0</code>, and the language is a string where each character represents an instruction:</p>
+<ul>
+<li><code>&gt;</code> Moves to the next instruction</li>
+<li><code>+</code> Increments the current value by 1</li>
+<li><code>-</code> Decrements the current value by 1</li>
+<li><code>[</code> and <code>]</code>: Loop. If the current value is <code>0</code>, jump to the instruction after <code>]</code>. If it is not 0, go back to the instruction after <code>[</code></li>
+<li><code>{</code> and <code>}</code>: Conditional. If the current value is <code>0</code>, jump to the instruction after <code>}</code>. If it is not 0, continue to the instruction after <code>{</code></li>
+</ul>
+<p>You need to return the value of the program after executing all the instructions.</p>
+<pre><code class="javascript language-javascript">execute('+++') // 3
+execute('+--') // -1
+execute('&gt;+++[-]') // 0
+execute('&gt;&gt;&gt;+{++}') // 3
+execute('+{[-]+}+') // 2
+execute('{+}{+}{+}') // 0
+execute('------[+]++') // 2
+execute('-[++{-}]+{++++}') // 5
+</code></pre>
+<p><strong>Note: A conditional can have a loop inside, and a loop can also have a conditional inside. But two loops or two conditionals are never nested.</strong></p>

@@ -1,0 +1,31 @@
+<p>At the North Pole, they’ve set up a <strong>panel of Christmas lights</strong> 🎄✨ to decorate the workshop. Each light can be on with a color, or off.</p>
+<p>The panel is represented as a <strong>matrix</strong> where each cell can be:</p>
+<ul>
+<li><code>'.'</code> → light off</li>
+<li><code>'R'</code> → red light</li>
+<li><code>'G'</code> → green light</li>
+</ul>
+<p>The elves want to know if there is a <strong>line of 4 lights of the same color</strong> that are on and <strong>aligned</strong> on the panel (only horizontal ↔ or vertical ↕). Lights that are off (<code>'.'</code>) don’t count.</p>
+<pre><code class="javascript language-javascript">hasFourLights([
+  ['.', '.', '.', '.', '.'],
+  ['R', 'R', 'R', 'R', '.'],
+  ['G', 'G', '.', '.', '.']
+])
+// true → there are 4 red lights horizontally
+
+hasFourLights([
+  ['.', 'G', '.', '.'],
+  ['.', 'G', '.', '.'],
+  ['.', 'G', '.', '.'],
+  ['.', 'G', '.', '.']
+])
+// true → there are 4 green lights vertically
+
+hasFourLights([
+  ['R', 'G', 'R'],
+  ['G', 'R', 'G'],
+  ['G', 'R', 'G']
+])
+// false → there are no 4 lights of the same color in a row
+</code></pre>
+<p><strong>Note:</strong> The board can be any size. No diagonals.</p>

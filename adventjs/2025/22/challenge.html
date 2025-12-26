@@ -1,0 +1,55 @@
+<p>Santa Claus 🎅 is testing a new <strong>sleigh simulator</strong> inside a maze in the workshop. The maze is represented as a matrix of characters.</p>
+<p>Your task is to implement a function that determines if it is possible to reach the exit (<code>E</code>) starting from the initial position (<code>S</code>).</p>
+<p><strong>Maze rules:</strong></p>
+<ul>
+<li><code>S</code>: Santa's initial position.</li>
+<li><code>E</code>: Maze exit.</li>
+<li><code>.</code>: Free path.</li>
+<li><code>#</code>: Wall (blocks the path).</li>
+<li>Allowed movements: <strong>up, down, left, and right</strong>.</li>
+<li>There is only one <code>S</code> and one <code>E</code>.</li>
+</ul>
+<pre><code class="javascript language-javascript">canEscape([
+  ['S', '.', '#', '.'],
+  ['#', '.', '#', '.'],
+  ['.', '.', '.', '.'],
+  ['#', '#', '#', 'E']
+])
+// → true
+
+canEscape([
+  ['S', '#', '#'],
+  ['.', '#', '.'],
+  ['.', '#', 'E']
+])
+// → false
+
+canEscape([
+  ['S', 'E']
+])
+// → true
+
+canEscape([
+  ['S', '.', '.', '.', '.'],
+  ['#', '#', '#', '#', '.'],
+  ['.', '.', '.', '.', '.'],
+  ['.', '#', '#', '#', '#'],
+  ['.', '.', '.', '.', 'E']
+])
+// → true
+
+canEscape([
+  ['S', '.', '.'],
+  ['.', '.', '.'],
+  ['#', '#', '#'],
+  ['.', '.', 'E']
+])
+// → false
+</code></pre>
+<p><strong>Things to keep in mind:</strong></p>
+<ul>
+<li>You don't need to return the path, just if it is possible to arrive.</li>
+<li>Santa cannot leave the boundaries of the maze.</li>
+<li>You can pass through the same cell multiple times.</li>
+</ul>
+<p><strong>Tip:</strong> This problem can be solved in several ways, but search algorithms like <strong>BFS</strong> (Breadth-First Search) or <strong>DFS</strong> (Depth-First Search) are ideal for these types of challenges.</p>

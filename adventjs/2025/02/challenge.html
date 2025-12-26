@@ -1,0 +1,14 @@
+<p>Santa's factory has started to receive the toy <strong>production list</strong>.<br />
+Each line indicates <strong>which toy</strong> must be manufactured and <strong>how many units</strong>.</p>
+<p>The elves, as always, have messed things up: they wrote down some toys with quantities that don't make any sense.</p>
+<p>You have a list of objects with this structure:</p>
+<ul>
+<li><code>toy</code>: the name of the toy (string)</li>
+<li><code>quantity</code>: how many units must be manufactured (number)</li>
+</ul>
+<p>Your task is to write a function that takes this list and returns <strong>an array of strings</strong> with:</p>
+<ol>
+<li>Each toy repeated as many times as indicated by <code>quantity</code></li>
+<li>In the same order in which they appear in the original list</li>
+<li>Ignoring toys with invalid quantities (less than or equal to 0, or not a number)</li>
+</ol>

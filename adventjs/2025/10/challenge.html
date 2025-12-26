@@ -1,0 +1,16 @@
+<h1 id="depthofchristmasmagic">🎄 Depth of Christmas Magic</h1>
+<p>At the North Pole, Santa Claus is reviewing the magical letters 📩✨ he receives from children all over the world. These letters use an ancient Christmas language in which the brackets <code>[</code> and <code>]</code> represent the intensity of the wish.</p>
+<p>The deeper the nesting of the brackets, the stronger the wish. Your mission is to find out the <strong>maximum depth</strong> at which the <code>[]</code> are nested.</p>
+<p>But be careful! Some letters may be <strong>poorly written</strong>. If the brackets are not properly balanced (if one closes before it opens, there are extra closing brackets, or closing brackets are missing), the letter is invalid and you must return <code>-1</code>.</p>
+<pre><code class="javascript language-javascript">maxDepth('[]') // -&gt; 1
+maxDepth('[[]]') // -&gt; 2
+maxDepth('[][]') // -&gt; 1
+maxDepth('[[][]]') // -&gt; 2
+maxDepth('[[[]]]') // -&gt; 3
+maxDepth('[][[]][]') // -&gt; 2
+
+maxDepth('][') // -&gt; -1 (closes before opening)
+maxDepth('[[[') // -&gt; -1 (missing closing brackets)
+maxDepth('[]]]') // -&gt; -1 (extra closing brackets)
+maxDepth('[][][') // -&gt; -1 (one remains unclosed)
+</code></pre>

@@ -1,0 +1,58 @@
+<p>Two elves are playing a turn-based battle. Each one has a deck of moves represented as a <code>string</code> where each character is an action.</p>
+<ul>
+<li><code>A</code> <strong><em>Normal attack</em>:</strong> deals 1 point of damage if it’s not blocked</li>
+<li><code>B</code> <strong><em>Block</em>:</strong> blocks a normal attack (<code>A</code>)</li>
+<li><code>F</code> <strong><em>Strong attack</em>:</strong> deals 2 points of damage, cannot be blocked</li>
+</ul>
+<p>Both elves start with <strong>3 hit points</strong>. The first elf to reach <strong>0 hit points or less</strong> loses and the battle ends immediately (no further moves are processed).</p>
+<p><strong>Round rules</strong></p>
+<ul>
+<li>If both use an attack (<code>A</code> or <code>F</code>), both take damage according to the type.</li>
+<li><code>B</code> blocks <code>A</code>, but <strong>does not block</strong> <code>F</code>.</li>
+<li>Everything is resolved <strong>simultaneously</strong>.</li>
+</ul>
+<p><strong>Your task</strong></p>
+<p>Return the result of the battle as a number:</p>
+<ul>
+<li><code>1</code> → if Elf 1 wins</li>
+<li><code>2</code> → if Elf 2 wins</li>
+<li><code>0</code> → if it’s a draw (both reach 0 at the same time or end with the same health)</li>
+</ul>
+<pre><code class="javascript language-javascript">elfBattle('A', 'B')
+// Round 1: A vs B -&gt; Elf 2 blocks
+// Result: Elf 1 = 3 HP
+//         Elf 2 = 3 HP
+// → 0
+
+elfBattle('F', 'B')
+// Round 1: F vs B -&gt; Elf 2 takes 2 damage (F cannot be blocked)
+// Result: Elf 1 = 3 HP
+//         Elf 2 = 1 HP
+// → 1
+
+elfBattle('AAB', 'BBA')
+// R1: A vs B → Elf 2 blocks
+// R2: A vs B → Elf 2 blocks
+// R3: B vs A → Elf 1 blocks
+// Result: Elf 1 = 3, Elf 2 = 3
+// → 0
+
+elfBattle('AFA', 'BBA')
+// R1: A vs B → Elf 2 blocks
+// R2: F vs B → Elf 2 takes 2 damage (F cannot be blocked)
+// R3: A vs A → both -1
+// Result: Elf 1 = 2, Elf 2 = 0
+// → 1
+
+elfBattle('AFAB', 'BBAF')
+// R1: A vs B → Elf 2 blocks
+// R2: F vs B → Elf 2 takes 2 damage (F cannot be blocked)
+// R3: A vs A → both -1 → Elf 2 reaches 0 Battle ends!
+// R4: is not played, since Elf 2 has no health left
+// → 1
+
+elfBattle('AA', 'FF')
+// R1: A vs F → Elf 1 -2, Elf 2 -1
+// R2: A vs F → Elf 1 -2, Elf 2 -1 → Elf 1 reaches -1
+// → 2
+</code></pre>

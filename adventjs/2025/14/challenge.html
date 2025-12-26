@@ -1,0 +1,38 @@
+<p>At the North Pole, the elves have simplified their storage system to avoid mistakes.<br />
+They now keep the presents in a <strong>magical object with limited depth</strong>, where <strong>each value appears only once</strong>.</p>
+<p>Santa needs a quick way to know <strong>which path of keys</strong> he must follow to find a specific present.</p>
+<p>Your task is to write a function that, given an object and a value, returns the <strong>array of keys</strong> that must be traversed to reach that value.</p>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>The object has <strong>at most 3 levels of depth</strong>.</li>
+<li>The value to search for <strong>appears at most once</strong>.</li>
+<li>The object only contains <strong>other objects and primitive values</strong> (strings, numbers, booleans).</li>
+<li>If the value does not exist, return an empty array.</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<pre><code class="js language-js">const workshop = {
+  storage: {
+    shelf: {
+      box1: 'train',
+      box2: 'switch'
+    },
+    box: 'car'
+  },
+  gift: 'doll'
+}
+
+findGiftPath(workshop, 'train')
+// ➜ ['storage', 'shelf', 'box1']
+
+findGiftPath(workshop, 'switch')
+// ➜ ['storage', 'shelf', 'box2']
+
+findGiftPath(workshop, 'car')
+// ➜ ['storage', 'box']
+
+findGiftPath(workshop, 'doll')
+// ➜ ['gift']
+
+findGiftPath(workshop, 'plane')
+// ➜ []
+</code></pre>

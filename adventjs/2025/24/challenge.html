@@ -1,0 +1,64 @@
+<p>At the North Pole, the elves have <strong>two magical binary trees that generate energy</strong> 🌲🌲 to keep the Christmas star ⭐️ shining. However, for them to work properly, the trees must be in perfect sync <strong>like mirrors 🪞.</strong></p>
+<p><strong>Two binary trees are mirrors if:</strong></p>
+<ul>
+<li>The roots of both trees have the same value.</li>
+<li>Each node of the first tree must have its corresponding node in the opposite position in the second tree.</li>
+</ul>
+<p>And the tree is represented with three properties <code>value</code>, <code>left</code>, and <code>right</code>. The latter two display the remaining branches (if any):</p>
+<pre><code class="typescript language-typescript">const tree = {
+  value: '⭐️',
+  left: {
+    value: '🎅'
+    // left: {...}
+    // right: { ... }
+  },
+  right: {
+    value: '🎁'
+    // left: { ... }
+    // right: { ...&amp;nbsp;}
+  }
+}
+</code></pre>
+<p>Santa needs your help to verify if the trees are synchronized so that the star can keep shining. <strong>You must return an array</strong> where the <strong>first position indicates if the trees are synchronized</strong> and the <strong>second position returns the value of the root of the first tree</strong>.</p>
+<pre><code class="javascript language-javascript">const tree1 = {
+  value: '🎄',
+  left: { value: '⭐' },
+  right: { value: '🎅' }
+}
+
+const tree2 = {
+  value: '🎄',
+  left: { value: '🎅' }
+  right: { value: '⭐' },
+}
+
+isTreesSynchronized(tree1, tree2) // [true, '🎄']
+
+/*
+  tree1          tree2
+   🎄              🎄
+  / \             / \
+⭐   🎅         🎅   ⭐
+*/
+
+const tree3 = {
+  value: '🎄',
+  left: { value: '🎅' },
+  right: { value: '🎁' }
+}
+
+isTreesSynchronized(tree1, tree3) // [false, '🎄']
+
+const tree4 = {
+  value: '🎄',
+  left: { value: '⭐' },
+  right: { value: '🎅' }
+}
+
+isTreesSynchronized(tree1, tree4) // [false, '🎄']
+
+isTreesSynchronized(
+  { value: '🎅' },
+  { value: '🧑‍🎄' }
+) // [false, '🎅']
+</code></pre>

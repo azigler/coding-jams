@@ -1,0 +1,68 @@
+<p>Santa’s vertical warehouse has been modernized! Now, in addition to stacking gifts, there’s a robot 🤖 in the warehouse that picks up the gifts if there is a complete row.</p>
+<p>The warehouse is a matrix with <code>#</code> gifts and <code>.</code> empty spaces. You must create a <code>clearGifts</code> function that receives the state of the warehouse and an array with the columns where the gifts are dropped.</p>
+<p><strong>Drop rules:</strong></p>
+<ul>
+<li>The gift falls down the indicated column from the top.</li>
+<li>It is placed in the <strong>lowest empty cell (<code>.</code>)</strong> of that column.</li>
+<li>If the column is full, the gift is ignored.</li>
+</ul>
+<p><strong>Cleaning robot rule:</strong></p>
+<ul>
+<li>If when placing a gift, a row becomes completely filled with gifts (<code>#</code>), that row <strong>disappears</strong>.</li>
+<li>All the rows that were above the removed row <strong>move down one position</strong>.</li>
+<li>When a row is removed, a new empty row (<code>.</code>) appears at the top to keep the warehouse size.</li>
+</ul>
+<pre><code class="javascript language-javascript">clearGifts(
+  [
+    ['.', '.', '.'],
+    ['.', '.', '.'],
+    ['#', '.', '#']
+  ],
+  [1]
+)
+/*
+1. The gift falls in column 1
+2. Row 2 becomes [# # #].
+3. Row 2 is complete, the robot clears it.
+6. A new empty row is added at position 0.
+
+Result:
+[
+  ['.', '.', '.'],
+  ['.', '.', '.'],
+  ['.', '.', '.']
+]
+*/
+
+clearGifts(
+  [
+    ['.', '.', '#'],
+    ['#', '.', '#'],
+    ['#', '.', '#']
+  ],
+  [0, 1, 2]
+)
+
+/*
+1. The gift falls in column 0
+2. The gift falls in column 1
+3. Row 2 becomes [# # #]
+4. Row 2 is complete, the robot clears it
+
+For now it looks like this:
+[
+  ['.', '.', '.']
+  ['#', '.', '#'],
+  ['#', '.', '#'],
+]
+
+5. The gift falls in column 2
+
+Result:
+[
+  ['.', '.', '#'],
+  ['#', '.', '#'],
+  ['#', '.', '#']
+]
+*/
+</code></pre>

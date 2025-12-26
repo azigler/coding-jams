@@ -1,0 +1,12 @@
+# Environment and secrets
+.env
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+
+# Deno
+deno.lock
+

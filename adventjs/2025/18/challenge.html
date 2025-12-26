@@ -1,0 +1,40 @@
+<p>The Christmas lights panel 🎄✨ in the workshop has been a total success. But the elves want to go one step further: now they want to detect whether there is a <strong>line of 4 lights of the same color</strong> also on a <strong>diagonal</strong>.</p>
+<p>The panel is still a <strong>matrix</strong> where each cell can be:</p>
+<ul>
+<li><code>'.'</code> → light off</li>
+<li><code>'R'</code> → red light</li>
+<li><code>'G'</code> → green light</li>
+</ul>
+<p>Now your function must return <code>true</code> if there is a line of 4 lights of the same color that are on and aligned, whether <strong>horizontally ↔, vertically ↕ or diagonally ↘↙</strong>.</p>
+<pre><code class="javascript language-javascript">hasFourInARow([
+  ['R', '.', '.', '.'],
+  ['.', 'R', '.', '.'],
+  ['.', '.', 'R', '.'],
+  ['.', '.', '.', 'R']
+])
+// true → there are 4 red lights in a ↘ diagonal
+
+hasFourInARow([
+  ['.', '.', '.', 'G'],
+  ['.', '.', 'G', '.'],
+  ['.', 'G', '.', '.'],
+  ['G', '.', '.', '.']
+])
+// true → there are 4 green lights in a ↙ diagonal
+
+hasFourInARow([
+  ['R', 'R', 'R', 'R'],
+  ['G', 'G', '.', '.'],
+  ['.', '.', '.', '.'],
+  ['.', '.', '.', '.']
+])
+// true → there are 4 red lights in a horizontal line
+
+hasFourInARow([
+  ['R', 'G', 'R'],
+  ['G', 'R', 'G'],
+  ['G', 'R', 'G']
+])
+// false → there are no 4 consecutive lights of the same color
+</code></pre>
+<p><strong>Note:</strong> The board can be any size.</p>

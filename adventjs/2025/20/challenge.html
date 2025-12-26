@@ -1,0 +1,69 @@
+<p>In Santa's workshop, the elves are storing gifts 🎁 in a <strong>vertical warehouse</strong>. The gifts are dropped one by one through a column and start stacking up.</p>
+<p>The warehouse is a matrix with <code>#</code> gifts and <code>.</code> empty spaces. You must create a <code>dropGifts</code> function that receives the warehouse state and an array with the columns where the gifts are dropped.</p>
+<p><strong>Falling rules:</strong></p>
+<ul>
+<li>The gift falls through the indicated column from the top.</li>
+<li>It is placed in the <strong>lowest empty cell (<code>.</code>)</strong> of that column.</li>
+<li>If the column is full, the gift is ignored.</li>
+</ul>
+<pre><code class="javascript language-javascript">dropGifts(
+  [
+    ['.', '.', '.'],
+    ['.', '#', '.'],
+    ['#', '#', '.']
+  ],
+  [0]
+)
+/*
+[
+  ['.', '.', '.'],
+  ['#', '#', '.'],
+  ['#', '#', '.']
+]
+*/
+
+dropGifts(
+  [
+    ['.', '.', '.'],
+    ['#', '#', '.'],
+    ['#', '#', '#']
+  ],
+  [0, 2]
+)
+/*
+[
+  ['#', '.', '.'],
+  ['#', '#', '#'],
+  ['#', '#', '#']
+]
+*/
+
+dropGifts(
+  [
+    ['.', '.', '.'],
+    ['.', '.', '.'],
+    ['.', '.', '.']
+  ],
+  [0, 1, 2]
+)
+/*
+[
+  ['.', '.', '.'],
+  ['.', '.', '.'],
+  ['#', '#', '#']
+]
+*/
+
+dropGifts(
+  [
+    ['#', '#']
+    ['#', '#']
+  ],
+  [0, 0]
+)
+/*
+[
+  ['#', '#']
+  ['#', '#']
+]
+</code></pre>

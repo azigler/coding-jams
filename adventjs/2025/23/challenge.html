@@ -1,0 +1,57 @@
+<p>Santa Claus 🎅 has to deliver presents in a town represented as a <strong>grid map</strong>.</p>
+<p>Each cell on the map can be:</p>
+<ul>
+<li><code>'S'</code> → Santa's starting point (where the presents are)</li>
+<li><code>'G'</code> → House that must receive a present</li>
+<li><code>'.'</code> → Free path</li>
+<li><code>'#'</code> → Obstacle (cannot be crossed)</li>
+</ul>
+<p>Santa makes independent deliveries for each present. He leaves from <code>'S'</code>, delivers the present to a house <code>'G'</code>, and <strong>immediately returns to <code>'S'</code></strong> to pick up the next one. However, for this challenge, <strong>we only want to calculate the sum of the minimum one-way distances</strong> from <code>'S'</code> to each house <code>'G'</code>.</p>
+<hr />
+<h2 id="yourgoal">🎯 Your goal</h2>
+<p>Write the function <code>minStepsToDeliver(map)</code> that returns the <strong>total number of steps</strong> required to reach all the houses with presents from the starting position.</p>
+<p>Keep in mind:</p>
+<ol>
+<li>You always start from the initial position <code>'S'</code>.</li>
+<li>For each present, you must calculate the <strong>minimum distance</strong> from <code>'S'</code> to that house <code>'G'</code>.</li>
+<li>Obstacles (<code>'#'</code>) cannot be crossed.</li>
+<li>If any house with a present is unreachable, the function must return <code>-1</code>.</li>
+</ol>
+<p>🧩 <strong>Examples</strong></p>
+<pre><code class="javascript language-javascript">minStepsToDeliver([
+  ['S', '.', 'G'],
+  ['.', '#', '.'],
+  ['G', '.', '.']
+])
+// Result: 4
+
+/* 
+Explanation:
+- Minimum distance from S (0,0) to G (0,2): 2 steps
+- Minimum distance from S (0,0) to G (2,0): 2 steps
+- Total: 2 + 2 = 4
+*/
+
+minStepsToDeliver([
+  ['S', '#', 'G'],
+  ['#', '#', '.'],
+  ['G', '.', '.']
+])
+// Result: -1
+// (The house at (0,2) is unreachable due to obstacles)
+
+minStepsToDeliver([['S', 'G']])
+// Result: 1
+</code></pre>
+<p>🎯 <strong>Rules</strong></p>
+<ul>
+<li>The map always contains exactly one <code>'S'</code>.</li>
+<li>There can be zero or more houses with presents (<code>'G'</code>).</li>
+<li>The order of deliveries doesn't matter, as each is measured independently from <code>'S'</code>.</li>
+<li>You must return the <strong>sum of the minimum one-way distances</strong>.</li>
+</ul>
+<p>🧠 <strong>Hint</strong></p>
+<ul>
+<li>Calculate the shortest distance from <code>'S'</code> to each <code>'G'</code> (you can use a Breadth-First Search or BFS algorithm).</li>
+<li>If any present has no possible path, the total result is <code>-1</code>.</li>
+</ul>

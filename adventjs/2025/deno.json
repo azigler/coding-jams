@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "imports": {
+    "std/path": "https://deno.land/std@0.208.0/path/mod.ts"
+  },
+  "tasks": {
+    "harness": "deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts",
+    "fetch": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-env harness.ts --fetch \"$1\"' _",
+    "submit": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-env harness.ts --submit \"$1\" --lang \"${2:-javascript}\"' _",
+    "resubmit": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-env harness.ts --submit \"$1\" --lang \"${2:-javascript}\" --force' _",
+    "status": "deno run --allow-read --allow-write --allow-net --allow-env harness.ts --status",
+    "titles": "deno run --allow-read --allow-write --allow-net --allow-env harness.ts --titles",
+    "test": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-run --allow-env harness.ts --test \"$1\" --lang \"${2:-javascript}\"' _",
+    "auto": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-env harness.ts --auto \"$1\"' _",
+    "improve": "bash -c 'deno run --allow-read --allow-write --allow-net --allow-env harness.ts --improve \"$1\" --lang \"${2:-javascript}\"' _",
+    "improve-all": "deno run --allow-read --allow-write --allow-net --allow-env harness.ts --improve"
+  }
+}

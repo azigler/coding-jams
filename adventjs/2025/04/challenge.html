@@ -1,0 +1,14 @@
+<p>The elves have found the <strong>encrypted code</strong> that protects the door to Santa’s workshop 🔐. The PIN has <strong>4 digits</strong>, and it is hidden inside blocks like these:</p>
+<pre><code>[1++][2-][3+][&lt;]
+</code></pre>
+<p><strong>Write a function that deciphers the PIN from the code.</strong></p>
+<p>The code is made up of blocks between brackets <code>[...]</code> and each block generates one digit of the PIN.</p>
+<p>A normal block has the form <code>[nOP...]</code>, where <code>n</code> is a number (0-9) and after it there can be a list of (optional) operations.</p>
+<p>The operations are applied in order to the number and are:</p>
+<ul>
+<li><code>+</code> adds 1</li>
+<li><code>-</code> subtracts 1</li>
+</ul>
+<p>The result is always a digit (mod 10 arithmetic), for example <code>9 + 1 → 0</code> and <code>0 - 1 → 9</code>.</p>
+<p>There is also the special block <code>[&lt;]</code>, which repeats the digit from the previous block.</p>
+<p>If in the end there are fewer than 4 digits, you must return <code>null</code>.</p>
