@@ -53,6 +53,7 @@ interface CacheData {
   year: number
   buildId: string | null
   lastBuildIdFetch: number | null
+  lastSubmissionTime: number | null // Timestamp of last submission for rate limiting
   challenges: Record<
     string,
     {
@@ -315,12 +316,18 @@ const CACHE_FILE = "cache.json"
 async function loadCache(): Promise<CacheData> {
   try {
     const content = await Deno.readTextFile(CACHE_FILE)
-    return JSON.parse(content)
+    const cache = JSON.parse(content)
+    // Ensure lastSubmissionTime exists for backward compatibility
+    if (cache.lastSubmissionTime === undefined) {
+      cache.lastSubmissionTime = null
+    }
+    return cache
   } catch {
     return {
       year: 2025,
       buildId: null,
       lastBuildIdFetch: null,
+      lastSubmissionTime: null,
       challenges: {},
       achievements: {},
       timestamp: null,
@@ -340,7 +347,6 @@ async function saveCache(cache: CacheData): Promise<void> {
 class AdventJSClient {
   private config: EnvConfig
   private cache: CacheData
-  private lastRequestTime = 0
   private userAgent = "azigler/coding-jams"
 
   constructor(config: EnvConfig, cache: CacheData) {
@@ -353,20 +359,31 @@ class AdventJSClient {
   }
 
   private async rateLimit(): Promise<void> {
-    // Only rate limit if we've made a request before
-    if (this.lastRequestTime > 0) {
-      // Random wait between 30-70 seconds to avoid looking like a robot
-      const minWait = 30000 // 30 seconds
-      const maxWait = 70000 // 70 seconds
-      const randomWait = minWait + Math.random() * (maxWait - minWait)
-      const waitSeconds = Math.ceil(randomWait / 1000)
-      console.log(
-        `⏳ Rate limit: waiting ${waitSeconds}s before next API call...`
-      )
-      await new Promise((resolve) => setTimeout(resolve, randomWait))
+    const now = Date.now()
+    const lastSubmission = this.cache.lastSubmissionTime
+
+    if (lastSubmission !== null && lastSubmission > 0) {
+      const elapsed = now - lastSubmission
+      const baseWait = this.config.rateLimitMs
+
+      if (elapsed < baseWait) {
+        // Need to wait - add jitter (±10%) to avoid patterns
+        const remainingWait = baseWait - elapsed
+        const jitterPercent = 0.1 // ±10%
+        const jitter = remainingWait * jitterPercent * (Math.random() * 2 - 1) // -10% to +10%
+        const waitTime = Math.max(0, remainingWait + jitter)
+        const waitSeconds = Math.ceil(waitTime / 1000)
+
+        console.log(
+          `⏳ Rate limit: waiting ${waitSeconds}s before next API call...`
+        )
+        await new Promise((resolve) => setTimeout(resolve, waitTime))
+      }
     }
 
-    this.lastRequestTime = Date.now()
+    // Update cache with current submission time
+    this.cache.lastSubmissionTime = Date.now()
+    await saveCache(this.cache)
   }
 
   async getBuildId(): Promise<string> {
@@ -1153,8 +1170,15 @@ async function cmdSubmit(
     } else {
       console.log(`⭐ Already solved in ${language} with 5/5 quality! ✨`)
       console.log(`   Stars: ${challengeCache.stars[language]}`)
+      console.log(`   Use --force to resubmit anyway.\n`)
       return
     }
+  }
+
+  if (alreadySolved && force && hasPerfectScore) {
+    console.log(
+      `🔄 Force resubmitting ${language} solution (currently 5/5 quality)...\n`
+    )
   }
 
   // Read solution
