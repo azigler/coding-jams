@@ -5,6 +5,38 @@
 
 ## Projects
 
+### [AdventJS 2025](adventjs/2025/README.md)
+
+> December 2025 (25 days)
+
+![Profile badge](https://i.ibb.co/hJWL1ckM/530284260-d09e41af-ff46-4aec-b5bd-ea0866c2c5d0.png)
+
+A complete set of solutions for all 25 challenges in [AdventJS 2025](https://adventjs.dev/). Each challenge solved in JavaScript, TypeScript, and Python with comprehensive test suites and solution logs. Built a custom harness for automated fetching, testing, and submission with quality score tracking.
+
+Completed all 25 challenges across all three languages (75 total solutions), achieving 5/5 quality scores on all submissions.
+
+- **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/advent-of-code/2025/)
+- **Harness:** [Read the automation harness](https://github.com/azigler/coding-jams/tree/main/adventjs/2025/harness.ts)
+- **Challenge:** [Visit AdventJS](https://adventjs.dev/)
+
+---
+
+### [Advent of Code 2025](advent-of-code/2025/README.md)
+
+> December 2025 (12 days)
+
+![Completed advent calendar](https://i.ibb.co/JWnY69QC/530284137-4581d572-60d4-4e67-9526-93c1049d87d0.png)
+
+Solutions for all 12 days of [Advent of Code 2025](https://adventofcode.com/2025). Each day includes TypeScript solutions with comprehensive test suites, edge case analysis, and detailed solution logs documenting the problem-solving process.
+
+Built a custom harness for automated input fetching, answer submission, and star tracking with rate limiting and caching.
+
+- **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/advent-of-code/2025/)
+- **Harness:** [Read the automation harness](https://github.com/azigler/coding-jams/tree/main/adventjs/2025/harness.ts)
+- **Challenge:** [Visit Advent of Code](https://adventofcode.com/2025)
+
+---
+
 ### [America's Next Top Modeler Hackathon](theory-ventures/antm-hackathon/README.md)
 
 > November 15, 2025 (6 hours)
@@ -19,6 +51,8 @@ Placed 20th out of 100+ participants.
 - **Hackathon:** [Explore the hackathon repository](https://github.com/TheoryVentures/antm)
 - **Blog:** [Read the event announcement](https://theoryvc.com/blog-posts/americas-next-top-modeler)
 - **Hackathon:** [View the ANTM Hackathon by Theory Ventures](https://luma.com/7vg7u3mf?tk=x4Gdem)
+
+---
 
 ### [PartyKit Quiz Game (Coding with Zach)](warp-coding-with-zach/partykit-quiz-game/README.md)
 
