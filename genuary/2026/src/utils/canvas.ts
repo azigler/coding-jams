@@ -2,6 +2,8 @@
  * Canvas utility functions
  */
 
+import type p5 from 'p5';
+
 /**
  * Create a fixed-size canvas that maintains aspect ratio
  * The canvas will be centered and scaled to fit the viewport, but won't resize

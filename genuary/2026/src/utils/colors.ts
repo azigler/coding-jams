@@ -2,6 +2,8 @@
  * Color utility functions
  */
 
+import type p5 from 'p5';
+
 /**
  * Convert HSL to RGB array [r, g, b] (0-255)
  */
@@ -37,7 +39,7 @@ export function hslToRgb(h: number, s: number, l: number): [number, number, numb
 /**
  * Generate a random color with optional hue range
  */
-export function randomColor(p: p5, hueMin = 0, hueMax = 360, satMin = 50, satMax = 100, lightMin = 30, lightMax = 70): p5.Color {
+export function randomColor(p: p5, hueMin = 0, hueMax = 360, satMin = 50, satMax = 100, lightMin = 30, lightMax = 70): import('p5').Color {
   const h = p.random(hueMin, hueMax);
   const s = p.random(satMin, satMax);
   const l = p.random(lightMin, lightMax);

@@ -2,6 +2,8 @@
 
 Daily generative art challenge for January 2026. This project contains 31 days of creative coding prompts, with each day implemented as a modular TypeScript module.
 
+- **Demo:** [Explore all 31 days](https://azigler.github.io/coding-jams/genuary-2026/)
+
 ## What is Genuary?
 
 [Genuary](https://genuary.art/) is an annual, month-long creative coding challenge where artists create generative art daily based on specific prompts. It's a celebration of algorithmic art, creative coding, and the vibrant community of generative artists worldwide.
@@ -62,16 +64,18 @@ genuary/2026/
 ### Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
-2. Start the development server:
+1. Start the development server:
+
 ```bash
 npm run dev
 ```
 
-3. Open your browser to `http://localhost:3000`
+1. Open your browser to `http://localhost:3000`
 
 The app will automatically load today's prompt (if it's January) or Day 1 by default. Use the navigation controls to switch between days.
 

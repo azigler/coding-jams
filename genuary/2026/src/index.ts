@@ -99,8 +99,9 @@ function cleanupContainers(): void {
   // Clean up previous sketch
   if (currentSketch) {
     // Clean up resize listener if it exists
-    if (currentSketch.canvas && (currentSketch.canvas as any)._cleanupResize) {
-      (currentSketch.canvas as any)._cleanupResize();
+    const canvas = (currentSketch as any).canvas as HTMLCanvasElement | undefined;
+    if (canvas && (canvas as any)._cleanupResize) {
+      (canvas as any)._cleanupResize();
     }
     currentSketch.remove();
     currentSketch = null;
@@ -495,7 +496,7 @@ function generateTimestampFilename(day: number): string {
  * Download canvas as image without prompt
  */
 function downloadCanvasImage(sketch: p5, filename: string): void {
-  const canvas = sketch.canvas;
+  const canvas = (sketch as any).canvas as HTMLCanvasElement | undefined;
   if (!canvas) {
     console.error('Canvas not available');
     return;
@@ -583,7 +584,7 @@ function startTimelapseRecording(dayConfig: DayConfig): void {
     return;
   }
   
-  const timelapseBtn = document.getElementById('download-timelapse-btn');
+  const timelapseBtn = document.getElementById('download-timelapse-btn') as HTMLButtonElement | null;
   
   // Update button state
   if (timelapseBtn) {
@@ -611,7 +612,7 @@ function startTimelapseRecording(dayConfig: DayConfig): void {
         console.error('Current sketch is null after reload');
         if (timelapseBtn) {
           timelapseBtn.textContent = '❌ Error';
-          timelapseBtn.disabled = false;
+          (timelapseBtn as HTMLButtonElement).disabled = false;
         }
         return;
       }
@@ -650,12 +651,13 @@ function startTimelapseRecording(dayConfig: DayConfig): void {
           // Small delay to ensure first frame is drawn with correct controls
           setTimeout(() => {
             console.log('Initializing encoder...');
+            const canvas = (currentSketch as any).canvas as HTMLCanvasElement | undefined;
             console.log('Canvas check:', {
-              canvas: currentSketch!.canvas ? 'exists' : 'missing',
+              canvas: canvas ? 'exists' : 'missing',
               width: currentSketch!.width,
               height: currentSketch!.height,
-              canvasWidth: currentSketch!.canvas?.width,
-              canvasHeight: currentSketch!.canvas?.height,
+              canvasWidth: canvas?.width,
+              canvasHeight: canvas?.height,
               controls: (currentSketch as any)._controls
             });
             
@@ -669,9 +671,9 @@ function startTimelapseRecording(dayConfig: DayConfig): void {
             setTimeout(() => {
               if (timelapseBtn) {
                 timelapseBtn.textContent = '🎬 Download Timelapse';
-                timelapseBtn.disabled = false;
+                (timelapseBtn as HTMLButtonElement).disabled = false;
               }
-            }, dayConfig.recording.duration * 1000 + 5000); // Extra time for encoding
+            }, (dayConfig.recording?.duration || 8) * 1000 + 5000); // Extra time for encoding
             } else {
               console.error('❌ Failed to initialize GIF encoder');
               if (timelapseBtn) {
@@ -695,7 +697,7 @@ function startTimelapseRecording(dayConfig: DayConfig): void {
         console.error('❌ Error loading recording module:', error);
         if (timelapseBtn) {
           timelapseBtn.textContent = '❌ Error';
-          timelapseBtn.disabled = false;
+          (timelapseBtn as HTMLButtonElement).disabled = false;
         }
       });
     }, 500);

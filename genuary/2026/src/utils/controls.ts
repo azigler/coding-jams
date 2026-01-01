@@ -149,7 +149,7 @@ export function createControlsContainer(
     slider.type = 'range';
     slider.min = '0';
     slider.max = '100';
-    slider.step = config.step ? (100 / ((config.max - config.min) / config.step)) : '1';
+    slider.step = config.step ? (100 / ((config.max - config.min) / config.step)).toString() : '1';
     slider.value = mapToSliderValue(values[key], config.min, config.max).toString();
     slider.style.cssText = `
       flex: 1;
@@ -420,20 +420,30 @@ export function setControlsProgrammatically(day: number, values: Partial<Control
     if (controlKey && updatedValues[controlKey as keyof ControlState] !== undefined) {
       const config = configs[controlKey];
       const newValue = updatedValues[controlKey as keyof ControlState];
-      const sliderEl = slider as HTMLInputElement;
-      const sliderValue = mapToSliderValue(newValue, config.min, config.max);
-      sliderEl.value = sliderValue.toString();
-      
-      // Trigger input event to update display and save
-      sliderEl.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+      if (newValue !== undefined) {
+        const sliderEl = slider as HTMLInputElement;
+        const sliderValue = mapToSliderValue(newValue, config.min, config.max);
+        sliderEl.value = sliderValue.toString();
+        
+        // Trigger input event to update display and save
+        sliderEl.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+      }
     }
   });
   
+    // Filter out undefined values before saving
+    const validValues: ControlState = {} as ControlState;
+    for (const key in updatedValues) {
+      if (updatedValues[key] !== undefined) {
+        validValues[key] = updatedValues[key]!;
+      }
+    }
+  
     // Save and trigger callback
-    saveControls(day, updatedValues);
+    saveControls(day, validValues);
     console.log(`🔄 Calling update callback...`);
     try {
-      callback(updatedValues);
+      callback(validValues);
       console.log(`✅ Controls updated for day ${day}:`, updatedValues);
     } catch (error) {
       console.error(`❌ Error calling update callback:`, error);
@@ -461,7 +471,7 @@ if (typeof window !== 'undefined') {
   };
   
   // Verify it's on window
-  if (window.setGenuaryControls) {
+  if (typeof window.setGenuaryControls === 'function') {
     console.log('✅ setGenuaryControls successfully exposed on window');
   } else {
     console.error('❌ FAILED to expose setGenuaryControls on window!');

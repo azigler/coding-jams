@@ -7,7 +7,7 @@
 
 ### [Genuary 2026](genuary/2026/README.md)
 
-> January 2026 (31 days)
+> January 1-31, 2026 (31 days)
 
 ![Day 1: One color, one shape](https://i.ibb.co/S7czBC7b/anenome.png)
 
@@ -23,7 +23,7 @@ Built a custom harness for daily creative coding with animation recording, GIF e
 
 ### [AdventJS 2025](adventjs/2025/README.md)
 
-> December 2025 (25 days)
+> December 1–25, 2025 (25 days)
 
 ![Profile badge](https://i.ibb.co/hJWL1ckM/530284260-d09e41af-ff46-4aec-b5bd-ea0866c2c5d0.png)
 
@@ -39,7 +39,7 @@ Completed all 25 challenges across all three languages (75 total solutions), ach
 
 ### [Advent of Code 2025](advent-of-code/2025/README.md)
 
-> December 2025 (12 days)
+> December 1–12, 2025 (12 days)
 
 ![Completed advent calendar](https://i.ibb.co/JWnY69QC/530284137-4581d572-60d4-4e67-9526-93c1049d87d0.png)
 

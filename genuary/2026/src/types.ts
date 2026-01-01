@@ -2,6 +2,11 @@
  * Shared types for Genuary 2026 projects
  */
 
+import type p5 from 'p5';
+
+// Re-export p5 type for use in day files
+export type { p5 };
+
 export interface DayConfig {
   day: number;
   prompt: string;

@@ -6,6 +6,7 @@
  * Recording utilities for capturing animations as GIFs using gif.js
  */
 
+import type p5 from 'p5';
 // @ts-ignore - gif.js might not have types
 import GIF from 'gif.js';
 // @ts-ignore - Vite handles this as a URL
@@ -77,7 +78,7 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
       
       if (blob.size === 0) {
         console.error('❌ GIF blob is empty!');
-        const timelapseBtn = document.getElementById('download-timelapse-btn');
+        const timelapseBtn = document.getElementById('download-timelapse-btn') as HTMLButtonElement | null;
         if (timelapseBtn) {
           timelapseBtn.textContent = '❌ Error: Empty GIF';
           timelapseBtn.disabled = false;
@@ -109,7 +110,7 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
         setTimeout(() => {
           if (timelapseBtn) {
             timelapseBtn.textContent = '🎬 Download Timelapse';
-            timelapseBtn.disabled = false;
+            (timelapseBtn as HTMLButtonElement).disabled = false;
           }
         }, 2000);
       }
