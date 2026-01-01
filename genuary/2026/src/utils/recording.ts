@@ -36,7 +36,7 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
   
   try {
     // Get actual canvas dimensions (not CSS-scaled)
-    const canvas = p.canvas;
+    const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
     if (!canvas) {
       console.error('Canvas not available');
       return null;
@@ -179,7 +179,7 @@ export function captureFrame(p: p5): void {
   
   try {
     // Get canvas and its actual dimensions
-    const canvas = p.canvas;
+    const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
     if (!canvas) {
       console.warn('Canvas not available');
       return;

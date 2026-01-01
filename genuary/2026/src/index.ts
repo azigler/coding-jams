@@ -261,15 +261,16 @@ function loadDay(dayNum: number): void {
         p.windowResized = () => {
           // Don't resize canvas - maintain fixed dimensions
           // Just update display scaling if needed
-          const container = p.canvas.parentElement;
-          if (container && p.canvas) {
+          const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
+          const container = canvas?.parentElement;
+          if (container && canvas) {
             const scale = Math.min(
               container.clientWidth / p.width,
               container.clientHeight / p.height,
               1
             );
-            p.canvas.style.width = `${p.width * scale}px`;
-            p.canvas.style.height = `${p.height * scale}px`;
+            canvas.style.width = `${p.width * scale}px`;
+            canvas.style.height = `${p.height * scale}px`;
           }
           dayConfig.windowResized!(p);
         };
@@ -349,15 +350,16 @@ function loadDay(dayNum: number): void {
         p.windowResized = () => {
           // Don't resize canvas - maintain fixed dimensions
           // Just update display scaling if needed
-          const container = p.canvas.parentElement;
-          if (container && p.canvas) {
+          const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
+          const container = canvas?.parentElement;
+          if (container && canvas) {
             const scale = Math.min(
               container.clientWidth / p.width,
               container.clientHeight / p.height,
               1
             );
-            p.canvas.style.width = `${p.width * scale}px`;
-            p.canvas.style.height = `${p.height * scale}px`;
+            canvas.style.width = `${p.width * scale}px`;
+            canvas.style.height = `${p.height * scale}px`;
           }
           dayConfig.windowResized!(p);
         };

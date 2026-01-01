@@ -19,8 +19,9 @@ export function createCanvas(p: p5, width: number = 1200, height: number = 1200)
   // This is the proper place to set it since p5.js manages the context internally
   
   // Center the canvas in the container
-  const container = p.canvas.parentElement;
-  if (container) {
+  const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
+  const container = canvas?.parentElement;
+  if (container && canvas) {
     container.style.display = 'flex';
     container.style.alignItems = 'center';
     container.style.justifyContent = 'center';
@@ -47,11 +48,11 @@ export function createCanvas(p: p5, width: number = 1200, height: number = 1200)
       );
       
       // Apply scaling
-      p.canvas.style.width = `${displayWidth * scale}px`;
-      p.canvas.style.height = `${displayHeight * scale}px`;
-      p.canvas.style.display = 'block';
-      p.canvas.style.margin = 'auto';
-      p.canvas.style.imageRendering = 'auto'; // Better quality scaling
+      canvas.style.width = `${displayWidth * scale}px`;
+      canvas.style.height = `${displayHeight * scale}px`;
+      canvas.style.display = 'block';
+      canvas.style.margin = 'auto';
+      canvas.style.imageRendering = 'auto'; // Better quality scaling
     };
     
     // Initial scale
@@ -62,7 +63,7 @@ export function createCanvas(p: p5, width: number = 1200, height: number = 1200)
     window.addEventListener('resize', resizeHandler);
     
     // Store cleanup function
-    (p.canvas as any)._cleanupResize = () => {
+    (canvas as any)._cleanupResize = () => {
       window.removeEventListener('resize', resizeHandler);
     };
   }
