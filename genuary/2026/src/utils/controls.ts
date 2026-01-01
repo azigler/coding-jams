@@ -89,15 +89,10 @@ export function createControlsContainer(
     backdrop-filter: blur(10px);
     border-top: 1px solid #333;
     padding: 1rem;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    max-height: 40vh;
     overflow-y: auto;
   `;
 

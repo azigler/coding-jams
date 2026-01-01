@@ -34,22 +34,44 @@ export function createCanvas(p: p5, width: number = 1200, height: number = 1200)
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
       
+      // Detect mobile devices (matches CSS media query breakpoint)
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      
       // Max canvas display size is 800x800
       const maxDisplaySize = 800;
       const displayWidth = Math.min(width, maxDisplaySize);
       const displayHeight = Math.min(height, maxDisplaySize);
       
-      // Calculate scale to fit container while maintaining aspect ratio
-      // Use 95% of available space to ensure no clipping
-      const scale = Math.min(
-        (containerWidth * 0.95) / displayWidth,
-        (containerHeight * 0.95) / displayHeight,
-        1 // Don't scale up, only down
-      );
+      let scale: number;
+      let finalDisplayWidth: number;
+      let finalDisplayHeight: number;
+      
+      if (isMobile) {
+        // On mobile: enforce square aspect ratio (height = width)
+        // Calculate scale based on width only to ensure square display
+        scale = Math.min(
+          (containerWidth * 0.95) / displayWidth,
+          1 // Don't scale up, only down
+        );
+        
+        // Use the width as the base for square dimensions
+        finalDisplayWidth = displayWidth * scale;
+        finalDisplayHeight = finalDisplayWidth; // Enforce square: height = width
+      } else {
+        // On desktop: maintain original aspect ratio
+        scale = Math.min(
+          (containerWidth * 0.95) / displayWidth,
+          (containerHeight * 0.95) / displayHeight,
+          1 // Don't scale up, only down
+        );
+        
+        finalDisplayWidth = displayWidth * scale;
+        finalDisplayHeight = displayHeight * scale;
+      }
       
       // Apply scaling
-      canvas.style.width = `${displayWidth * scale}px`;
-      canvas.style.height = `${displayHeight * scale}px`;
+      canvas.style.width = `${finalDisplayWidth}px`;
+      canvas.style.height = `${finalDisplayHeight}px`;
       canvas.style.display = 'block';
       canvas.style.margin = 'auto';
       canvas.style.imageRendering = 'auto'; // Better quality scaling
@@ -62,9 +84,26 @@ export function createCanvas(p: p5, width: number = 1200, height: number = 1200)
     const resizeHandler = () => updateScale();
     window.addEventListener('resize', resizeHandler);
     
+    // Also listen for media query changes (e.g., when crossing mobile breakpoint)
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    const mediaQueryHandler = () => updateScale();
+    
+    // Modern browsers support addEventListener on MediaQueryList
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', mediaQueryHandler);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(mediaQueryHandler);
+    }
+    
     // Store cleanup function
     (canvas as any)._cleanupResize = () => {
       window.removeEventListener('resize', resizeHandler);
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', mediaQueryHandler);
+      } else {
+        mediaQuery.removeListener(mediaQueryHandler);
+      }
     };
   }
 }

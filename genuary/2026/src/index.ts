@@ -220,14 +220,15 @@ function loadDay(dayNum: number): void {
           }
         );
         
-        // Add controls container to body
-        document.body.appendChild(controlsContainer);
-        currentControlsContainer = controlsContainer;
-        
-        // Update content area margin to account for controls
+        // Add controls container to content area (below canvas), not as fixed overlay
         const contentArea = document.getElementById('content');
         if (contentArea) {
-          contentArea.style.marginBottom = `${controlsContainer.offsetHeight}px`;
+          contentArea.appendChild(controlsContainer);
+          currentControlsContainer = controlsContainer;
+        } else {
+          // Fallback to body if content area not found
+          document.body.appendChild(controlsContainer);
+          currentControlsContainer = controlsContainer;
         }
       }
       
@@ -264,13 +265,33 @@ function loadDay(dayNum: number): void {
           const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
           const container = canvas?.parentElement;
           if (container && canvas) {
-            const scale = Math.min(
-              container.clientWidth / p.width,
-              container.clientHeight / p.height,
-              1
-            );
-            canvas.style.width = `${p.width * scale}px`;
-            canvas.style.height = `${p.height * scale}px`;
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const maxDisplaySize = 800;
+            const displayWidth = Math.min(p.width, maxDisplaySize);
+            const displayHeight = Math.min(p.height, maxDisplaySize);
+            
+            let scale: number;
+            let finalWidth: number;
+            let finalHeight: number;
+            
+            if (isMobile) {
+              // On mobile: enforce square aspect ratio (height = width)
+              scale = Math.min((container.clientWidth * 0.95) / displayWidth, 1);
+              finalWidth = displayWidth * scale;
+              finalHeight = finalWidth; // Square
+            } else {
+              // On desktop: maintain original aspect ratio
+              scale = Math.min(
+                container.clientWidth / p.width,
+                container.clientHeight / p.height,
+                1
+              );
+              finalWidth = p.width * scale;
+              finalHeight = p.height * scale;
+            }
+            
+            canvas.style.width = `${finalWidth}px`;
+            canvas.style.height = `${finalHeight}px`;
           }
           dayConfig.windowResized!(p);
         };
@@ -353,13 +374,33 @@ function loadDay(dayNum: number): void {
           const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
           const container = canvas?.parentElement;
           if (container && canvas) {
-            const scale = Math.min(
-              container.clientWidth / p.width,
-              container.clientHeight / p.height,
-              1
-            );
-            canvas.style.width = `${p.width * scale}px`;
-            canvas.style.height = `${p.height * scale}px`;
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const maxDisplaySize = 800;
+            const displayWidth = Math.min(p.width, maxDisplaySize);
+            const displayHeight = Math.min(p.height, maxDisplaySize);
+            
+            let scale: number;
+            let finalWidth: number;
+            let finalHeight: number;
+            
+            if (isMobile) {
+              // On mobile: enforce square aspect ratio (height = width)
+              scale = Math.min((container.clientWidth * 0.95) / displayWidth, 1);
+              finalWidth = displayWidth * scale;
+              finalHeight = finalWidth; // Square
+            } else {
+              // On desktop: maintain original aspect ratio
+              scale = Math.min(
+                container.clientWidth / p.width,
+                container.clientHeight / p.height,
+                1
+              );
+              finalWidth = p.width * scale;
+              finalHeight = p.height * scale;
+            }
+            
+            canvas.style.width = `${finalWidth}px`;
+            canvas.style.height = `${finalHeight}px`;
           }
           dayConfig.windowResized!(p);
         };

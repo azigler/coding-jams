@@ -20,7 +20,7 @@ const fullHtml = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>azigler/coding-jams</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
   <style>
     body {
       box-sizing: border-box;
@@ -28,17 +28,27 @@ const fullHtml = `<!DOCTYPE html>
       max-width: 980px;
       margin: 0 auto;
       padding: 45px;
+      background-color: #ffffff;
+      color: #24292f;
     }
     @media (max-width: 767px) {
       body {
         padding: 15px;
       }
     }
+    .markdown-body {
+      background-color: #ffffff;
+      color: #24292f;
+    }
     .markdown-body a {
       color: #0969da;
     }
     .markdown-body a:hover {
       text-decoration: underline;
+    }
+    .markdown-body blockquote {
+      color: #57606a;
+      border-left: 0.25em solid #d0d7de;
     }
   </style>
 </head>

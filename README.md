@@ -1,11 +1,10 @@
 # azigler/coding-jams
 
-> [!NOTE]
 > Building in the open, one jam at a time 🍯
 
 ## Projects
 
-### [Genuary 2026](genuary/2026/README.md)
+### [Genuary 2026](https://github.com/azigler/coding-jams/tree/main/genuary/2026/README.md)
 
 > January 1-31, 2026 (31 days)
 
@@ -21,7 +20,7 @@ Built a custom harness for daily creative coding with animation recording, GIF e
 
 ---
 
-### [AdventJS 2025](adventjs/2025/README.md)
+### [AdventJS 2025](https://github.com/azigler/coding-jams/tree/main/adventjs/2025/README.md)
 
 > December 1–25, 2025 (25 days)
 
@@ -37,7 +36,7 @@ Completed all 25 challenges across all three languages (75 total solutions), ach
 
 ---
 
-### [Advent of Code 2025](advent-of-code/2025/README.md)
+### [Advent of Code 2025](https://github.com/azigler/coding-jams/tree/main/advent-of-code/2025/README.md)
 
 > December 1–12, 2025 (12 days)
 
@@ -53,7 +52,7 @@ Built a custom harness for automated input fetching, answer submission, and star
 
 ---
 
-### [America's Next Top Modeler Hackathon](theory-ventures/antm-hackathon/README.md)
+### [America's Next Top Modeler Hackathon](https://github.com/azigler/coding-jams/tree/main/theory-ventures/antm-hackathon/README.md)
 
 > November 15, 2025 (6 hours)
 
@@ -63,14 +62,14 @@ Participants competed to design and optimize context agents that navigate comple
 
 Placed 20th out of 100+ participants.
 
-- **Agent:** [Explore my agent repository](theory-ventures/antm-hackathon/antm-agent/README.md)
+- **Agent:** [Explore my agent repository](https://github.com/azigler/coding-jams/tree/main/theory-ventures/antm-hackathon/antm-agent/README.md)
 - **Hackathon:** [Explore the hackathon repository](https://github.com/TheoryVentures/antm)
 - **Blog:** [Read the event announcement](https://theoryvc.com/blog-posts/americas-next-top-modeler)
 - **Hackathon:** [View the ANTM Hackathon by Theory Ventures](https://luma.com/7vg7u3mf?tk=x4Gdem)
 
 ---
 
-### [PartyKit Quiz Game (Coding with Zach)](warp-coding-with-zach/partykit-quiz-game/README.md)
+### [PartyKit Quiz Game (Coding with Zach)](https://github.com/azigler/coding-jams/tree/main/warp-coding-with-zach/partykit-quiz-game/README.md)
 
 > September 18, 2025 (1 hour)
 
@@ -84,7 +83,7 @@ A multiplayer, real-time quiz game built with PartyKit. Perfect as an icebreaker
 
 ---
 
-### [Marble Tilt (Web Dev Challenge)](codetv/web-dev-challenge/unconventional-interfaces/README.md)
+### [Marble Tilt (Web Dev Challenge)](https://github.com/azigler/coding-jams/tree/main/codetv/web-dev-challenge/unconventional-interfaces/README.md)
 
 > September 3, 2025 (4 hours)
 
@@ -98,7 +97,7 @@ A multiplayer marble game using phone tilt controls as an unconventional interfa
 
 ---
 
-### [Depths (Ludum Dare 57)](ludum-dare/57-depths/README.md)
+### [Depths (Ludum Dare 57)](https://github.com/azigler/coding-jams/tree/main/ludum-dare/57-depths/README.md)
 
 > April 4–7, 2025 (72 hours)
 
