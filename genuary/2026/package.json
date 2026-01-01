@@ -1,0 +1,30 @@
+{
+  "name": "genuary-2026",
+  "version": "1.0.0",
+  "description": "Genuary 2026 - Daily Generative Art Challenge",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "generative-art",
+    "genuary",
+    "creative-coding",
+    "p5.js"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/p5": "^1.7.4",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "ccapture.js": "^1.1.0",
+    "gif.js": "^0.2.0",
+    "p5": "^1.11.0"
+  }
+}

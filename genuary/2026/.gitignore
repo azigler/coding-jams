@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.vite/
+outputs/
+frames/
+temp-frames/
+*.gif
+*.png
+*.jpg

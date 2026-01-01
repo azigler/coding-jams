@@ -5,6 +5,9 @@ on:
     branches: ["main"]
     paths:
       - "ludum-dare/57-depths/**"
+      - "genuary/2026/**"
+      - "README.md"
+      - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -19,9 +22,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ludum-dare/57-depths
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,23 +31,41 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install Dependencies
-        run: bun install
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Build
-        run: bun run build
-
-      - name: List Build Output
+      - name: Build Ludum Dare
+        working-directory: ludum-dare/57-depths
         run: |
-          echo "Contents of dist directory:"
-          ls -la dist/
-          echo "Contents of dist/assets directory:"
-          ls -la dist/assets/
+          bun install
+          bun run build
+
+      - name: Build Genuary
+        working-directory: genuary/2026
+        run: |
+          npm install
+          npm run build
+
+      - name: Create Landing Page
+        run: |
+          node .github/scripts/generate-landing-page.js
+
+      - name: Organize Build Output
+        run: |
+          # Copy ludum-dare build to _site/ludum-dare-57
+          mkdir -p _site/ludum-dare-57
+          cp -r ludum-dare/57-depths/dist/* _site/ludum-dare-57/
+          
+          # Copy genuary build to _site/genuary-2026
+          mkdir -p _site/genuary-2026
+          cp -r genuary/2026/dist/* _site/genuary-2026/
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ludum-dare/57-depths/dist
+          path: _site
           retention-days: 7
 
   deploy:

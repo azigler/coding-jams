@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Genuary 2026 - Daily Generative Art Challenge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #333;
+      z-index: 1000;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    #header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    #header h1 a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    #header h1 a:hover {
+      text-decoration: underline;
+    }
+
+    #header-credit {
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    #header-credit a {
+      color: #e0e0e0;
+      text-decoration: none;
+    }
+
+    #header-credit a:hover {
+      text-decoration: underline;
+    }
+
+    #header-left {
+      flex: 1;
+    }
+
+    #day-navigation {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    #day-navigation select,
+    #day-navigation button {
+      background: #2a2a2a;
+      color: #e0e0e0;
+      border: 1px solid #444;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #day-navigation select:hover,
+    #day-navigation button:hover {
+      background: #3a3a3a;
+    }
+
+    #day-navigation button:active {
+      background: #4a4a4a;
+    }
+
+    #download-buttons button:hover {
+      background: #3a3a3a;
+    }
+
+    #download-buttons button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #day-info {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #333;
+      font-size: 0.9rem;
+    }
+
+    #day-info h2 {
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+    }
+
+    #day-info p {
+      margin: 0.25rem 0;
+      line-height: 1.4;
+    }
+
+    #day-info a {
+      color: #4a9eff;
+      text-decoration: none;
+    }
+
+    #day-info a:hover {
+      text-decoration: underline;
+    }
+
+    #content {
+      margin-top: 120px; /* Reduced since buttons moved to same row */
+      margin-bottom: 0;
+      width: 100%;
+      height: calc(100vh - 120px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: margin-bottom 0.3s ease;
+    }
+
+    #p5-canvas-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    #p5-canvas-container canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    #html-only-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    @media (max-width: 768px) {
+      #header {
+        padding: 0.75rem;
+        flex-direction: column;
+      }
+
+      #header-left {
+        width: 100%;
+      }
+
+      #header-credit {
+        margin-top: 0.5rem;
+        align-self: flex-start;
+      }
+
+      #header h1 {
+        font-size: 1.25rem;
+      }
+
+      #day-info {
+        font-size: 0.8rem;
+      }
+
+      #content {
+        margin-top: 250px;
+        height: calc(100vh - 250px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div id="header-left">
+      <h1><a href="https://genuary.art/" target="_blank" rel="noopener noreferrer">Genuary 2026</a></h1>
+      <div id="day-navigation"></div>
+      <div id="day-info"></div>
+    </div>
+    <div id="header-credit">
+      Generated with ❤️ by <a href="https://github.com/azigler/coding-jams/tree/main/genuary/2026" target="_blank" rel="noopener noreferrer">Zig</a>
+    </div>
+  </div>
+  <div id="content"></div>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

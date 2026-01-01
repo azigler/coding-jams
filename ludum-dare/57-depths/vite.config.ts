@@ -2,7 +2,7 @@ import { defineConfig } from "vite"
 import { resolve } from "path"
 
 export default defineConfig({
-  base: "/coding-jams/",
+  base: "/coding-jams/ludum-dare-57/",
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),

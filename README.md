@@ -5,6 +5,22 @@
 
 ## Projects
 
+### [Genuary 2026](genuary/2026/README.md)
+
+> January 2026 (31 days)
+
+![Day 1: One color, one shape](https://i.ibb.co/S7czBC7b/anenome.png)
+
+Daily generative art challenge for January 2026. This project contains 31 days of creative coding prompts, with each day implemented as a modular TypeScript module using [p5.js](https://p5js.org/).
+
+Built a custom harness for daily creative coding with animation recording, GIF export, and a unified interface for navigating all 31 prompts.
+
+- **Demo:** [Explore all 31 days](https://azigler.github.io/coding-jams/genuary-2026/)
+- **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/genuary/2026)
+- **Challenge:** [Visit Genuary](https://genuary.art/)
+
+---
+
 ### [AdventJS 2025](adventjs/2025/README.md)
 
 > December 2025 (25 days)
@@ -90,6 +106,6 @@ A multiplayer marble game using phone tilt controls as an unconventional interfa
 
 A game about navigating deep folder structures under time pressure. Players take on the role of an office worker who must find a specific file in a chaotic company server within a strict time limit.
 
-- **Demo:** [Play the latest version](https://azigler.github.io/coding-jams)
+- **Demo:** [Play the latest version](https://azigler.github.io/coding-jams/ludum-dare-57/)
 - **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/ludum-dare/57-depths)
 - **Entry:** [View on LDJam](https://ldjam.com/events/ludum-dare/57/folder-depth)
