@@ -47,7 +47,7 @@ Solutions for all 12 days of [Advent of Code 2025](https://adventofcode.com/2025
 Built a custom harness for automated input fetching, answer submission, and star tracking with rate limiting and caching.
 
 - **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/advent-of-code/2025/)
-- **Harness:** [Read the automation harness](https://github.com/azigler/coding-jams/tree/main/adventjs/2025/harness.ts)
+- **Harness:** [Read the automation harness](https://github.com/azigler/coding-jams/tree/main/advent-of-code/2025/harness.ts)
 - **Challenge:** [Visit Advent of Code](https://adventofcode.com/2025)
 
 ---
@@ -97,7 +97,7 @@ A multiplayer marble game using phone tilt controls as an unconventional interfa
 
 ---
 
-### [Depths (Ludum Dare 57)](https://github.com/azigler/coding-jams/tree/main/ludum-dare/57-depths/README.md)
+### [Depths (Ludum Dare 57)](ludum-dare/57-depths/README.md)
 
 > April 4–7, 2025 (72 hours)
 
