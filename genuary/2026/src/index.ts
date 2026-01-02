@@ -199,6 +199,9 @@ function loadDay(dayNum: number): void {
         // Set controls on p5 instance BEFORE setup runs
         (p as any)._controls = currentControls;
         
+        // Get Claude's Choice function if available
+        const getClaudesChoice = dayModule.getClaudesChoice;
+        
         // Create controls UI
         const controlsContainer = createControlsContainer(
           dayNum,
@@ -206,18 +209,25 @@ function loadDay(dayNum: number): void {
           (values: ControlState) => {
             // Update controls on p5 instance
             (p as any)._controls = values;
-            // Reset triangle data to regenerate with new count
-            const prevCount = currentControls.numTriangles || defaultControls.numTriangles || 120;
-            if (values.numTriangles !== prevCount) {
+            // Reset data to regenerate with new count (works for both triangles and balls)
+            const prevCount = currentControls.numTriangles || currentControls.numBalls || defaultControls.numTriangles || defaultControls.numBalls || 120;
+            if (values.numTriangles !== prevCount || values.numBalls !== prevCount) {
               (p as any)._triangleData = null;
               (p as any)._lastTriangleCount = null;
+              (p as any)._balls = null;
+              (p as any)._lastBallCount = null;
+            }
+            // Reset color mutation data if changed
+            if (values.colorMutation !== currentControls.colorMutation) {
+              (p as any)._lastColorMutation = null;
             }
             currentControls = values;
             // Redraw
             if (p.isLooping()) {
               p.redraw();
             }
-          }
+          },
+          getClaudesChoice
         );
         
         // Add controls container to content area (below canvas), not as fixed overlay

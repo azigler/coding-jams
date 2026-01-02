@@ -272,6 +272,15 @@ const config: DayConfig = {
   },
 }
 
+// Claude's Choice - beautiful settings for day 1
+export function getClaudesChoice(): Partial<ControlState> {
+  return {
+    numTriangles: 220,
+    orbitVelocity: 0.20,
+    rotationVelocity: 0.50,
+  }
+}
+
 // Export control configs for use in index.ts
 export { controlConfigs, defaultControls }
 

@@ -77,7 +77,8 @@ const controlConfigsStore: Map<number, { configs: { [key: string]: ControlConfig
 export function createControlsContainer(
   day: number,
   controls: { [key: string]: ControlConfig },
-  onUpdate: (values: ControlState) => void
+  onUpdate: (values: ControlState) => void,
+  getClaudesChoice?: () => Partial<ControlState>
 ): HTMLElement {
   // Store configs and callback for programmatic access
   controlConfigsStore.set(day, { configs: controls, callback: onUpdate });
@@ -282,11 +283,19 @@ export function createControlsContainer(
   });
   claudeBtn.addEventListener('click', () => {
     // Apply Claude's recommended settings
-    const claudesChoice: Partial<ControlState> = {
-      numTriangles: 220,
-      orbitVelocity: 0.20,
-      rotationVelocity: 0.50,
-    };
+    let claudesChoice: Partial<ControlState>;
+    
+    if (getClaudesChoice) {
+      // Use day-specific Claude's Choice if provided
+      claudesChoice = getClaudesChoice();
+    } else {
+      // Fallback to day 1 defaults (for backwards compatibility)
+      claudesChoice = {
+        numTriangles: 220,
+        orbitVelocity: 0.20,
+        rotationVelocity: 0.50,
+      };
+    }
     
     // Use the programmatic API
     setControlsProgrammatically(day, claudesChoice);
@@ -335,6 +344,17 @@ function mapFromSliderValue(sliderValue: number, min: number, max: number): numb
  * Format a value for display
  */
 function formatValue(value: number, config: ControlConfig): string {
+  // Special handling for Color Style (colorMutation)
+  if (config.label === "Color Style") {
+    if (value > 0.05) {
+      return `Pastel ${value.toFixed(2)}`;
+    } else if (value < -0.05) {
+      return `Glitchy ${Math.abs(value).toFixed(2)}`;
+    } else {
+      return "Normal";
+    }
+  }
+  
   // If step is defined and is an integer step, show as integer
   if (config.step && config.step >= 1 && Number.isInteger(value)) {
     return Math.round(value).toString();
