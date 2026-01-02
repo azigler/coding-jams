@@ -1,4 +1,4 @@
-import type { DayConfig } from "../types"
+import type { DayConfig, p5 } from "../types"
 import { createCanvas } from "../utils/canvas"
 import type { ControlConfig, ControlState } from "../utils/controls"
 
@@ -9,7 +9,7 @@ interface Ball {
   vx: number
   vy: number
   baseY: number // Ground level for this ball
-  color: p5.Color
+  color: import('p5').Color
   squashAmount: number // Current squash/stretch amount
   rotation: number
   trail: Array<{ x: number; y: number; alpha: number }>
