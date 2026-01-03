@@ -210,16 +210,31 @@ function loadDay(dayNum: number): void {
             // Update controls on p5 instance
             (p as any)._controls = values;
             // Reset data to regenerate with new count (works for both triangles and balls)
-            const prevCount = currentControls.numTriangles || currentControls.numBalls || defaultControls.numTriangles || defaultControls.numBalls || 120;
-            if (values.numTriangles !== prevCount || values.numBalls !== prevCount) {
+            const prevCount = currentControls.numTriangles || currentControls.numBalls || currentControls.numParticles || defaultControls.numTriangles || defaultControls.numBalls || defaultControls.numParticles || 120;
+            if (values.numTriangles !== prevCount || values.numBalls !== prevCount || values.numParticles !== prevCount) {
               (p as any)._triangleData = null;
               (p as any)._lastTriangleCount = null;
               (p as any)._balls = null;
               (p as any)._lastBallCount = null;
+              (p as any)._particles = null;
+              (p as any)._lastParticleCount = null;
             }
             // Reset color mutation data if changed
             if (values.colorMutation !== currentControls.colorMutation) {
               (p as any)._lastColorMutation = null;
+            }
+            // Reset particle control tracking if changed
+            if (values.spiralTightness !== currentControls.spiralTightness || 
+                values.colorSpread !== currentControls.colorSpread) {
+              (p as any)._lastSpiralTightness = null;
+              (p as any)._lastColorSpread = null;
+            }
+            // Reset mode-specific data when mode changes
+            if (values.mode !== currentControls.mode) {
+              (p as any)._particles = null;
+              (p as any)._lastParticleCount = null;
+              (p as any)._waveSources = null;
+              (p as any)._lastWaveCount = null;
             }
             currentControls = values;
             // Redraw

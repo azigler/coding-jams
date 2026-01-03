@@ -355,6 +355,11 @@ function formatValue(value: number, config: ControlConfig): string {
     }
   }
   
+  // Special handling for Mode toggle
+  if (config.label === "Mode") {
+    return value === 0 ? "Spiral" : "Wave";
+  }
+  
   // If step is defined and is an integer step, show as integer
   if (config.step && config.step >= 1 && Number.isInteger(value)) {
     return Math.round(value).toString();
