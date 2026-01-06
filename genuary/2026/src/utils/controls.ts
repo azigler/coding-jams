@@ -262,9 +262,9 @@ export function createControlsContainer(
     onUpdate(values);
   });
 
-  // Add Claude's Choice button
+  // Add GPT-5.2's Choice button
   const claudeBtn = document.createElement('button');
-  claudeBtn.textContent = "🎨 Claude's Choice";
+  claudeBtn.textContent = "🤖 GPT-5.2's Choice";
   claudeBtn.style.cssText = `
     padding: 0.5rem 1rem;
     background: #4a9eff;
@@ -282,11 +282,11 @@ export function createControlsContainer(
     claudeBtn.style.background = '#4a9eff';
   });
   claudeBtn.addEventListener('click', () => {
-    // Apply Claude's recommended settings
+    // Apply recommended settings
     let claudesChoice: Partial<ControlState>;
     
     if (getClaudesChoice) {
-      // Use day-specific Claude's Choice if provided
+      // Use day-specific choice if provided
       claudesChoice = getClaudesChoice();
     } else {
       // Fallback to day 1 defaults (for backwards compatibility)

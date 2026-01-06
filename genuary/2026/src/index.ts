@@ -70,6 +70,17 @@ let currentDay: number = 1;
 let currentControlsContainer: HTMLElement | null = null;
 
 /**
+ * Keep CSS in sync with actual fixed header height.
+ * Fixes canvas being clipped under the header when day-info wraps.
+ */
+function syncHeaderHeight(): void {
+  const header = document.getElementById('header');
+  if (!header) return;
+  const h = Math.ceil(header.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--header-height', `${h}px`);
+}
+
+/**
  * Get day number from URL hash or default to current day
  */
 function getDayFromURL(): number {
@@ -543,6 +554,9 @@ function updateDayInfo(dayConfig: DayConfig): void {
     
     // Set up download button handlers
     setupDownloadButtons(dayConfig);
+
+    // Header height can change due to wrapping; resync layout
+    syncHeaderHeight();
   }
 }
 
@@ -785,6 +799,16 @@ function init(): void {
 
   // Load initial day
   loadDay(dayNum);
+
+  // Keep content offset accurate as header content changes
+  syncHeaderHeight();
+  const header = document.getElementById('header');
+  if (header && 'ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => syncHeaderHeight());
+    ro.observe(header);
+  } else {
+    window.addEventListener('resize', () => syncHeaderHeight());
+  }
 
   // Handle hash changes
   window.addEventListener('hashchange', () => {
