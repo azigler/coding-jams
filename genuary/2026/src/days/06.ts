@@ -5,171 +5,552 @@ import { createCanvas } from "../utils/canvas"
 // TYPES
 // ============================================================================
 
-interface LedCell {
-  gx: number
-  gy: number
+type Vec2 = { x: number; y: number }
+
+interface Segment {
+  a: Vec2
+  b: Vec2
+  width: number
+  startDist: number
+  endDist: number
+  kind: "trace" | "resistor"
+  meta?: {
+    resistorName?: string
+  }
+}
+
+interface Via {
   x: number
   y: number
-  seed: number
-  hue: number
-  charge: number // persistent brightness (for afterglow)
+  outer: number
+  hole: number
 }
 
-interface Trace {
-  points: Array<{ x: number; y: number }>
-  hue: number
-  seed: number
+interface Pad {
+  x: number
+  y: number
+  w: number
+  h: number
+  hole?: number
+  round: number
 }
 
-interface TraceSampler {
-  points: Array<{ x: number; y: number }>
-  lens: number[]
-  totalLen: number
-}
-
-interface Packet {
-  traceIdx: number
-  dist: number
-  speed: number // px/sec
-  hue: number
-  energy: number
-  driftX: number
-  driftY: number
-  kind: "charge" | "spore"
-  age: number
+interface Resistor {
+  name: string
+  x: number
+  y: number
+  length: number
+  height: number
+  pad: number
+  orientation: "h"
+  inDist: number
+  outDist: number
 }
 
 // ============================================================================
 // SCENE GENERATION
 // ============================================================================
 
-function randomInt(p: p5, min: number, max: number): number {
-  return Math.floor(p.random(min, max + 1))
-}
-
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))
 }
 
-function generateTraces(
-  p: p5,
-  cols: number,
-  rows: number,
-  cell: number,
-  count: number
-): Trace[] {
-  const traces: Trace[] = []
-  const dirs = [
-    { x: 1, y: 0 },
-    { x: -1, y: 0 },
-    { x: 0, y: 1 },
-    { x: 0, y: -1 },
-  ]
+function dist(a: Vec2, b: Vec2): number {
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  return Math.sqrt(dx * dx + dy * dy)
+}
 
-  for (let i = 0; i < count; i++) {
-    let gx = randomInt(p, 2, cols - 3)
-    let gy = randomInt(p, 2, rows - 3)
-    const steps = randomInt(p, 10, 26)
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t
+}
 
-    const points: Array<{ x: number; y: number }> = []
-    points.push({ x: (gx + 0.5) * cell, y: (gy + 0.5) * cell })
+function vLerp(a: Vec2, b: Vec2, t: number): Vec2 {
+  return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) }
+}
 
-    let lastDir = randomInt(p, 0, dirs.length - 1)
-    for (let s = 0; s < steps; s++) {
-      // Bias to keep going straight, like PCB traces
-      const dirIdx =
-        p.random() < 0.72 ? lastDir : randomInt(p, 0, dirs.length - 1)
-      lastDir = dirIdx
-      const d = dirs[dirIdx]
+function keyOf(p: Vec2): string {
+  return `${Math.round(p.x)},${Math.round(p.y)}`
+}
 
-      gx = Math.max(1, Math.min(cols - 2, gx + d.x))
-      gy = Math.max(1, Math.min(rows - 2, gy + d.y))
+function snap(v: number, unit: number): number {
+  return Math.round(v / unit) * unit
+}
 
-      // Occasionally step twice to create longer segments
-      if (p.random() < 0.22) {
-        gx = Math.max(1, Math.min(cols - 2, gx + d.x))
-        gy = Math.max(1, Math.min(rows - 2, gy + d.y))
-      }
+function snapV(v: Vec2, unit: number): Vec2 {
+  return { x: snap(v.x, unit), y: snap(v.y, unit) }
+}
 
-      points.push({ x: (gx + 0.5) * cell, y: (gy + 0.5) * cell })
-    }
+function splitManhattan(points: Vec2[]): Array<{ a: Vec2; b: Vec2 }> {
+  const out: Array<{ a: Vec2; b: Vec2 }> = []
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]
+    const b = points[i]
+    if (a.x === b.x && a.y === b.y) continue
+    out.push({ a, b })
+  }
+  return out
+}
 
-    traces.push({
-      points,
-      hue: (p.random(0, 1) * 360 + i * 7) % 360,
-      seed: p.random(0, 1),
+function addPath(
+  segs: Segment[],
+  distMap: Map<string, number>,
+  points: Vec2[],
+  width: number,
+  kind: Segment["kind"],
+  meta?: Segment["meta"]
+): void {
+  const parts = splitManhattan(points)
+  for (const part of parts) {
+    const k = keyOf(part.a)
+    const startDist = distMap.get(k) ?? 0
+    const len = dist(part.a, part.b)
+    const endDist = startDist + len
+    segs.push({ a: part.a, b: part.b, width, startDist, endDist, kind, meta })
+    distMap.set(keyOf(part.b), endDist)
+  }
+}
+
+function buildPCB(p: p5): {
+  board: { x: number; y: number; w: number; h: number; r: number }
+  unit: number
+  segments: Segment[]
+  vias: Via[]
+  pads: Pad[]
+  resistors: Resistor[]
+  totalLen: number
+  sourceDist: number
+} {
+  // Pixel grid for that “thin-but-digital” circuit look
+  const unit = 4
+
+  const boardW = 800
+  const boardH = 780
+  const board = {
+    x: p.width / 2,
+    y: p.height / 2 - 20,
+    w: boardW,
+    h: boardH,
+    r: 26,
+  }
+
+  const left = board.x - board.w / 2
+  const top = board.y - board.h / 2
+  const right = board.x + board.w / 2
+  const bottom = board.y + board.h / 2
+
+  // Coordinates (snapped)
+  const src = snapV({ x: left + 50, y: top + 160 }, unit) // VCC pad
+  const hub = snapV({ x: left + 330, y: top + 210 }, unit)
+  const hub2 = snapV({ x: left + 440, y: top + 340 }, unit) // branching “bus”
+
+  // Resistors (realistic-ish placement)
+  const resistors = [
+    { name: "R1", x: right - 160, y: top + 140, length: 90, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
+    { name: "R2", x: right - 210, y: top + 290, length: 100, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
+    { name: "R3", x: right - 170, y: top + 460, length: 110, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
+    { name: "R4", x: left + 520, y: bottom - 160, length: 100, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
+  ].map(
+    (r) =>
+      ({
+        ...r,
+        orientation: "h" as const,
+        x: snap(r.x, unit),
+        y: snap(r.y, unit),
+      }) satisfies Resistor
+  )
+
+  // Pads: connector + resistor pads
+  const pads: Pad[] = []
+
+  // 3-pin connector (power)
+  for (let i = 0; i < 3; i++) {
+    const py = snap(top + 120 + i * 36, unit)
+    pads.push({
+      x: snap(left + 34, unit),
+      y: py,
+      w: snap(22, unit),
+      h: snap(30, unit),
+      hole: 8,
+      round: 6,
     })
   }
 
-  return traces
-}
-
-function buildTraceSamplers(traces: Trace[]): TraceSampler[] {
-  return traces.map((t) => {
-    const lens: number[] = []
-    let total = 0
-    for (let i = 1; i < t.points.length; i++) {
-      const a = t.points[i - 1]
-      const b = t.points[i]
-      const dx = b.x - a.x
-      const dy = b.y - a.y
-      const len = Math.sqrt(dx * dx + dy * dy)
-      lens.push(len)
-      total += len
-    }
-    return { points: t.points, lens, totalLen: total }
-  })
-}
-
-function sampleTrace(
-  sampler: TraceSampler,
-  dist: number
-): { x: number; y: number; dx: number; dy: number } {
-  const total = sampler.totalLen
-  if (total <= 0 || sampler.points.length < 2) {
-    const p0 = sampler.points[0] || { x: 0, y: 0 }
-    return { x: p0.x, y: p0.y, dx: 1, dy: 0 }
+  // Resistor pads
+  for (const r of resistors) {
+    pads.push({
+      x: snap(r.x - r.length / 2 - r.pad / 2 - 6, unit),
+      y: r.y,
+      w: snap(r.pad + 6, unit),
+      h: snap(r.pad, unit),
+      hole: 7,
+      round: 7,
+    })
+    pads.push({
+      x: snap(r.x + r.length / 2 + r.pad / 2 + 6, unit),
+      y: r.y,
+      w: snap(r.pad + 6, unit),
+      h: snap(r.pad, unit),
+      hole: 7,
+      round: 7,
+    })
   }
 
-  let d = ((dist % total) + total) % total
-  for (let i = 0; i < sampler.lens.length; i++) {
-    const segLen = sampler.lens[i] || 0
-    if (d <= segLen || i === sampler.lens.length - 1) {
-      const a = sampler.points[i]
-      const b = sampler.points[i + 1]
-      const t = segLen > 0 ? d / segLen : 0
-      const x = a.x + (b.x - a.x) * t
-      const y = a.y + (b.y - a.y) * t
-      const dx = b.x - a.x
-      const dy = b.y - a.y
-      const mag = Math.sqrt(dx * dx + dy * dy) || 1
-      return { x, y, dx: dx / mag, dy: dy / mag }
-    }
-    d -= segLen
+  // Vias sprinkled for realism (and to hint at layers)
+  const vias: Via[] = []
+  const viaPts: Vec2[] = [
+    { x: left + 220, y: top + 360 },
+    { x: left + 520, y: top + 120 },
+    { x: left + 600, y: top + 560 },
+    { x: left + 160, y: top + 560 },
+    { x: left + 420, y: top + 560 },
+    { x: right - 80, y: top + 380 },
+    { x: right - 80, y: top + 520 },
+  ].map((pt) => snapV(pt, unit))
+
+  for (const pt of viaPts) {
+    vias.push({ x: pt.x, y: pt.y, outer: 14, hole: 6 })
   }
 
-  const last = sampler.points[sampler.points.length - 1]
-  return { x: last.x, y: last.y, dx: 1, dy: 0 }
-}
+  // Segments (tree from source -> hub -> branches -> resistors)
+  const segments: Segment[] = []
+  const distMap = new Map<string, number>()
+  distMap.set(keyOf(src), 0)
 
-function spawnPacket(p: p5, samplers: TraceSampler[], kind: Packet["kind"]): Packet {
-  const traceIdx = Math.floor(p.random(0, Math.max(1, samplers.length)))
-  const sampler = samplers[traceIdx]
-  const dist = p.random(0, Math.max(1, sampler.totalLen))
-  const baseHue = (p.random(0, 1) * 360 + traceIdx * 9.0) % 360
-  const hue = kind === "charge" ? baseHue : 150 + p.random(-20, 20)
+  const traceW = 6
+
+  // Main trunk
+  addPath(
+    segments,
+    distMap,
+    [
+      src,
+      snapV({ x: left + 120, y: src.y }, unit),
+      snapV({ x: left + 120, y: top + 210 }, unit),
+      hub,
+      snapV({ x: hub2.x, y: hub.y }, unit),
+      hub2,
+    ],
+    traceW,
+    "trace"
+  )
+
+  // Branches to resistors (into left pads)
+  const resistorLeftPads = resistors.map((r) =>
+    snapV({ x: r.x - r.length / 2 - r.pad - 14, y: r.y }, unit)
+  )
+
+  const branchStarts: Vec2[] = [
+    hub2,
+    snapV({ x: hub2.x, y: hub2.y + 60 }, unit),
+    snapV({ x: hub2.x, y: hub2.y + 140 }, unit),
+    snapV({ x: hub2.x - 80, y: hub2.y + 240 }, unit),
+  ]
+
+  // Ensure dist exists at intermediate branch nodes
+  for (const bs of branchStarts) {
+    const k = keyOf(bs)
+    if (!distMap.has(k)) {
+      // Connect from hub2 to branch start so it’s part of the routed tree
+      addPath(segments, distMap, [hub2, bs], traceW, "trace")
+    }
+  }
+
+  for (let i = 0; i < resistors.length; i++) {
+    const r = resistors[i]
+    const start = branchStarts[i] || hub2
+    const leftPad = resistorLeftPads[i]
+    // Manhattan route with a little jog
+    const midX = snap(lerp(start.x, leftPad.x, 0.55), unit)
+    addPath(
+      segments,
+      distMap,
+      [start, snapV({ x: midX, y: start.y }, unit), snapV({ x: midX, y: leftPad.y }, unit), leftPad],
+      traceW,
+      "trace"
+    )
+
+    // Resistor body acts like a component segment (slower “dump”)
+    const inK = keyOf(leftPad)
+    const inDist = distMap.get(inK) ?? 0
+    const bodyA = snapV({ x: r.x - r.length / 2, y: r.y }, unit)
+    const bodyB = snapV({ x: r.x + r.length / 2, y: r.y }, unit)
+
+    // Connect pad -> body start (tiny lead)
+    addPath(segments, distMap, [leftPad, bodyA], traceW, "trace")
+
+    // Component segment
+    distMap.set(keyOf(bodyA), distMap.get(keyOf(bodyA)) ?? inDist)
+    addPath(
+      segments,
+      distMap,
+      [bodyA, bodyB],
+      5,
+      "resistor",
+      { resistorName: r.name }
+    )
+    const outDist = distMap.get(keyOf(bodyB)) ?? inDist + r.length
+    r.inDist = inDist
+    r.outDist = outDist
+  }
+
+  const totalLen = segments.reduce((m, s) => Math.max(m, s.endDist), 0)
 
   return {
-    traceIdx,
-    dist,
-    speed: kind === "charge" ? p.random(120, 280) : p.random(35, 90),
-    hue,
-    energy: kind === "charge" ? p.random(0.75, 1.15) : p.random(0.35, 0.75),
-    driftX: 0,
-    driftY: 0,
-    kind,
-    age: 0,
+    board,
+    unit,
+    segments,
+    vias,
+    pads,
+    resistors,
+    totalLen,
+    sourceDist: 0,
   }
+}
+
+// ============================================================================
+// DRAWING
+// ============================================================================
+
+function drawBoardBase(p: p5, board: { x: number; y: number; w: number; h: number; r: number }, timeSec: number): void {
+  const { x, y, w, h, r } = board
+
+  // Shadow
+  p.noStroke()
+  p.fill(0, 0, 0, 0.35)
+  p.rect(x + 10, y + 12, w, h, r + 4)
+
+  // Solder mask: deep PCB green with subtle gradient
+  for (let i = 0; i < 6; i++) {
+    const t = i / 5
+    const ww = w - t * 10
+    const hh = h - t * 10
+    p.fill(135, 70, 18 + (1 - t) * 8, 1)
+    p.rect(x, y, ww, hh, r)
+  }
+
+  // Glossy “wipe” highlight
+  p.fill(140, 55, 55, 0.05)
+  p.push()
+  p.translate(x, y)
+  p.rotate(-0.5)
+  p.rect(0, -h * 0.2 + Math.sin(timeSec * 0.3) * 6, w * 1.2, h * 0.18, 40)
+  p.pop()
+
+  // Micro-noise speckle
+  for (let i = 0; i < 900; i++) {
+    const px = x - w / 2 + Math.random() * w
+    const py = y - h / 2 + Math.random() * h
+    p.fill(120, 25, 80, Math.random() * 0.03)
+    p.rect(px, py, 2, 2)
+  }
+
+  // Vignette
+  p.fill(0, 0, 0, 0.22)
+  p.rect(x, y, w + 40, h + 40, r + 8)
+}
+
+function drawPixelLine(p: p5, a: Vec2, b: Vec2, unit: number, width: number, hue: number, sat: number, bri: number, alpha: number): void {
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  const steps = Math.max(1, Math.floor((Math.abs(dx) + Math.abs(dy)) / unit))
+  const half = Math.max(unit, width) / 2
+
+  p.noStroke()
+  p.fill(hue, sat, bri, alpha)
+
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps
+    const x = snap(lerp(a.x, b.x, t), unit)
+    const y = snap(lerp(a.y, b.y, t), unit)
+    p.rect(x, y, width + half, width + half, width * 0.35)
+  }
+}
+
+function drawCopperTrace(p: p5, seg: Segment, unit: number): void {
+  // Copper under solder mask: render as raised green “channels” with highlights
+  const baseHue = 140
+  const baseSat = 60
+  const baseBri = 24
+
+  // Shadow
+  drawPixelLine(p, seg.a, seg.b, unit, seg.width + 3, baseHue, baseSat, 8, 0.22)
+  // Main
+  drawPixelLine(p, seg.a, seg.b, unit, seg.width, baseHue, baseSat, baseBri, 0.9)
+  // Highlight edge (slight offset)
+  const off: Vec2 =
+    seg.a.y === seg.b.y
+      ? { x: 0, y: -unit * 0.5 }
+      : { x: -unit * 0.5, y: 0 }
+  drawPixelLine(
+    p,
+    { x: seg.a.x + off.x, y: seg.a.y + off.y },
+    { x: seg.b.x + off.x, y: seg.b.y + off.y },
+    unit,
+    Math.max(2, seg.width - 2),
+    140,
+    45,
+    38,
+    0.28
+  )
+}
+
+function drawPad(p: p5, pad: Pad): void {
+  // Gold ENIG pad
+  p.noStroke()
+  p.fill(45, 65, 85, 1)
+  p.rect(pad.x, pad.y, pad.w, pad.h, pad.round)
+  p.fill(45, 70, 65, 1)
+  p.rect(pad.x, pad.y, pad.w - 6, pad.h - 6, pad.round)
+
+  if (pad.hole) {
+    p.fill(0, 0, 10, 1)
+    p.circle(pad.x, pad.y, pad.hole)
+    p.fill(0, 0, 0, 0.25)
+    p.circle(pad.x + 1.5, pad.y + 1.5, pad.hole + 2)
+  }
+}
+
+function drawVia(p: p5, via: Via): void {
+  p.noStroke()
+  p.fill(45, 60, 78, 1)
+  p.circle(via.x, via.y, via.outer)
+  p.fill(45, 65, 62, 1)
+  p.circle(via.x, via.y, via.outer - 4)
+  p.fill(0, 0, 10, 1)
+  p.circle(via.x, via.y, via.hole)
+}
+
+function drawResistor(p: p5, r: Resistor): void {
+  // Pads are separate; draw body + silk label
+  const bodyW = r.length
+  const bodyH = r.height
+
+  // Body shadow
+  p.noStroke()
+  p.fill(0, 0, 0, 0.25)
+  p.rect(r.x + 2, r.y + 2, bodyW, bodyH, 6)
+
+  // Body
+  p.fill(35, 40, 88, 1) // warm ceramic
+  p.rect(r.x, r.y, bodyW, bodyH, 6)
+
+  // Color bands
+  const bands = [
+    { c: [220, 70, 55] as [number, number, number], x: -bodyW * 0.22 },
+    { c: [45, 75, 55] as [number, number, number], x: -bodyW * 0.05 },
+    { c: [200, 65, 45] as [number, number, number], x: bodyW * 0.10 },
+    { c: [50, 30, 75] as [number, number, number], x: bodyW * 0.28 },
+  ]
+  for (const b of bands) {
+    p.fill(b.c[0], b.c[1], b.c[2], 0.9)
+    p.rect(r.x + b.x, r.y, 10, bodyH - 6, 3)
+  }
+
+  // Silkscreen label
+  p.fill(0, 0, 96, 0.75)
+  p.textAlign(p.CENTER, p.CENTER)
+  p.textSize(14)
+  p.text(r.name, r.x, r.y - 18)
+}
+
+function drawSilk(p: p5, board: { x: number; y: number; w: number; h: number }, unit: number): void {
+  p.noStroke()
+  p.fill(0, 0, 96, 0.22)
+
+  // Fiducials / alignment marks
+  const left = board.x - board.w / 2
+  const top = board.y - board.h / 2
+  const right = board.x + board.w / 2
+  const bottom = board.y + board.h / 2
+
+  const pts: Vec2[] = [
+    { x: left + 60, y: top + 60 },
+    { x: right - 60, y: top + 60 },
+    { x: right - 60, y: bottom - 60 },
+  ].map((pt) => snapV(pt, unit))
+
+  for (const pt of pts) {
+    p.circle(pt.x, pt.y, 10)
+    p.fill(0, 0, 96, 0.16)
+    p.circle(pt.x, pt.y, 18)
+    p.fill(0, 0, 96, 0.22)
+  }
+}
+
+function pulseIntensityOnSegment(seg: Segment, front: number, tail: number): { a: number; b: number; intensity: number } | null {
+  // Returns normalized segment portion [a,b] (0..1) that is “lit” by the moving front.
+  const len = seg.endDist - seg.startDist
+  if (len <= 0) return null
+
+  const start = front - tail
+  const end = front
+  const s0 = seg.startDist
+  const s1 = seg.endDist
+
+  if (end <= s0 || start >= s1) return null
+
+  const litStart = Math.max(s0, start)
+  const litEnd = Math.min(s1, end)
+  const a = (litStart - s0) / len
+  const b = (litEnd - s0) / len
+  const intensity = clamp((litEnd - litStart) / tail, 0.15, 1.0)
+  return { a, b, intensity }
+}
+
+function drawElectricOverlay(
+  p: p5,
+  seg: Segment,
+  unit: number,
+  front: number,
+  tail: number,
+  globalOn: boolean,
+  afterglow: number,
+  timeSec: number
+): void {
+  const lit = pulseIntensityOnSegment(seg, front, tail)
+  const isActive = globalOn && lit
+  const baseGlow = afterglow * 0.22
+
+  const cobaltHue = 215
+  const cobaltSat = 85
+  const cobaltBri = 95
+
+  // Off-state afterglow along whole segment
+  if (!globalOn && baseGlow > 0.01) {
+    const a = seg.a
+    const b = seg.b
+    drawPixelLine(p, a, b, unit, seg.width + 6, cobaltHue, cobaltSat, cobaltBri, baseGlow * 0.12)
+    drawPixelLine(p, a, b, unit, seg.width + 2, cobaltHue, cobaltSat, cobaltBri, baseGlow * 0.18)
+  }
+
+  if (!isActive) return
+
+  // Draw only the lit portion
+  const t0 = lit!.a
+  const t1 = lit!.b
+  const a = vLerp(seg.a, seg.b, t0)
+  const b = vLerp(seg.a, seg.b, t1)
+
+  const jitter = (p.noise(timeSec * 7.0, seg.startDist * 0.003) - 0.5) * unit * 0.8
+  const aa = snapV({ x: a.x + (seg.a.y === seg.b.y ? 0 : jitter), y: a.y + (seg.a.y === seg.b.y ? jitter : 0) }, unit)
+  const bb = snapV({ x: b.x + (seg.a.y === seg.b.y ? 0 : jitter), y: b.y + (seg.a.y === seg.b.y ? jitter : 0) }, unit)
+
+  const coreW = seg.kind === "resistor" ? Math.max(2, seg.width - 3) : seg.width
+  const glowW = seg.width + 10
+  const i = lit!.intensity
+
+  // Outer glow
+  drawPixelLine(p, aa, bb, unit, glowW, cobaltHue, cobaltSat, cobaltBri, 0.10 * i)
+  drawPixelLine(p, aa, bb, unit, seg.width + 6, cobaltHue, cobaltSat, cobaltBri, 0.16 * i)
+  // Core
+  drawPixelLine(p, aa, bb, unit, coreW, cobaltHue, cobaltSat, cobaltBri, 0.45 * i)
+
+  // Tiny traveling spark at the front
+  const spark = vLerp(seg.a, seg.b, t1)
+  p.noStroke()
+  p.fill(cobaltHue, cobaltSat, 100, 0.45)
+  p.rect(snap(spark.x, unit), snap(spark.y, unit), unit * 2.2, unit * 2.2, unit)
 }
 
 function drawSwitchUI(p: p5, t: number): void {
@@ -225,59 +606,26 @@ const config: DayConfig = {
     createCanvas(p, 900, 900)
     p.colorMode(p.HSB, 360, 100, 100, 1)
     p.rectMode(p.CENTER)
+    p.textFont("monospace")
 
-    const cols = 72
-    const rows = 72
-    const cell = p.width / cols
-
-    const leds: LedCell[] = []
-    for (let gy = 0; gy < rows; gy++) {
-      for (let gx = 0; gx < cols; gx++) {
-        const seed = p.random(0, 1)
-        const hue = (seed * 360 + gx * 0.8 + gy * 0.25 + p.random(-12, 12)) % 360
-        leds.push({
-          gx,
-          gy,
-          x: (gx + 0.5) * cell,
-          y: (gy + 0.5) * cell,
-          seed,
-          hue,
-          charge: 0,
-        })
-      }
-    }
-
-    const traces = generateTraces(p, cols, rows, cell, 60)
-    const samplers = buildTraceSamplers(traces)
-    const packets: Packet[] = []
-    for (let i = 0; i < 18; i++) packets.push(spawnPacket(p, samplers, "charge"))
-
-    ;(p as any)._cols = cols
-    ;(p as any)._rows = rows
-    ;(p as any)._cell = cell
-    ;(p as any)._leds = leds
-    ;(p as any)._traces = traces
-    ;(p as any)._traceSamplers = samplers
-    ;(p as any)._packets = packets
-    ;(p as any)._accum = new Float32Array(cols * rows)
+    // Deterministic-ish layout for a “designed” composition
+    p.randomSeed(6)
+    p.noiseSeed(6)
+    const pcb = buildPCB(p)
+    ;(p as any)._pcb = pcb
 
     ;(p as any)._lightsOn = true
     ;(p as any)._switchT = 1
     ;(p as any)._manualHoldUntilSec = 0
-    ;(p as any)._autoPeriodSec = 4.2
+    ;(p as any)._autoPeriodSec = 6.0
     ;(p as any)._lastAutoPhase = -1
     ;(p as any)._lastToggleSec = 0
+    ;(p as any)._surgeStartSec = 0
+    ;(p as any)._afterglow = 0
   },
 
   draw: (p: p5) => {
-    const cols: number = (p as any)._cols
-    const rows: number = (p as any)._rows
-    const cell: number = (p as any)._cell
-    const leds: LedCell[] = (p as any)._leds
-    const traces: Trace[] = (p as any)._traces
-    const samplers: TraceSampler[] = (p as any)._traceSamplers
-    const packets: Packet[] = (p as any)._packets
-    const accum: Float32Array = (p as any)._accum
+    const pcb: ReturnType<typeof buildPCB> = (p as any)._pcb
 
     const timeSec = p.millis() / 1000
     const autoPeriodSec: number = (p as any)._autoPeriodSec
@@ -303,205 +651,68 @@ const config: DayConfig = {
     switchT = p.lerp(switchT, lightsOn ? 1 : 0, 0.12)
     ;(p as any)._switchT = switchT
 
-    const dt = Math.min(0.05, Math.max(0.001, p.deltaTime / 1000))
     const sinceToggle = Math.max(0, timeSec - lastToggleSec)
-    const edge = Math.exp(-sinceToggle * 2.4) // power edge flash
+    const edge = Math.exp(-sinceToggle * 3.0)
+    const dt = Math.min(0.05, Math.max(0.001, p.deltaTime / 1000))
 
-    // Background: screen glow changes personality
-    p.background(230, 18, lightsOn ? 7 : 2, 1)
+    // Background
+    p.background(0, 0, 6, 1)
+
+    // Draw board + static details
+    drawBoardBase(p, pcb.board, timeSec)
+    drawSilk(p, pcb.board, pcb.unit)
+
+    // Pads / vias
+    for (const pad of pcb.pads) drawPad(p, pad)
+    for (const via of pcb.vias) drawVia(p, via)
+
+    // Traces (thin pixelated copper under mask)
+    for (const seg of pcb.segments) {
+      if (seg.kind === "trace") drawCopperTrace(p, seg, pcb.unit)
+    }
+
+    // Resistors
+    for (const r of pcb.resistors) drawResistor(p, r)
+
+    // Electricity animation
+    // - On: cobalt beam surges from source, branches naturally as front passes segment startDist
+    // - Off: a faint decay along previously energized segments
+    let afterglow: number = (p as any)._afterglow || 0
+    afterglow = lightsOn ? clamp(afterglow + dt * 1.8, 0, 1) : clamp(afterglow - dt * 0.28, 0, 1)
+    ;(p as any)._afterglow = afterglow
+
+    if (lightsOn && (p as any)._surgeStartSec === 0) {
+      ;(p as any)._surgeStartSec = timeSec
+    }
+
+    const surgeStartSec: number = (p as any)._surgeStartSec || timeSec
+    const speedPx = 360 // px/sec along trace network
+    const tail = 150
+    const front = ((timeSec - surgeStartSec) * speedPx) % (pcb.totalLen + tail * 1.2)
+
+    // Power edge flash
+    p.blendMode(p.ADD)
     p.noStroke()
-    p.fill(230, 30, 0, lightsOn ? 0.2 : 0.45)
-    p.rect(p.width / 2, p.height / 2, p.width * 1.2, p.height * 1.2)
+    p.fill(215, 80, 100, 0.08 * edge)
+    p.rect(pcb.board.x, pcb.board.y, pcb.board.w, pcb.board.h, pcb.board.r)
 
-    // Scanlines (subtle)
-    for (let y = 0; y < p.height; y += 6) {
-      const a = lightsOn ? 0.05 : 0.09
-      p.stroke(0, 0, 0, a)
-      p.strokeWeight(1)
-      p.line(0, y + (y % 12 === 0 ? 1 : 0), p.width, y)
+    for (const seg of pcb.segments) {
+      drawElectricOverlay(p, seg, pcb.unit, front, tail, lightsOn, afterglow, timeSec)
     }
 
-    // Circuit traces become more visible when lights are off, but "breathe" when on
-    p.noFill()
-    p.strokeWeight(1.5)
-    for (const trace of traces) {
-      const shimmer =
-        0.65 +
-        0.35 *
-          Math.sin(timeSec * 1.7 + trace.seed * Math.PI * 2 + trace.points.length * 0.07)
-      const alpha = (lightsOn ? 0.06 + 0.05 * edge : 0.22) * shimmer
-      const hue = lightsOn ? (trace.hue + 10 * Math.sin(timeSec * 0.7)) % 360 : 160
-      const sat = lightsOn ? 22 : 35
-      const bri = lightsOn ? 70 : 55
-      p.stroke(hue, sat, bri, alpha)
-      p.beginShape()
-      for (const pt of trace.points) p.vertex(pt.x, pt.y)
-      p.endShape()
+    // Resistor “dump” bloom when the surge reaches them
+    for (const r of pcb.resistors) {
+      const hit = clamp((front - r.inDist) / Math.max(1, r.outDist - r.inDist), 0, 1)
+      const active = hit > 0 && hit < 1.05
+      if (!active) continue
+      const heat = Math.sin(hit * Math.PI) * 0.9
+      p.fill(215, 85, 95, 0.18 * heat)
+      p.rect(r.x, r.y, r.length * 1.15, r.height * 1.8, 10)
+      p.fill(215, 85, 100, 0.08 * heat)
+      p.circle(r.x + r.length * 0.2, r.y - 2, 18)
     }
 
-    // --- Simulate "power" as packets in traces ---
-    accum.fill(0)
-
-    // Maintain population
-    const targetCharges = 18
-    const targetSpores = lightsOn ? 0 : 26
-    const charges = packets.filter((pk) => pk.kind === "charge").length
-    const spores = packets.filter((pk) => pk.kind === "spore").length
-
-    if (charges < targetCharges) {
-      for (let i = 0; i < targetCharges - charges; i++) packets.push(spawnPacket(p, samplers, "charge"))
-    }
-    if (spores < targetSpores) {
-      for (let i = 0; i < targetSpores - spores; i++) packets.push(spawnPacket(p, samplers, "spore"))
-    }
-
-    // Cull to avoid runaway
-    while (packets.length > 70) packets.splice(Math.floor(p.random(0, packets.length)), 1)
-
-    // Update packets and stamp light into the grid
-    const stampRadius = 4
-    const sigma2 = 3.0 * 3.0
-    const noiseScale = 0.006
-
-    for (let i = 0; i < packets.length; i++) {
-      const pk = packets[i]
-      const sampler = samplers[pk.traceIdx]
-      if (!sampler) continue
-
-      pk.age += dt
-      pk.dist += pk.speed * dt * (pk.kind === "charge" ? (lightsOn ? 1 : 0.25) : (lightsOn ? 0.1 : 0.45))
-
-      const s = sampleTrace(sampler, pk.dist)
-
-      // Spores leak off-trace when power is off: a "digital afterlife"
-      if (!lightsOn && pk.kind === "spore") {
-        const n1 = p.noise(s.x * noiseScale, s.y * noiseScale, timeSec * 0.35 + pk.traceIdx)
-        const n2 = p.noise(s.y * noiseScale, s.x * noiseScale, timeSec * 0.35 + pk.energy * 10)
-        const ax = (n1 - 0.5) * 120
-        const ay = (n2 - 0.5) * 120
-        pk.driftX = clamp(pk.driftX + ax * dt, -90, 90)
-        pk.driftY = clamp(pk.driftY + ay * dt, -90, 90)
-      } else {
-        pk.driftX *= 0.92
-        pk.driftY *= 0.92
-      }
-
-      const px = s.x + pk.driftX
-      const py = s.y + pk.driftY
-
-      // Convert to grid coords and stamp
-      const gx = Math.floor(px / cell)
-      const gy = Math.floor(py / cell)
-      if (gx < -stampRadius || gx > cols - 1 + stampRadius) continue
-      if (gy < -stampRadius || gy > rows - 1 + stampRadius) continue
-
-      const baseI =
-        (pk.kind === "charge"
-          ? (lightsOn ? 1.0 : 0.25)
-          : lightsOn
-            ? 0.07
-            : 0.55) * pk.energy
-
-      const dirGlow = pk.kind === "charge" ? 1.2 : 0.6
-      const dx = s.dx
-      const dy = s.dy
-
-      for (let oy = -stampRadius; oy <= stampRadius; oy++) {
-        const yy = gy + oy
-        if (yy < 0 || yy >= rows) continue
-        for (let ox = -stampRadius; ox <= stampRadius; ox++) {
-          const xx = gx + ox
-          if (xx < 0 || xx >= cols) continue
-
-          // Slight directional streak
-          const along = ox * dx + oy * dy
-          const perp = ox * -dy + oy * dx
-          const r2 = perp * perp + (along * 0.6) * (along * 0.6)
-          const w = Math.exp(-r2 / (2 * sigma2))
-          accum[yy * cols + xx] += baseI * w * dirGlow
-        }
-      }
-
-      // Rare branching: when power is off, spores occasionally split (creepy)
-      if (!lightsOn && pk.kind === "spore" && p.random() < 0.012) {
-        const child = spawnPacket(p, samplers, "spore")
-        child.traceIdx = pk.traceIdx
-        child.dist = pk.dist + p.random(-30, 30)
-        child.driftX = pk.driftX + p.random(-10, 10)
-        child.driftY = pk.driftY + p.random(-10, 10)
-        child.energy = pk.energy * p.random(0.55, 0.85)
-        packets.push(child)
-      }
-
-      // Recycle old spores
-      if (pk.kind === "spore" && pk.age > 12) {
-        packets[i] = spawnPacket(p, samplers, "spore")
-      }
-    }
-
-    // Draw LEDs (additive when "on", ghostly when "off")
-    if (lightsOn) p.blendMode(p.ADD)
-
-    const freq = 0.07
-
-    p.noStroke()
-
-    for (let i = 0; i < leds.length; i++) {
-      const led = leds[i]
-      const idx = led.gy * cols + led.gx
-
-      const ambient = lightsOn
-        ? 0.02 + 0.02 * p.noise(led.gx * freq, led.gy * freq, timeSec * 0.2 + led.seed * 6.0)
-        : 0.003
-      const packetI = accum[idx]
-
-      let target = 0
-      if (lightsOn) {
-        target = ambient + packetI * 0.55 + 0.35 * edge
-        led.charge = p.lerp(led.charge, target, 0.25)
-      } else {
-        target = ambient + packetI * 0.22
-        // phosphor discharge: slow decay + occasional ghost sparkles
-        const ghost = p.noise(led.seed * 30, timeSec * 1.1) > 0.925 ? 0.08 : 0
-        led.charge = Math.max(led.charge * 0.945, target + ghost)
-      }
-
-      const flicker =
-        (p.noise(led.seed * 40, timeSec * 4.2 + led.gx * 0.02 + led.gy * 0.01) - 0.5) *
-        (lightsOn ? 0.06 : 0.018)
-      const intensity = clamp(led.charge + flicker * Math.max(0.05, led.charge), 0, 1.25)
-      if (intensity < 0.01) continue
-
-      const size = cell * (0.62 + 0.22 * intensity)
-      const hue = lightsOn ? (led.hue + packetI * 18) % 360 : 150
-      const sat = lightsOn ? 80 : 28
-      const bri = (lightsOn ? 100 : 78) * clamp(intensity, 0, 1)
-
-      // Bloom layers
-      if (lightsOn) {
-        p.fill(hue, sat, bri, 0.05 + 0.10 * clamp(intensity, 0, 1) + 0.08 * edge)
-        p.rect(led.x, led.y, size * 2.6, size * 2.6, cell * 0.25)
-        p.fill(hue, sat, bri, 0.08 + 0.12 * clamp(intensity, 0, 1))
-        p.rect(led.x, led.y, size * 1.8, size * 1.8, cell * 0.25)
-      } else {
-        p.fill(hue, sat, bri, 0.06 + 0.14 * clamp(intensity, 0, 1))
-        p.rect(led.x, led.y, size * 1.9, size * 1.9, cell * 0.25)
-      }
-
-      // Core LED
-      const coreAlpha = lightsOn
-        ? 0.18 + 0.62 * clamp(intensity, 0, 1)
-        : 0.14 + 0.52 * clamp(intensity, 0, 1)
-      p.fill(hue, sat, bri, coreAlpha)
-      p.rect(led.x, led.y, size, size, cell * 0.2)
-    }
-
-    if (lightsOn) p.blendMode(p.BLEND)
-
-    // Soft vignette to frame the panel
-    p.noStroke()
-    p.fill(230, 20, 0, 0.35)
-    p.rect(p.width / 2, p.height / 2, p.width * 1.25, p.height * 1.25)
+    p.blendMode(p.BLEND)
 
     // Switch UI overlay
     drawSwitchUI(p, switchT)
@@ -510,76 +721,25 @@ const config: DayConfig = {
   },
 
   renderFinal: (p: p5) => {
-    const cols: number = (p as any)._cols
-    const rows: number = (p as any)._rows
-    const cell: number = (p as any)._cell
-    const leds: LedCell[] = (p as any)._leds
-    const traces: Trace[] = (p as any)._traces
-    const samplers: TraceSampler[] = (p as any)._traceSamplers
+    const pcb: ReturnType<typeof buildPCB> = (p as any)._pcb
+    const timeSec = (p.frameCount || 180) / 60
 
-    // Deterministic "powered on" snapshot
-    const t = 6.0
-    p.background(230, 18, 7, 1)
+    p.background(0, 0, 6, 1)
+    drawBoardBase(p, pcb.board, timeSec)
+    drawSilk(p, pcb.board, pcb.unit)
+    for (const pad of pcb.pads) drawPad(p, pad)
+    for (const via of pcb.vias) drawVia(p, via)
+    for (const seg of pcb.segments) if (seg.kind === "trace") drawCopperTrace(p, seg, pcb.unit)
+    for (const r of pcb.resistors) drawResistor(p, r)
 
-    // Traces
-    p.noFill()
-    p.strokeWeight(1.5)
-    for (const trace of traces) {
-      p.stroke(trace.hue, 22, 70, 0.08)
-      p.beginShape()
-      for (const pt of trace.points) p.vertex(pt.x, pt.y)
-      p.endShape()
-    }
-
-    // Stamp some packets to suggest motion
-    const accum = new Float32Array(cols * rows)
-    const stampRadius = 4
-    const sigma2 = 3.0 * 3.0
-
-    for (let i = 0; i < 22; i++) {
-      const pk = spawnPacket(p, samplers, "charge")
-      pk.dist = (i / 22) * Math.max(1, samplers[pk.traceIdx]?.totalLen || 1)
-      const s = sampleTrace(samplers[pk.traceIdx], pk.dist + t * 190)
-      const gx = Math.floor(s.x / cell)
-      const gy = Math.floor(s.y / cell)
-      const baseI = pk.energy
-      for (let oy = -stampRadius; oy <= stampRadius; oy++) {
-        const yy = gy + oy
-        if (yy < 0 || yy >= rows) continue
-        for (let ox = -stampRadius; ox <= stampRadius; ox++) {
-          const xx = gx + ox
-          if (xx < 0 || xx >= cols) continue
-          const along = ox * s.dx + oy * s.dy
-          const perp = ox * -s.dy + oy * s.dx
-          const r2 = perp * perp + (along * 0.6) * (along * 0.6)
-          const w = Math.exp(-r2 / (2 * sigma2))
-          accum[yy * cols + xx] += baseI * w
-        }
-      }
-    }
-
-    // LEDs
+    // Render a “hero” surge mid-flight
+    const front = pcb.totalLen * 0.62
+    const tail = 180
     p.blendMode(p.ADD)
-    p.noStroke()
-    const freq = 0.07
-    for (const led of leds) {
-      const idx = led.gy * cols + led.gx
-      const ambient = 0.02 + 0.02 * p.noise(led.gx * freq, led.gy * freq, t * 0.2 + led.seed * 6.0)
-      const intensity = clamp(ambient + accum[idx] * 0.55, 0, 1.1)
-      if (intensity < 0.02) continue
-
-      const size = cell * (0.62 + 0.22 * intensity)
-      const hue = (led.hue + accum[idx] * 18) % 360
-      const sat = 80
-      const bri = 100 * clamp(intensity, 0, 1)
-
-      p.fill(hue, sat, bri, 0.12)
-      p.rect(led.x, led.y, size * 2.2, size * 2.2, cell * 0.25)
-      p.fill(hue, sat, bri, 0.22 + 0.55 * clamp(intensity, 0, 1))
-      p.rect(led.x, led.y, size, size, cell * 0.2)
+    for (const seg of pcb.segments) {
+      drawElectricOverlay(p, seg, pcb.unit, front, tail, true, 1, timeSec)
     }
     p.blendMode(p.BLEND)
-
     drawSwitchUI(p, 1)
   },
 
@@ -588,6 +748,9 @@ const config: DayConfig = {
     ;(p as any)._lightsOn = !(p as any)._lightsOn
     ;(p as any)._manualHoldUntilSec = timeSec + 10
     ;(p as any)._lastToggleSec = timeSec
+    if ((p as any)._lightsOn) {
+      ;(p as any)._surgeStartSec = timeSec
+    }
   },
 
   keyPressed: (p: p5) => {
@@ -596,6 +759,9 @@ const config: DayConfig = {
       ;(p as any)._lightsOn = !(p as any)._lightsOn
       ;(p as any)._manualHoldUntilSec = timeSec + 10
       ;(p as any)._lastToggleSec = timeSec
+      if ((p as any)._lightsOn) {
+        ;(p as any)._surgeStartSec = timeSec
+      }
     }
   },
 }
