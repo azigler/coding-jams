@@ -43,7 +43,7 @@ interface Resistor {
   length: number
   height: number
   pad: number
-  orientation: "h"
+  orientation: "h" | "v"
   inDist: number
   outDist: number
   ohms: number
@@ -125,10 +125,9 @@ function buildPCB(p: p5): {
   vias: Via[]
   pads: Pad[]
   resistors: Resistor[]
-  totalLen: number
-  sourceDist: number
+  maxDist: number
+  sourceNodeId: number
 } {
-  // Pixel grid for that “thin-but-digital” circuit look
   const controls: ControlState = (p as any)._controls || {}
   const unit = 4
 
@@ -152,110 +151,197 @@ function buildPCB(p: p5): {
   const right = board.x + board.w / 2
   const bottom = board.y + board.h / 2
 
-  // Coordinates (snapped)
-  const src = snapV({ x: left + 50, y: top + 160 }, unit) // VCC pad
-  const hub = snapV({ x: left + 330, y: top + 210 }, unit)
-  const hub2 = snapV({ x: left + 440, y: top + 340 }, unit) // branching “bus”
+  // Routing grid: higher complexity => tighter grid (more traces, no overlaps)
+  const stepCells = Math.round(lerp(7, 3, complexity)) // unit multiples
+  const step = unit * stepCells
+  const inset = 70
+
+  const gridLeft = left + inset
+  const gridTop = top + inset
+  const gridRight = right - inset
+  const gridBottom = bottom - inset
+
+  const gridW = Math.max(12, Math.floor((gridRight - gridLeft) / step) + 1)
+  const gridH = Math.max(12, Math.floor((gridBottom - gridTop) / step) + 1)
+  const nodeCount = gridW * gridH
+
+  const nodeId = (ix: number, iy: number) => iy * gridW + ix
+  const nodePos = (id: number): Vec2 =>
+    snapV(
+      { x: gridLeft + (id % gridW) * step, y: gridTop + Math.floor(id / gridW) * step },
+      unit
+    )
+
+  // Source near connector area
+  const srcIx = 1
+  const srcIy = clamp(Math.floor(gridH * 0.18), 2, gridH - 3)
+  const sourceNodeId = nodeId(srcIx, srcIy)
+  const srcPos = nodePos(sourceNodeId)
 
   // Choose “realistic-ish” E12 resistor values around a base decade
   const E12 = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82]
   const decadeExp = Math.round(lerp(1, 5, strength)) // 10^1 .. 10^5
-  const baseDecade = Math.pow(10, decadeExp)
 
   function pickOhms(idx: number): number {
-    // small spread based on idx + seed
-    const jitter = p.noise(seed * 0.01, idx * 0.23) // 0..1
+    const jitter = p.noise(seed * 0.01, idx * 0.23)
     const pick = E12[Math.floor(jitter * E12.length) % E12.length]
-    // vary multiplier occasionally
     const multShift = p.noise(seed * 0.02, idx * 0.31) > 0.82 ? 1 : 0
     return pick * Math.pow(10, decadeExp - 1 + multShift)
   }
 
   const DIGIT_COLORS: Array<[number, number, number]> = [
-    [0, 0, 15],   // 0 black
+    [0, 0, 15], // 0 black
     [25, 70, 32], // 1 brown
-    [0, 80, 65],  // 2 red
+    [0, 80, 65], // 2 red
     [28, 85, 80], // 3 orange
     [55, 75, 92], // 4 yellow
-    [120, 65, 55],// 5 green
-    [210, 75, 70],// 6 blue
-    [280, 45, 70],// 7 violet
-    [0, 0, 62],   // 8 gray
-    [0, 0, 95],   // 9 white
+    [120, 65, 55], // 5 green
+    [210, 75, 70], // 6 blue
+    [280, 45, 70], // 7 violet
+    [0, 0, 62], // 8 gray
+    [0, 0, 95], // 9 white
   ]
   const GOLD: [number, number, number] = [45, 70, 70] // tolerance band
 
   function resistorBandsFromOhms(ohms: number): Array<[number, number, number]> {
     const v = Math.max(1, Math.round(ohms))
     const exp = Math.floor(Math.log10(v))
-    // two significant digits
     let sig = Math.round(v / Math.pow(10, exp - 1))
-    if (sig >= 100) {
-      sig = Math.round(sig / 10)
-    }
+    if (sig >= 100) sig = Math.round(sig / 10)
     const d1 = Math.floor(sig / 10) % 10
     const d2 = sig % 10
     const mult = clamp(exp - 1, 0, 9)
     return [DIGIT_COLORS[d1], DIGIT_COLORS[d2], DIGIT_COLORS[mult], GOLD]
   }
 
-  // Resistors (realistic-ish placement)
-  const resistors: Resistor[] = []
-  const slotsRight = Math.min(4, numResistors)
-  const slotsBottom = numResistors - slotsRight
-  const yStart = top + 130
-  const yEnd = top + 520
-  for (let i = 0; i < slotsRight; i++) {
-    const t = slotsRight === 1 ? 0.5 : i / (slotsRight - 1)
-    const ry = snap(lerp(yStart, yEnd, t) + p.random(-14, 14) * (seed % 3 === 0 ? 1 : 0.6), unit)
-    const rx = snap(right - lerp(150, 240, p.noise(seed * 0.03, i * 0.8)), unit)
-    const len = snap(lerp(86, 118, p.noise(seed * 0.04, i * 1.1)), unit)
-    const ohms = pickOhms(i)
-    resistors.push({
-      name: `R${i + 1}`,
-      x: rx,
-      y: ry,
-      length: len,
-      height: 22,
-      pad: 18,
-      orientation: "h",
-      inDist: 0,
-      outDist: 0,
-      ohms,
-      bands: resistorBandsFromOhms(ohms),
-    })
-  }
-  for (let i = 0; i < slotsBottom; i++) {
-    const idx = slotsRight + i
-    const t = slotsBottom === 1 ? 0.5 : i / (slotsBottom - 1)
-    const rx = snap(lerp(left + 330, right - 190, t) + p.random(-12, 12) * 0.7, unit)
-    const ry = snap(bottom - lerp(140, 170, p.noise(seed * 0.05, idx * 0.9)), unit)
-    const len = snap(lerp(90, 122, p.noise(seed * 0.06, idx * 1.2)), unit)
-    const ohms = pickOhms(idx)
-    resistors.push({
-      name: `R${idx + 1}`,
-      x: rx,
-      y: ry,
-      length: len,
-      height: 22,
-      pad: 18,
-      orientation: "h",
-      inDist: 0,
-      outDist: 0,
-      ohms,
-      bands: resistorBandsFromOhms(ohms),
-    })
+  // --- Generate a spanning tree over the grid (no overlapping lines by construction) ---
+  const visited = new Uint8Array(nodeCount)
+  const adj: number[][] = Array.from({ length: nodeCount }, () => [])
+  const edges: Array<{ a: number; b: number }> = []
+
+  const neighbors = (id: number): number[] => {
+    const ix = id % gridW
+    const iy = Math.floor(id / gridW)
+    const out: number[] = []
+    if (ix > 0) out.push(id - 1)
+    if (ix < gridW - 1) out.push(id + 1)
+    if (iy > 0) out.push(id - gridW)
+    if (iy < gridH - 1) out.push(id + gridW)
+    return out
   }
 
-  // Pads: connector + resistor pads
+  const stack: number[] = [sourceNodeId]
+  visited[sourceNodeId] = 1
+  while (stack.length > 0) {
+    const cur = stack[stack.length - 1]
+    const nbs = neighbors(cur).filter((n) => visited[n] === 0)
+    if (nbs.length === 0) {
+      stack.pop()
+      continue
+    }
+    const next = nbs[Math.floor(p.random(0, nbs.length))]
+    visited[next] = 1
+    adj[cur].push(next)
+    adj[next].push(cur)
+    edges.push({ a: cur, b: next })
+    stack.push(next)
+  }
+
+  // Distances from source along the tree (branching surge uses these)
+  const distFromSource = new Float32Array(nodeCount)
+  const q: number[] = [sourceNodeId]
+  const seen = new Uint8Array(nodeCount)
+  seen[sourceNodeId] = 1
+  while (q.length > 0) {
+    const cur = q.pop()!
+    const d0 = distFromSource[cur]
+    for (const nb of adj[cur]) {
+      if (seen[nb]) continue
+      seen[nb] = 1
+      distFromSource[nb] = d0 + step
+      q.push(nb)
+    }
+  }
+
+  let maxDist = 0
+  for (let i = 0; i < nodeCount; i++) maxDist = Math.max(maxDist, distFromSource[i] || 0)
+
+  // Build trace segments from edges
+  const traceW = clamp(Math.round(lerp(7, 5, complexity)), 4, 7)
+  const segments: Segment[] = edges.map(({ a, b }) => {
+    const pa = nodePos(a)
+    const pb = nodePos(b)
+    const da = distFromSource[a]
+    const db = distFromSource[b]
+    return {
+      a: pa,
+      b: pb,
+      width: traceW,
+      startDist: Math.min(da, db),
+      endDist: Math.max(da, db),
+      kind: "trace",
+    }
+  })
+
+  // Edge lookup for run detection
+  const edgeSet = new Set<string>()
+  for (const e of edges) edgeSet.add(`${Math.min(e.a, e.b)}-${Math.max(e.a, e.b)}`)
+  const connected = (a: number, b: number): boolean => edgeSet.has(`${Math.min(a, b)}-${Math.max(a, b)}`)
+
+  // Find maximal straight runs
+  type Run = { nodes: number[]; orientation: "h" | "v" }
+  const runs: Run[] = []
+
+  for (let iy = 0; iy < gridH; iy++) {
+    for (let ix = 0; ix < gridW; ix++) {
+      const id = nodeId(ix, iy)
+      const hasR = ix < gridW - 1 && connected(id, id + 1)
+      const hasL = ix > 0 && connected(id, id - 1)
+      const hasD = iy < gridH - 1 && connected(id, id + gridW)
+      const hasU = iy > 0 && connected(id, id - gridW)
+
+      // horizontal start: has right, no left
+      if (hasR && !hasL) {
+        const nodes: number[] = [id]
+        let cur = id
+        while (true) {
+          const cix = cur % gridW
+          if (cix >= gridW - 1) break
+          const nb = cur + 1
+          if (!connected(cur, nb)) break
+          nodes.push(nb)
+          cur = nb
+        }
+        if (nodes.length >= 6) runs.push({ nodes, orientation: "h" })
+      }
+
+      // vertical start: has down, no up
+      if (hasD && !hasU) {
+        const nodes: number[] = [id]
+        let cur = id
+        while (true) {
+          const ciy = Math.floor(cur / gridW)
+          if (ciy >= gridH - 1) break
+          const nb = cur + gridW
+          if (!connected(cur, nb)) break
+          nodes.push(nb)
+          cur = nb
+        }
+        if (nodes.length >= 6) runs.push({ nodes, orientation: "v" })
+      }
+    }
+  }
+
+  runs.sort((a, b) => b.nodes.length - a.nodes.length)
+
+  const resistors: Resistor[] = []
   const pads: Pad[] = []
 
-  // 3-pin connector (power)
+  // 3-pin connector (visual only)
   for (let i = 0; i < 3; i++) {
-    const py = snap(top + 120 + i * 36, unit)
     pads.push({
-      x: snap(left + 34, unit),
-      y: py,
+      x: snap(left + 36, unit),
+      y: snap(srcPos.y - 36 + i * 36, unit),
       w: snap(22, unit),
       h: snap(30, unit),
       hole: 8,
@@ -263,160 +349,100 @@ function buildPCB(p: p5): {
     })
   }
 
-  // Resistor pads
-  for (const r of resistors) {
-    pads.push({
-      x: snap(r.x - r.length / 2 - r.pad / 2 - 6, unit),
-      y: r.y,
-      w: snap(r.pad + 6, unit),
-      h: snap(r.pad, unit),
-      hole: 7,
-      round: 7,
-    })
-    pads.push({
-      x: snap(r.x + r.length / 2 + r.pad / 2 + 6, unit),
-      y: r.y,
-      w: snap(r.pad + 6, unit),
-      h: snap(r.pad, unit),
-      hole: 7,
-      round: 7,
-    })
+  const chosenNodeSet = new Set<number>()
+
+  for (let ri = 0; ri < numResistors; ri++) {
+    let placed = false
+    for (let attempt = 0; attempt < 220 && !placed; attempt++) {
+      const run = runs[Math.floor(p.random(0, Math.max(1, runs.length)))]
+      if (!run) continue
+      const minSpan = 4
+      const maxSpan = 9
+      const maxAllowed = Math.max(minSpan + 1, run.nodes.length - 2)
+      const span = Math.min(Math.floor(p.random(minSpan, maxSpan + 1)), maxAllowed)
+      if (span >= run.nodes.length) continue
+
+      const startIdx = Math.floor(p.random(0, run.nodes.length - span))
+      const endIdx = startIdx + span
+
+      // Reserve nodes so resistors don’t stack
+      let ok = true
+      for (let k = startIdx; k <= endIdx; k++) {
+        if (chosenNodeSet.has(run.nodes[k])) {
+          ok = false
+          break
+        }
+      }
+      if (!ok) continue
+
+      const aNode = run.nodes[startIdx]
+      const bNode = run.nodes[endIdx]
+      const aPos = nodePos(aNode)
+      const bPos = nodePos(bNode)
+
+      const center = { x: (aPos.x + bPos.x) / 2, y: (aPos.y + bPos.y) / 2 }
+      const lengthPx = Math.max(78, Math.min(150, dist(aPos, bPos) * 0.85))
+
+      const ohms = pickOhms(ri)
+      const bands = resistorBandsFromOhms(ohms)
+
+      const da = distFromSource[aNode]
+      const db = distFromSource[bNode]
+      const inDist = Math.min(da, db)
+      const outDist = Math.max(da, db)
+
+      resistors.push({
+        name: `R${ri + 1}`,
+        x: snap(center.x, unit),
+        y: snap(center.y, unit),
+        length: snap(lengthPx, unit),
+        height: 22,
+        pad: 18,
+        orientation: run.orientation,
+        inDist,
+        outDist,
+        ohms,
+        bands,
+      })
+
+      // Gold pads at endpoints (visual)
+      const padW = snap(22, unit)
+      const padH = snap(18, unit)
+      const endA =
+        run.orientation === "h"
+          ? { x: snap(center.x - lengthPx / 2 - 18, unit), y: snap(center.y, unit) }
+          : { x: snap(center.x, unit), y: snap(center.y - lengthPx / 2 - 18, unit) }
+      const endB =
+        run.orientation === "h"
+          ? { x: snap(center.x + lengthPx / 2 + 18, unit), y: snap(center.y, unit) }
+          : { x: snap(center.x, unit), y: snap(center.y + lengthPx / 2 + 18, unit) }
+
+      pads.push({ x: endA.x, y: endA.y, w: padW, h: padH, hole: 7, round: 7 })
+      pads.push({ x: endB.x, y: endB.y, w: padW, h: padH, hole: 7, round: 7 })
+
+      for (let k = startIdx; k <= endIdx; k++) chosenNodeSet.add(run.nodes[k])
+      placed = true
+    }
   }
 
-  // Vias sprinkled for realism (and to hint at layers)
+  // Vias for texture
   const vias: Via[] = []
-  const viaPts: Vec2[] = [
-    { x: left + 220, y: top + 360 },
-    { x: left + 520, y: top + 120 },
-    { x: left + 600, y: top + 560 },
-    { x: left + 160, y: top + 560 },
-    { x: left + 420, y: top + 560 },
-    { x: right - 80, y: top + 380 },
-    { x: right - 80, y: top + 520 },
-  ].map((pt) => snapV(pt, unit))
-
-  for (const pt of viaPts) {
-    vias.push({ x: pt.x, y: pt.y, outer: 14, hole: 6 })
+  const viaCount = Math.round(lerp(16, 90, complexity))
+  for (let i = 0; i < viaCount; i++) {
+    const id = Math.floor(p.random(0, nodeCount))
+    const pos = nodePos(id)
+    vias.push({ x: pos.x, y: pos.y, outer: 12 + (i % 3), hole: 6 })
   }
-
-  // Complexity: add extra decorative routing (not energized)
-  const extraSegments: Segment[] = []
-  const extraCount = Math.round(lerp(12, 120, complexity))
-  for (let i = 0; i < extraCount; i++) {
-    const gx0 = snap(left + 80 + p.random(0, boardW - 160), unit)
-    const gy0 = snap(top + 80 + p.random(0, boardH - 240), unit)
-    const gx1 = snap(left + 80 + p.random(0, boardW - 160), unit)
-    const gy1 = snap(top + 80 + p.random(0, boardH - 240), unit)
-    const midX = snap(lerp(gx0, gx1, p.random(0.25, 0.75)), unit)
-    const pts = [
-      { x: gx0, y: gy0 },
-      { x: midX, y: gy0 },
-      { x: midX, y: gy1 },
-      { x: gx1, y: gy1 },
-    ]
-    // Use dummy dist values (not part of surge)
-    const dummy = new Map<string, number>()
-    dummy.set(keyOf(pts[0]), 0)
-    addPath(extraSegments, dummy, pts, 4, "trace")
-    // sprinkle vias occasionally
-    if (p.random() < 0.12) {
-      vias.push({ x: pts[1].x, y: pts[1].y, outer: 12, hole: 6 })
-    }
-  }
-
-  // Segments (tree from source -> hub -> branches -> resistors)
-  const segments: Segment[] = []
-  const distMap = new Map<string, number>()
-  distMap.set(keyOf(src), 0)
-
-  const traceW = 6
-
-  // Main trunk
-  addPath(
-    segments,
-    distMap,
-    [
-      src,
-      snapV({ x: left + 120, y: src.y }, unit),
-      snapV({ x: left + 120, y: top + 210 }, unit),
-      hub,
-      snapV({ x: hub2.x, y: hub.y }, unit),
-      hub2,
-    ],
-    traceW,
-    "trace"
-  )
-
-  // Branches to resistors (into left pads)
-  const resistorLeftPads = resistors.map((r) =>
-    snapV({ x: r.x - r.length / 2 - r.pad - 14, y: r.y }, unit)
-  )
-
-  const branchStarts: Vec2[] = [
-    hub2,
-    snapV({ x: hub2.x, y: hub2.y + 60 }, unit),
-    snapV({ x: hub2.x, y: hub2.y + 140 }, unit),
-    snapV({ x: hub2.x - 80, y: hub2.y + 240 }, unit),
-  ]
-
-  // Ensure dist exists at intermediate branch nodes
-  for (const bs of branchStarts) {
-    const k = keyOf(bs)
-    if (!distMap.has(k)) {
-      // Connect from hub2 to branch start so it’s part of the routed tree
-      addPath(segments, distMap, [hub2, bs], traceW, "trace")
-    }
-  }
-
-  for (let i = 0; i < resistors.length; i++) {
-    const r = resistors[i]
-    const start = branchStarts[i] || hub2
-    const leftPad = resistorLeftPads[i]
-    // Manhattan route with a little jog
-    const midX = snap(lerp(start.x, leftPad.x, 0.55), unit)
-    addPath(
-      segments,
-      distMap,
-      [start, snapV({ x: midX, y: start.y }, unit), snapV({ x: midX, y: leftPad.y }, unit), leftPad],
-      traceW,
-      "trace"
-    )
-
-    // Resistor body acts like a component segment (slower “dump”)
-    const inK = keyOf(leftPad)
-    const inDist = distMap.get(inK) ?? 0
-    const bodyA = snapV({ x: r.x - r.length / 2, y: r.y }, unit)
-    const bodyB = snapV({ x: r.x + r.length / 2, y: r.y }, unit)
-
-    // Connect pad -> body start (tiny lead)
-    addPath(segments, distMap, [leftPad, bodyA], traceW, "trace")
-
-    // Component segment
-    distMap.set(keyOf(bodyA), distMap.get(keyOf(bodyA)) ?? inDist)
-    addPath(
-      segments,
-      distMap,
-      [bodyA, bodyB],
-      5,
-      "resistor",
-      { resistorName: r.name }
-    )
-    const outDist = distMap.get(keyOf(bodyB)) ?? inDist + r.length
-    r.inDist = inDist
-    r.outDist = outDist
-  }
-
-  const totalLen = segments.reduce((m, s) => Math.max(m, s.endDist), 0)
 
   return {
     board,
     unit,
-    segments: [...segments, ...extraSegments],
+    segments,
     vias,
     pads,
     resistors,
-    totalLen,
-    sourceDist: 0,
+    maxDist,
+    sourceNodeId,
   }
 }
 
@@ -538,22 +564,39 @@ function drawResistor(p: p5, r: Resistor): void {
   const bodyW = r.length
   const bodyH = r.height
 
+  p.push()
+  p.translate(r.x, r.y)
+  if (r.orientation === "v") p.rotate(Math.PI / 2)
+
   // Body shadow
   p.noStroke()
   p.fill(0, 0, 0, 0.25)
-  p.rect(r.x + 2, r.y + 2, bodyW, bodyH, 6)
+  p.rect(2, 2, bodyW, bodyH, 6)
 
   // Body
   p.fill(35, 40, 88, 1) // warm ceramic
-  p.rect(r.x, r.y, bodyW, bodyH, 6)
+  p.rect(0, 0, bodyW, bodyH, 6)
 
   // Color bands
   const bandXs = [-0.22, -0.05, 0.10, 0.30].map((t) => t * bodyW)
   for (let i = 0; i < Math.min(4, r.bands.length); i++) {
     const c = r.bands[i]
     p.fill(c[0], c[1], c[2], 0.92)
-    p.rect(r.x + bandXs[i], r.y, 10, bodyH - 6, 3)
+    p.rect(bandXs[i], 0, 10, bodyH - 6, 3)
   }
+
+  // Tiny value hint on body (subtle)
+  p.fill(0, 0, 12, 0.35)
+  p.textAlign(p.CENTER, p.CENTER)
+  p.textSize(10)
+  const v = r.ohms >= 1000000
+    ? `${Math.round(r.ohms / 1000000)}M`
+    : r.ohms >= 1000
+      ? `${Math.round(r.ohms / 1000)}k`
+      : `${Math.round(r.ohms)}`
+  p.text(v, 0, 1)
+
+  p.pop()
 
   // Silkscreen label
   p.fill(0, 0, 96, 0.75)
@@ -871,7 +914,7 @@ const config: DayConfig = {
     const speedMult = clamp(controls.electricitySpeed ?? 1.0, 0.3, 2.2)
     const speedPx = 360 * speedMult // px/sec along trace network
     const tail = 150
-    const front = ((timeSec - surgeStartSec) * speedPx) % (pcb.totalLen + tail * 1.2)
+    const front = ((timeSec - surgeStartSec) * speedPx) % (pcb.maxDist + tail * 1.2)
 
     // Power edge flash
     p.blendMode(p.ADD)
@@ -890,9 +933,15 @@ const config: DayConfig = {
       if (!active) continue
       const heat = Math.sin(hit * Math.PI) * 0.9
       p.fill(215, 85, 95, 0.18 * heat)
-      p.rect(r.x, r.y, r.length * 1.15, r.height * 1.8, 10)
+      const w = r.orientation === "h" ? r.length : r.height
+      const h = r.orientation === "h" ? r.height : r.length
+      p.rect(r.x, r.y, w * 1.15, h * 0.9, 10)
       p.fill(215, 85, 100, 0.08 * heat)
-      p.circle(r.x + r.length * 0.2, r.y - 2, 18)
+      p.circle(
+        r.x + (r.orientation === "h" ? r.length * 0.2 : 0),
+        r.y + (r.orientation === "v" ? -r.length * 0.2 : -2),
+        18
+      )
     }
 
     p.blendMode(p.BLEND)
@@ -916,7 +965,7 @@ const config: DayConfig = {
     for (const r of pcb.resistors) drawResistor(p, r)
 
     // Render a “hero” surge mid-flight
-    const front = pcb.totalLen * 0.62
+    const front = pcb.maxDist * 0.62
     const tail = 180
     p.blendMode(p.ADD)
     for (const seg of pcb.segments) {
