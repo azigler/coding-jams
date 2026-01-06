@@ -1,5 +1,6 @@
 import type { DayConfig, p5 } from "../types"
 import { createCanvas } from "../utils/canvas"
+import type { ControlConfig, ControlState } from "../utils/controls"
 
 // ============================================================================
 // TYPES
@@ -45,6 +46,8 @@ interface Resistor {
   orientation: "h"
   inDist: number
   outDist: number
+  ohms: number
+  bands: Array<[number, number, number]> // HSB colors
 }
 
 // ============================================================================
@@ -53,6 +56,10 @@ interface Resistor {
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))
+}
+
+function randomInt(p: p5, min: number, max: number): number {
+  return Math.floor(p.random(min, max + 1))
 }
 
 function dist(a: Vec2, b: Vec2): number {
@@ -122,7 +129,13 @@ function buildPCB(p: p5): {
   sourceDist: number
 } {
   // Pixel grid for that “thin-but-digital” circuit look
+  const controls: ControlState = (p as any)._controls || {}
   const unit = 4
+
+  const seed = Math.round(controls.seed || 1)
+  const complexity = clamp(controls.complexity ?? 0.6, 0, 1)
+  const numResistors = Math.round(clamp(controls.numResistors ?? 4, 2, 8))
+  const strength = clamp(controls.resistorStrength ?? 0.55, 0, 1)
 
   const boardW = 800
   const boardH = 780
@@ -144,21 +157,95 @@ function buildPCB(p: p5): {
   const hub = snapV({ x: left + 330, y: top + 210 }, unit)
   const hub2 = snapV({ x: left + 440, y: top + 340 }, unit) // branching “bus”
 
+  // Choose “realistic-ish” E12 resistor values around a base decade
+  const E12 = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82]
+  const decadeExp = Math.round(lerp(1, 5, strength)) // 10^1 .. 10^5
+  const baseDecade = Math.pow(10, decadeExp)
+
+  function pickOhms(idx: number): number {
+    // small spread based on idx + seed
+    const jitter = p.noise(seed * 0.01, idx * 0.23) // 0..1
+    const pick = E12[Math.floor(jitter * E12.length) % E12.length]
+    // vary multiplier occasionally
+    const multShift = p.noise(seed * 0.02, idx * 0.31) > 0.82 ? 1 : 0
+    return pick * Math.pow(10, decadeExp - 1 + multShift)
+  }
+
+  const DIGIT_COLORS: Array<[number, number, number]> = [
+    [0, 0, 15],   // 0 black
+    [25, 70, 32], // 1 brown
+    [0, 80, 65],  // 2 red
+    [28, 85, 80], // 3 orange
+    [55, 75, 92], // 4 yellow
+    [120, 65, 55],// 5 green
+    [210, 75, 70],// 6 blue
+    [280, 45, 70],// 7 violet
+    [0, 0, 62],   // 8 gray
+    [0, 0, 95],   // 9 white
+  ]
+  const GOLD: [number, number, number] = [45, 70, 70] // tolerance band
+
+  function resistorBandsFromOhms(ohms: number): Array<[number, number, number]> {
+    const v = Math.max(1, Math.round(ohms))
+    const exp = Math.floor(Math.log10(v))
+    // two significant digits
+    let sig = Math.round(v / Math.pow(10, exp - 1))
+    if (sig >= 100) {
+      sig = Math.round(sig / 10)
+    }
+    const d1 = Math.floor(sig / 10) % 10
+    const d2 = sig % 10
+    const mult = clamp(exp - 1, 0, 9)
+    return [DIGIT_COLORS[d1], DIGIT_COLORS[d2], DIGIT_COLORS[mult], GOLD]
+  }
+
   // Resistors (realistic-ish placement)
-  const resistors = [
-    { name: "R1", x: right - 160, y: top + 140, length: 90, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
-    { name: "R2", x: right - 210, y: top + 290, length: 100, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
-    { name: "R3", x: right - 170, y: top + 460, length: 110, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
-    { name: "R4", x: left + 520, y: bottom - 160, length: 100, height: 22, pad: 18, orientation: "h", inDist: 0, outDist: 0 },
-  ].map(
-    (r) =>
-      ({
-        ...r,
-        orientation: "h" as const,
-        x: snap(r.x, unit),
-        y: snap(r.y, unit),
-      }) satisfies Resistor
-  )
+  const resistors: Resistor[] = []
+  const slotsRight = Math.min(4, numResistors)
+  const slotsBottom = numResistors - slotsRight
+  const yStart = top + 130
+  const yEnd = top + 520
+  for (let i = 0; i < slotsRight; i++) {
+    const t = slotsRight === 1 ? 0.5 : i / (slotsRight - 1)
+    const ry = snap(lerp(yStart, yEnd, t) + p.random(-14, 14) * (seed % 3 === 0 ? 1 : 0.6), unit)
+    const rx = snap(right - lerp(150, 240, p.noise(seed * 0.03, i * 0.8)), unit)
+    const len = snap(lerp(86, 118, p.noise(seed * 0.04, i * 1.1)), unit)
+    const ohms = pickOhms(i)
+    resistors.push({
+      name: `R${i + 1}`,
+      x: rx,
+      y: ry,
+      length: len,
+      height: 22,
+      pad: 18,
+      orientation: "h",
+      inDist: 0,
+      outDist: 0,
+      ohms,
+      bands: resistorBandsFromOhms(ohms),
+    })
+  }
+  for (let i = 0; i < slotsBottom; i++) {
+    const idx = slotsRight + i
+    const t = slotsBottom === 1 ? 0.5 : i / (slotsBottom - 1)
+    const rx = snap(lerp(left + 330, right - 190, t) + p.random(-12, 12) * 0.7, unit)
+    const ry = snap(bottom - lerp(140, 170, p.noise(seed * 0.05, idx * 0.9)), unit)
+    const len = snap(lerp(90, 122, p.noise(seed * 0.06, idx * 1.2)), unit)
+    const ohms = pickOhms(idx)
+    resistors.push({
+      name: `R${idx + 1}`,
+      x: rx,
+      y: ry,
+      length: len,
+      height: 22,
+      pad: 18,
+      orientation: "h",
+      inDist: 0,
+      outDist: 0,
+      ohms,
+      bands: resistorBandsFromOhms(ohms),
+    })
+  }
 
   // Pads: connector + resistor pads
   const pads: Pad[] = []
@@ -210,6 +297,31 @@ function buildPCB(p: p5): {
 
   for (const pt of viaPts) {
     vias.push({ x: pt.x, y: pt.y, outer: 14, hole: 6 })
+  }
+
+  // Complexity: add extra decorative routing (not energized)
+  const extraSegments: Segment[] = []
+  const extraCount = Math.round(lerp(12, 120, complexity))
+  for (let i = 0; i < extraCount; i++) {
+    const gx0 = snap(left + 80 + p.random(0, boardW - 160), unit)
+    const gy0 = snap(top + 80 + p.random(0, boardH - 240), unit)
+    const gx1 = snap(left + 80 + p.random(0, boardW - 160), unit)
+    const gy1 = snap(top + 80 + p.random(0, boardH - 240), unit)
+    const midX = snap(lerp(gx0, gx1, p.random(0.25, 0.75)), unit)
+    const pts = [
+      { x: gx0, y: gy0 },
+      { x: midX, y: gy0 },
+      { x: midX, y: gy1 },
+      { x: gx1, y: gy1 },
+    ]
+    // Use dummy dist values (not part of surge)
+    const dummy = new Map<string, number>()
+    dummy.set(keyOf(pts[0]), 0)
+    addPath(extraSegments, dummy, pts, 4, "trace")
+    // sprinkle vias occasionally
+    if (p.random() < 0.12) {
+      vias.push({ x: pts[1].x, y: pts[1].y, outer: 12, hole: 6 })
+    }
   }
 
   // Segments (tree from source -> hub -> branches -> resistors)
@@ -299,7 +411,7 @@ function buildPCB(p: p5): {
   return {
     board,
     unit,
-    segments,
+    segments: [...segments, ...extraSegments],
     vias,
     pads,
     resistors,
@@ -436,15 +548,11 @@ function drawResistor(p: p5, r: Resistor): void {
   p.rect(r.x, r.y, bodyW, bodyH, 6)
 
   // Color bands
-  const bands = [
-    { c: [220, 70, 55] as [number, number, number], x: -bodyW * 0.22 },
-    { c: [45, 75, 55] as [number, number, number], x: -bodyW * 0.05 },
-    { c: [200, 65, 45] as [number, number, number], x: bodyW * 0.10 },
-    { c: [50, 30, 75] as [number, number, number], x: bodyW * 0.28 },
-  ]
-  for (const b of bands) {
-    p.fill(b.c[0], b.c[1], b.c[2], 0.9)
-    p.rect(r.x + b.x, r.y, 10, bodyH - 6, 3)
+  const bandXs = [-0.22, -0.05, 0.10, 0.30].map((t) => t * bodyW)
+  for (let i = 0; i < Math.min(4, r.bands.length); i++) {
+    const c = r.bands[i]
+    p.fill(c[0], c[1], c[2], 0.92)
+    p.rect(r.x + bandXs[i], r.y, 10, bodyH - 6, 3)
   }
 
   // Silkscreen label
@@ -452,6 +560,56 @@ function drawResistor(p: p5, r: Resistor): void {
   p.textAlign(p.CENTER, p.CENTER)
   p.textSize(14)
   p.text(r.name, r.x, r.y - 18)
+}
+
+// ============================================================================
+// CONTROLS
+// ============================================================================
+
+const defaultControls: ControlState = {
+  electricitySpeed: 1.0, // multiplier
+  numResistors: 4,
+  resistorStrength: 0.55, // 0..1 (low->high decade)
+  complexity: 0.6, // 0..1
+  seed: 0, // 0 => auto-randomize on load
+}
+
+const controlConfigs: { [key: string]: ControlConfig } = {
+  electricitySpeed: {
+    label: "Electricity Speed",
+    min: 0.3,
+    max: 2.2,
+    defaultValue: 1.0,
+    step: 0.05,
+  },
+  numResistors: {
+    label: "Number of Resistors",
+    min: 2,
+    max: 8,
+    defaultValue: 4,
+    step: 1,
+  },
+  resistorStrength: {
+    label: "Resistor Strength (Ω decade)",
+    min: 0,
+    max: 1,
+    defaultValue: 0.55,
+    step: 0.05,
+  },
+  complexity: {
+    label: "Routing Complexity",
+    min: 0,
+    max: 1,
+    defaultValue: 0.6,
+    step: 0.05,
+  },
+  seed: {
+    label: "Seed",
+    min: 0,
+    max: 9999,
+    defaultValue: 0,
+    step: 1,
+  },
 }
 
 function drawSilk(p: p5, board: { x: number; y: number; w: number; h: number }, unit: number): void {
@@ -608,11 +766,24 @@ const config: DayConfig = {
     p.rectMode(p.CENTER)
     p.textFont("monospace")
 
-    // Deterministic-ish layout for a “designed” composition
-    p.randomSeed(6)
-    p.noiseSeed(6)
-    const pcb = buildPCB(p)
-    ;(p as any)._pcb = pcb
+    // Ensure controls exist (index.ts sets this before setup when controls are exported)
+    const controls: ControlState = (p as any)._controls || { ...defaultControls }
+
+    // Auto-randomize seed on first load if seed==0, and push to UI/localStorage
+    if (!controls.seed || Math.round(controls.seed) === 0) {
+      const newSeed = Math.floor(Math.random() * 10000)
+      controls.seed = newSeed
+      ;(p as any)._controls = controls
+      if (typeof window !== "undefined" && typeof (window as any).setGenuaryControls === "function") {
+        ;(window as any).setGenuaryControls(6, { seed: newSeed })
+      }
+    }
+
+    const seed = Math.round(controls.seed || 1)
+    p.randomSeed(seed)
+    p.noiseSeed(seed)
+    ;(p as any)._lastPcbKey = null
+    ;(p as any)._pcb = buildPCB(p)
 
     ;(p as any)._lightsOn = true
     ;(p as any)._switchT = 1
@@ -625,6 +796,17 @@ const config: DayConfig = {
   },
 
   draw: (p: p5) => {
+    const controls: ControlState = (p as any)._controls || { ...defaultControls }
+    const key = `${Math.round(controls.seed || 1)}-${Math.round(controls.numResistors || 4)}-${(controls.resistorStrength ?? 0.55).toFixed(2)}-${(controls.complexity ?? 0.6).toFixed(2)}`
+    if ((p as any)._lastPcbKey !== key) {
+      const seed = Math.round(controls.seed || 1)
+      p.randomSeed(seed)
+      p.noiseSeed(seed)
+      ;(p as any)._pcb = buildPCB(p)
+      ;(p as any)._lastPcbKey = key
+      ;(p as any)._surgeStartSec = 0
+    }
+
     const pcb: ReturnType<typeof buildPCB> = (p as any)._pcb
 
     const timeSec = p.millis() / 1000
@@ -686,7 +868,8 @@ const config: DayConfig = {
     }
 
     const surgeStartSec: number = (p as any)._surgeStartSec || timeSec
-    const speedPx = 360 // px/sec along trace network
+    const speedMult = clamp(controls.electricitySpeed ?? 1.0, 0.3, 2.2)
+    const speedPx = 360 * speedMult // px/sec along trace network
     const tail = 150
     const front = ((timeSec - surgeStartSec) * speedPx) % (pcb.totalLen + tail * 1.2)
 
@@ -763,7 +946,28 @@ const config: DayConfig = {
         ;(p as any)._surgeStartSec = timeSec
       }
     }
+    // Randomize seed quickly
+    if (p.key === "n" || p.key === "N") {
+      const newSeed = Math.floor(Math.random() * 10000)
+      if (typeof window !== "undefined" && typeof (window as any).setGenuaryControls === "function") {
+        ;(window as any).setGenuaryControls(6, { seed: newSeed })
+      } else {
+        const controls: ControlState = (p as any)._controls || { ...defaultControls }
+        controls.seed = newSeed
+        ;(p as any)._controls = controls
+      }
+    }
   },
 }
 
+export function getClaudesChoice(): Partial<ControlState> {
+  return {
+    electricitySpeed: 1.25,
+    numResistors: 6,
+    resistorStrength: 0.65, // nice mid-high decade (kΩ-ish)
+    complexity: 0.78,
+  }
+}
+
+export { controlConfigs, defaultControls }
 export default config
