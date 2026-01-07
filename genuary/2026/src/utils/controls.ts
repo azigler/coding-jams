@@ -359,7 +359,14 @@ function formatValue(value: number, config: ControlConfig): string {
   if (config.label === "Mode") {
     return value === 0 ? "Spiral" : "Wave";
   }
-  
+
+  // Special handling for Boolean Operation (Day 7)
+  if (config.label === "Boolean Operation") {
+    const ops = ["AND", "OR", "XOR", "¬A", "¬B", "De Morgan"];
+    const idx = Math.round(value);
+    return ops[Math.min(idx, ops.length - 1)] || "XOR";
+  }
+
   // If step is defined and is an integer step, show as integer
   if (config.step && config.step >= 1 && Number.isInteger(value)) {
     return Math.round(value).toString();
