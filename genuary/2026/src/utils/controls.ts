@@ -262,9 +262,9 @@ export function createControlsContainer(
     onUpdate(values);
   });
 
-  // Add GPT-5.2's Choice button
+  // Add Opus 4.5's Choice button
   const claudeBtn = document.createElement('button');
-  claudeBtn.textContent = "🤖 GPT-5.2's Choice";
+  claudeBtn.textContent = "🎨 Opus 4.5's Choice";
   claudeBtn.style.cssText = `
     padding: 0.5rem 1rem;
     background: #4a9eff;
