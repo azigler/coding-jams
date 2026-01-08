@@ -214,36 +214,52 @@ const config: DayConfig = {
     createCanvas(p, 800, 800);
     p.colorMode(p.RGB, 255, 255, 255, 1);
     p.noStroke();
+
+    // Pre-render sky gradient to a buffer (expensive, do once)
+    const skyBuffer = p.createGraphics(p.width, p.height);
+    for (let y = 0; y < p.height; y++) {
+      const t = y / p.height;
+      const r = p.lerp(5, 15, t);
+      const g = p.lerp(5, 18, t);
+      const b = p.lerp(15, 35, t);
+      skyBuffer.stroke(r, g, b);
+      skyBuffer.line(0, y, p.width, y);
+    }
+    (p as any)._skyBuffer = skyBuffer;
+
+    // Initialize city immediately
+    const controls = { ...defaultControls };
+    const rand = seededRandom(42);
+    const city = generateCity(p.width, p.height, controls, rand);
+    (p as any)._buildings = city.buildings;
+    (p as any)._stars = city.stars;
+    (p as any)._lastGenConfig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}-${controls.starDensity}`;
   },
 
   draw: (p: p5) => {
     const controls: ControlState = (p as any)._controls || { ...defaultControls };
     const time = p.millis() / 1000;
 
-    // Regenerate city if needed
-    const configSig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}`;
-    if ((p as any)._lastConfig !== configSig) {
+    // Only regenerate city for controls that affect generation (not animation controls)
+    const genConfigSig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}-${controls.starDensity}`;
+    if ((p as any)._lastGenConfig !== genConfigSig) {
       const rand = seededRandom(42);
       const city = generateCity(p.width, p.height, controls, rand);
       (p as any)._buildings = city.buildings;
       (p as any)._stars = city.stars;
-      (p as any)._lastConfig = configSig;
+      (p as any)._lastGenConfig = genConfigSig;
     }
 
     const buildings: Building[] = (p as any)._buildings || [];
     const stars: Star[] = (p as any)._stars || [];
 
-    // === DRAW SKY ===
-    // Gradient from deep blue-black at top to slightly lighter at horizon
-    for (let y = 0; y < p.height; y++) {
-      const t = y / p.height;
-      const r = p.lerp(5, 15, t);
-      const g = p.lerp(5, 18, t);
-      const b = p.lerp(15, 35, t);
-      p.stroke(r, g, b);
-      p.line(0, y, p.width, y);
+    // === DRAW SKY (from cached buffer) ===
+    const skyBuffer = (p as any)._skyBuffer;
+    if (skyBuffer) {
+      p.image(skyBuffer, 0, 0);
+    } else {
+      p.background(10, 10, 20);
     }
-    p.noStroke();
 
     // === DRAW STARS ===
     for (const star of stars) {
