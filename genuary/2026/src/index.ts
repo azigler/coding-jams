@@ -8,6 +8,7 @@
  *   - harness/day-loader.ts — Day module loading and rendering
  *   - harness/navigation.ts — Async navigation
  *   - utils/controls.ts     — Control UI management
+ *   - utils/recording.ts    — GIF recording with visual status
  */
 
 import type { DayConfig, ControlsManager, ControlState } from './types';
@@ -26,7 +27,10 @@ import { LoadDayResult } from './harness/day-loader';
 import {
   createControls,
   setControlsProgrammatically,
+  loadControls,
 } from './utils/controls';
+import { recordGif, downloadBlob, updateRecordButton, type RecordingStatus } from './utils/recording';
+import { createRecordingOverlay, type RecordingOverlay } from './utils/recording-overlay';
 
 // ============================================================================
 // Global API
@@ -42,6 +46,14 @@ if (typeof window !== 'undefined') {
     return setControlsProgrammatically(day, values);
   };
 }
+
+// ============================================================================
+// Recording State
+// ============================================================================
+
+// Recording state management
+let recordingAbortController: AbortController | null = null;
+let recordingOverlay: RecordingOverlay | null = null;
 
 // ============================================================================
 // Header Height Sync
@@ -185,73 +197,140 @@ function setupDownloadButtons(config: DayConfig): void {
 }
 
 /**
- * Start timelapse recording
+ * Start timelapse recording using the async/await flow with visual status
  */
 async function startTimelapseRecording(config: DayConfig): Promise<void> {
-  if (!config.recording) return;
+  console.log('🎬 Start timelapse recording clicked');
 
-  const timelapseBtn = document.getElementById(
-    'download-timelapse-btn'
-  ) as HTMLButtonElement | null;
-
-  // Update button state
-  if (timelapseBtn) {
-    timelapseBtn.textContent = '⏹️ Recording...';
-    timelapseBtn.disabled = true;
+  if (!config.recording) {
+    console.error('Recording not enabled for this day');
+    return;
   }
+
+  // Cancel any existing recording
+  if (recordingAbortController) {
+    recordingAbortController.abort();
+    recordingAbortController = null;
+  }
+
+  // Clean up existing overlay
+  if (recordingOverlay) {
+    recordingOverlay.destroy();
+    recordingOverlay = null;
+  }
+
+  // Create new abort controller
+  recordingAbortController = new AbortController();
+
+  const dayNum = config.day;
+  console.log('Reloading day', dayNum);
 
   try {
     // Reload day to restart animation
-    await navigateToDay(config.day, { forceReload: true });
+    await navigateToDay(dayNum, { forceReload: true });
 
     // Wait for sketch to initialize
     await delay(500);
 
     const renderer = getRenderer();
     const sketch = renderer?.getSketch();
+    const canvas = renderer?.getCanvas();
 
     if (!sketch) {
       throw new Error('Sketch not available');
     }
 
-    // Import recording module
-    const recording = await import('./utils/recording.js');
-    (sketch as unknown as Record<string, unknown>)._recordingModule = recording;
+    if (!canvas) {
+      throw new Error('Canvas not available');
+    }
+
+    // Create recording overlay
+    recordingOverlay = createRecordingOverlay(canvas);
+
+    // Combined status callback: update both button and overlay
+    const handleStatus = (status: RecordingStatus) => {
+      updateRecordButton(status);
+      recordingOverlay?.update(status);
+    };
 
     // Ensure animation is running
     sketch.loop();
+    console.log('✅ Animation started');
 
-    // Reset frame count
+    // Load and apply controls
+    try {
+      const dayModule = await import(`./days/${dayNum.toString().padStart(2, '0')}.ts`);
+      const defaultControls: ControlState = dayModule.defaultControls || {};
+      if (defaultControls && Object.keys(defaultControls).length > 0) {
+        const savedControls = loadControls(dayNum, defaultControls);
+        (sketch as unknown as Record<string, unknown>)._controls = savedControls;
+        console.log('✅ Controls loaded for recording:', savedControls);
+
+        // Reset cached data so it regenerates with correct control values
+        const extSketch = sketch as unknown as Record<string, unknown>;
+        extSketch._triangleData = null;
+        extSketch._lastTriangleCount = null;
+        extSketch._balls = null;
+        extSketch._lastBallCount = null;
+        extSketch._particles = null;
+        extSketch._lastParticleCount = null;
+      }
+    } catch {
+      console.log('No controls for this day');
+    }
+
+    // Reset frame count to start from beginning
     sketch.frameCount = 0;
 
-    // Small delay for canvas to be ready
+    // Small delay to ensure first frame is drawn with correct controls
     await delay(300);
 
-    // Initialize and start recording
-    const encoder = recording.initEncoder(sketch, config.recording);
-    if (encoder) {
-      setRecording(true);
-      recording.startRecording(sketch, config.recording);
+    console.log('🎬 Starting GIF recording...');
+    console.log('Canvas check:', {
+      canvas: canvas ? 'exists' : 'missing',
+      width: sketch.width,
+      height: sketch.height,
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+    });
 
-      // Re-enable button after recording + encoding
-      const totalTime = (config.recording.duration + 5) * 1000;
-      setTimeout(() => {
-        setRecording(false);
-        if (timelapseBtn) {
-          timelapseBtn.textContent = '🎬 Record GIF';
-          timelapseBtn.disabled = false;
-        }
-      }, totalTime);
+    setRecording(true);
+
+    // Record the GIF using the async API
+    const blob = await recordGif(
+      sketch,
+      handleStatus,
+      recordingAbortController.signal
+    );
+
+    // Download the result
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `genuary-2026-day-${dayNum.toString().padStart(2, '0')}-${timestamp}.gif`;
+    downloadBlob(blob, filename);
+
+    console.log('✅ Recording complete and downloaded!');
+
+    // Clean up overlay after a delay to show completion
+    setTimeout(() => {
+      if (recordingOverlay) {
+        recordingOverlay.update({ state: 'idle', progress: 0, message: '' });
+      }
+    }, 3000);
+
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === 'Recording cancelled') {
+      console.log('📹 Recording was cancelled');
+      updateRecordButton({ state: 'idle', progress: 0, message: '' });
+      recordingOverlay?.update({ state: 'idle', progress: 0, message: '' });
     } else {
-      throw new Error('Failed to initialize GIF encoder');
+      console.error('❌ Recording failed:', err);
+      updateRecordButton({ state: 'error', progress: 0, message: err.message });
+      recordingOverlay?.update({ state: 'error', progress: 0, message: err.message });
     }
-  } catch (error) {
-    console.error('Recording error:', error);
+  } finally {
     setRecording(false);
-    if (timelapseBtn) {
-      timelapseBtn.textContent = '❌ Error';
-      timelapseBtn.disabled = false;
-    }
+    recordingAbortController = null;
   }
 }
 
