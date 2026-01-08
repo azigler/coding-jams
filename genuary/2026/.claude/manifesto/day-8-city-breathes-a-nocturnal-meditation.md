@@ -126,7 +126,7 @@ The piece asks the viewer to slow down, to watch the rhythm emerge, to imagine t
 
 > Watch the windows. Each one pulses with its own rhythm — a lamp dimmed, a screen glowing blue, a light turned off as someone finally sleeps. This isn't architecture. It's a living organism. Thousands of lives behind glass, breathing together without knowing it. The city doesn't sleep. It breathes.
 
-**Medium:** TypeScript on silicon, rendered through liquid crystal
+**Medium:** Procedural lungs, pixel windows, watched through glass at 3am
 
 *Note: This description is for social media posts and accompanying text, NOT rendered on the canvas itself. The art should be clean and uncluttered.*
 

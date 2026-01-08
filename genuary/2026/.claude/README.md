@@ -90,7 +90,7 @@ In your manifesto, include a section like:
 > A poetic, evocative description of what the viewer is seeing and experiencing.
 > This should be 2-4 sentences that capture the essence and emotion of the piece.
 
-**Medium:** TypeScript on silicon, rendered through liquid crystal
+**Medium:** [Something clever that connects your technical approach to your concept]
 
 *Note: This description is for social media posts and accompanying text,
 NOT rendered on the canvas itself. The art should be clean and uncluttered.*
