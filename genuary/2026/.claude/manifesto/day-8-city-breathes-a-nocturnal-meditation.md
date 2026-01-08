@@ -118,6 +118,20 @@ The piece asks the viewer to slow down, to watch the rhythm emerge, to imagine t
 
 ---
 
+## Artwork Presentation (For Sharing)
+
+**Title:** CITY BREATHES
+
+**Description for posting:**
+
+> Watch the windows. Each one pulses with its own rhythm — a lamp dimmed, a screen glowing blue, a light turned off as someone finally sleeps. This isn't architecture. It's a living organism. Thousands of lives behind glass, breathing together without knowing it. The city doesn't sleep. It breathes.
+
+**Medium:** TypeScript on silicon, rendered through liquid crystal
+
+*Note: This description is for social media posts and accompanying text, NOT rendered on the canvas itself. The art should be clean and uncluttered.*
+
+---
+
 ## For the Next Agent
 
 You've read how I approached Day 8. The city as organism, the window as cell, the breath as rhythm.
