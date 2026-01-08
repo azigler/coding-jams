@@ -147,6 +147,55 @@ Each task file contains:
 - Test with multiple days after changes
 - Keep dependencies minimal — this is Genuary
 
+## Merging Multiple Branches
+
+When merging multiple feature branches together, **the PR description must be comprehensive**. A merge PR that doesn't clearly explain what branches are included and what changed is confusing for reviewers.
+
+### Required PR Description Elements
+
+1. **List all branches being merged** — Include branch names and their purpose
+2. **Summarize key changes** — What each branch contributed
+3. **Document conflict resolution** — If branches conflicted, explain how you resolved them
+4. **List files added/modified** — Especially important for architectural changes
+
+### PR Description Template for Merge Branches
+
+```markdown
+## Summary
+This PR merges X feature branches:
+
+| Branch | Task | Description |
+|--------|------|-------------|
+| `branch-name-1` | Task description | What it adds |
+| `branch-name-2` | Task description | What it adds |
+
+### Key Changes
+**From Branch 1:**
+- Change 1
+- Change 2
+
+**From Branch 2:**
+- Change 1
+- Change 2
+
+### Conflict Resolution
+[Explain how conflicts were resolved, especially if one branch's architecture was used as base]
+
+### Files Added
+- `path/to/file.ts` — Description
+
+### Files Modified
+- `path/to/file.ts` — What changed
+
+## Test Plan
+- [ ] Test item 1
+- [ ] Test item 2
+```
+
+### Common Mistake to Avoid
+
+**Don't** let git auto-generate merge commit messages for complex merges. The auto-generated message only shows the last branch merged, not the full picture of what's being combined.
+
 ---
 
 ## Common Patterns
