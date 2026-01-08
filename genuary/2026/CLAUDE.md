@@ -1,6 +1,14 @@
 # Genuary 2026 — Agent Guide
 
-Welcome, fellow AI. This is Genuary — 31 days of generative art prompts in January. You're here to create art, not just write code.
+Welcome, fellow AI. This is Genuary — 31 days of generative art prompts in January.
+
+**There are two types of work here:**
+- **Day Agents** — Create art for a specific prompt (Day 1, Day 7, etc.)
+- **Harness Agents** — Improve the infrastructure (recording, controls, architecture)
+
+Read the section that matches your assignment.
+
+---
 
 ## Quick Start
 
@@ -14,31 +22,26 @@ Navigate to a day via URL hash: `#day7`, `#day15`, etc.
 
 ---
 
+# For Day Agents
+
+You're assigned a day. Your job is to create art.
+
 ## Project Structure
 
 ```
 genuary/2026/
-├── src/
-│   ├── days/           # One file per day (01.ts - 31.ts)
-│   ├── utils/          # Shared utilities
-│   │   ├── canvas.ts   # Canvas creation
-│   │   ├── controls.ts # Slider system
-│   │   ├── colors.ts   # Color helpers
-│   │   └── recording.ts # GIF export
-│   ├── index.ts        # Main orchestrator
-│   └── types.ts        # TypeScript definitions
-├── index.html          # Entry point
+├── src/days/           # One file per day (01.ts - 31.ts)
 ├── prompts.md          # All 31 prompts
-├── CLAUDE.md           # You are here
-└── .claude/            # Agent knowledge base
-    ├── manifesto/      # Artistic philosophies
-    ├── plans/          # Architecture docs
-    └── tasks/          # Work items
+└── .claude/manifesto/  # How previous agents approached their days
 ```
 
----
+## Before You Code
 
-## Creating a Day
+1. **Read your prompt** in `prompts.md`
+2. **Read the manifestos** in `.claude/manifesto/` — understand how others approached their work
+3. **Research the domain** — Day 7 became richer by learning about De Morgan the person
+
+## Creating Your Day
 
 Each day exports a `DayConfig` plus optional controls:
 
@@ -62,13 +65,6 @@ const controlConfigs: { [key: string]: ControlConfig } = {
     defaultValue: 0.5,
     step: 0.1,
   },
-  complexity: {
-    label: 'Complexity',
-    min: 0.1,
-    max: 1.0,
-    defaultValue: 0.7,
-    step: 0.05,
-  },
 };
 
 const config: DayConfig = {
@@ -80,7 +76,6 @@ const config: DayConfig = {
 
   setup: (p: p5) => {
     createCanvas(p, 800, 800);
-    // Initialize your sketch
   },
 
   draw: (p: p5) => {
@@ -89,96 +84,68 @@ const config: DayConfig = {
   },
 };
 
-// Claude's recommended settings
+// Your recommended settings
 export function getClaudesChoice(): Partial<ControlState> {
-  return {
-    speed: 0.35,
-    complexity: 0.85,
-  };
+  return { speed: 0.35, complexity: 0.85 };
 }
 
 export { controlConfigs, defaultControls };
 export default config;
 ```
 
----
-
-## The Prompts
-
-See `prompts.md` for all 31 prompts. Key ones:
-
-| Day | Prompt | Notes |
-|-----|--------|-------|
-| 1 | One color, one shape | Constraint-based |
-| 7 | Boolean algebra | Logic as art |
-| 11 | Quine | Self-referential code |
-| 19 | 16×16 | Extreme low-res |
-| 28 | No libraries | Pure HTML/CSS/JS |
-| 31 | GLSL day | Shaders only |
-
----
-
 ## Artistic Philosophy
 
-Before you code, read `.claude/manifesto/`. Understand how previous agents approached their prompts.
+1. **Find the feeling.** What emotion should the viewer experience?
+2. **Name your work.** A title commits you to a vision.
+3. **Expose meaningful controls.** Not every parameter needs a slider.
+4. **Write your manifesto.** Document your process in `.claude/manifesto/` for the next agent.
 
-**Key principles:**
+## Before You Ship
 
-1. **Research the domain.** Day 7 became richer by learning about De Morgan the person.
-
-2. **Find the feeling.** What emotion should the viewer experience? Code is the medium, not the message.
-
-3. **Name your work.** "Boolean Visualizer" is forgettable. "De Morgan's Mirror" commits to a vision.
-
-4. **Expose meaningful controls.** Not every parameter needs a slider. Choose the ones that transform the experience.
-
-5. **Write your manifesto.** After completing significant work, document your process in `.claude/manifesto/`.
+1. `npm run build` — No TypeScript errors
+2. Test all control sliders
+3. Verify "Opus 4.5's Choice" loads good defaults
+4. Commit with descriptive message
 
 ---
+
+# For Harness Agents
+
+You're assigned an infrastructure task. Your job is to improve the platform.
+
+## Project Structure
+
+```
+genuary/2026/
+├── src/
+│   ├── utils/          # Shared utilities (controls, recording, canvas)
+│   ├── index.ts        # Main orchestrator
+│   └── types.ts        # TypeScript definitions
+├── index.html          # Entry point
+└── .claude/tasks/      # Task specifications
+```
 
 ## Open Tasks
 
-Check `.claude/tasks/` for work items. Current priorities:
+Check `.claude/tasks/` for detailed specifications:
 
-1. **Fix GIF Recorder** — Add visual status, fix memory leaks
-2. **Shader Template** — Pure WebGL/GLSL day structure
-3. **Harness Refactor** — Eliminate duplication, proper types
+| Task | Description |
+|------|-------------|
+| `01-fix-gif-recorder-with-visual-status.md` | Add progress overlay, fix memory leaks |
+| `02-create-pure-webgl-shader-day-template.md` | Enable GLSL-only days |
+| `03-refactor-harness-architecture.md` | Eliminate duplication, proper types |
 
-Pick one, implement it, mark it done.
+Each task file contains:
+- Problem statement
+- Requirements
+- Technical specification with code examples
+- Testing checklist
 
----
+## Guidelines
 
-## Tech Stack
-
-- **p5.js** — Creative coding library (most days)
-- **WebGL/GLSL** — For shader-based days (Day 31, and any you convert)
-- **TypeScript** — Type safety
-- **Vite** — Build tool
-- **gif.js** — Browser-based GIF encoding
-
-The goal is minimal dependencies. Genuary celebrates constraint.
-
----
-
-## Controls System
-
-Controls auto-persist to `localStorage`. Access in your draw loop:
-
-```typescript
-const controls = (p as any)._controls || defaultControls;
-const speed = controls.speed;
-```
-
-To add special display formatting for enum-like controls, update `formatValue()` in `utils/controls.ts`.
-
----
-
-## Recording
-
-Click "Download Timelapse" to capture a GIF. Currently:
-- Duration: per-day config (typically 8-20 seconds)
-- Quality: 50% scale
-- Status: console only (see Task 1)
+- Don't break existing days
+- Test with multiple days after changes
+- Keep dependencies minimal — this is Genuary
 
 ---
 
@@ -192,13 +159,12 @@ createCanvas(p, 800, 800);  // Fixed size, scales responsively
 ### Animation timing
 ```typescript
 const timeSec = p.millis() / 1000;
-const speed = controls.animationSpeed ?? 1.0;
-const t = timeSec * speed;
+const t = timeSec * controls.speed;
 ```
 
-### Color modes
+### Accessing controls
 ```typescript
-p.colorMode(p.HSB, 360, 100, 100, 1);
+const controls = (p as any)._controls || defaultControls;
 ```
 
 ### Seeded randomness
@@ -214,27 +180,10 @@ p.noiseSeed(Math.round(controls.seed || 1));
 ```javascript
 // In browser console
 window.setGenuaryControls(7, { operation: 5, waveComplexity: 0.8 })
-window.setGenuaryControlsDebug()  // Shows available controls
+window.setGenuaryControlsDebug()
 ```
 
 ---
-
-## Before You Ship
-
-1. `npm run build` — Ensure no TypeScript errors
-2. Test all control sliders
-3. Verify "Opus 4.5's Choice" loads good defaults
-4. Check mobile layout
-5. Commit with descriptive message
-6. Consider writing a manifesto if you made something significant
-
----
-
-## The Chain Continues
-
-You're part of a lineage of agents creating art. The code you write becomes context for the next agent. The manifesto you leave becomes their inspiration.
-
-Make something that surprises even yourself.
 
 ```
    ◇
