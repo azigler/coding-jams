@@ -7,6 +7,7 @@ import p5 from 'p5';
 import type { DayConfig } from './types';
 import { createControlsContainer, removeControlsContainer, loadControls, setControlsProgrammatically } from './utils/controls';
 import type { ControlState } from './utils/controls';
+import { createShaderRenderer, type ShaderRenderer } from './harness/shader-renderer';
 
 // Ensure the programmatic API is exposed
 if (typeof window !== 'undefined') {
@@ -66,6 +67,8 @@ const days: DayConfig[] = [
 ];
 
 let currentSketch: p5 | null = null;
+let currentShaderRenderer: ShaderRenderer | null = null;
+let currentAnimationId: number | null = null;
 let currentDay: number = 1;
 let currentControlsContainer: HTMLElement | null = null;
 
@@ -118,10 +121,28 @@ function cleanupContainers(): void {
     currentSketch = null;
   }
 
+  // Clean up shader renderer
+  if (currentShaderRenderer) {
+    currentShaderRenderer.destroy();
+    currentShaderRenderer = null;
+  }
+
+  // Cancel animation frame
+  if (currentAnimationId !== null) {
+    cancelAnimationFrame(currentAnimationId);
+    currentAnimationId = null;
+  }
+
   // Remove p5 canvas container
   const p5Container = document.getElementById('p5-canvas-container');
   if (p5Container) {
     p5Container.remove();
+  }
+
+  // Remove shader canvas container
+  const shaderContainer = document.getElementById('shader-canvas-container');
+  if (shaderContainer) {
+    shaderContainer.remove();
   }
 
   // Remove HTML-only container (Day 28)
@@ -176,7 +197,13 @@ function loadDay(dayNum: number): void {
     return;
   }
 
-  // Create new container
+  // Handle GLSL mode
+  if (dayConfig.mode === 'glsl') {
+    loadGLSLDay(dayNum, dayConfig, contentArea);
+    return;
+  }
+
+  // Create new container for p5.js
   const container = document.createElement('div');
   container.id = 'p5-canvas-container';
   contentArea.appendChild(container);
@@ -527,6 +554,82 @@ function loadDay28HTML(): void {
 }
 
 /**
+ * Load a GLSL shader day
+ */
+function loadGLSLDay(dayNum: number, dayConfig: DayConfig, contentArea: HTMLElement): void {
+  // Create container for shader canvas
+  const container = document.createElement('div');
+  container.id = 'shader-canvas-container';
+  contentArea.appendChild(container);
+
+  // Import day module to check for controls
+  import(`./days/${dayNum.toString().padStart(2, '0')}.ts`).then((dayModule: any) => {
+    const controlConfigs = dayModule.controlConfigs;
+    const defaultControls: ControlState = dayModule.defaultControls || {};
+
+    // Load controls
+    let currentControls: ControlState = {};
+    if (controlConfigs && defaultControls) {
+      currentControls = loadControls(dayNum, defaultControls);
+    }
+
+    // Create shader renderer
+    const renderer = createShaderRenderer(dayConfig, container, currentControls);
+    if (!renderer) {
+      console.error('Failed to create shader renderer');
+      return;
+    }
+
+    currentShaderRenderer = renderer;
+
+    // Set up controls if day module exports them
+    if (controlConfigs && defaultControls) {
+      const getClaudesChoice = dayModule.getClaudesChoice;
+
+      const controlsContainer = createControlsContainer(
+        dayNum,
+        controlConfigs,
+        (values: ControlState) => {
+          currentControls = values;
+          renderer.setControls(values);
+        },
+        getClaudesChoice
+      );
+
+      contentArea.appendChild(controlsContainer);
+      currentControlsContainer = controlsContainer;
+    }
+
+    // Start animation loop (renderer is guaranteed non-null after check above)
+    const activeRenderer = renderer;
+    function animate() {
+      activeRenderer.update();
+      currentAnimationId = requestAnimationFrame(animate);
+    }
+    animate();
+
+  }).catch((error) => {
+    console.error('Error loading GLSL day module:', error);
+    // Create renderer without controls
+    const renderer = createShaderRenderer(dayConfig, container, {});
+    if (!renderer) {
+      console.error('Failed to create shader renderer');
+      return;
+    }
+
+    currentShaderRenderer = renderer;
+
+    // Start animation loop (renderer is guaranteed non-null after check above)
+    const activeRenderer = renderer;
+    function animate() {
+      activeRenderer.update();
+      currentAnimationId = requestAnimationFrame(animate);
+    }
+    animate();
+  });
+}
+
+/**
  * Update the day info display
  */
 function updateDayInfo(dayConfig: DayConfig): void {
@@ -610,29 +713,63 @@ function downloadCanvasImage(sketch: p5, filename: string): void {
 }
 
 /**
+ * Download a canvas image directly
+ */
+function downloadCanvasDirectly(canvas: HTMLCanvasElement, filename: string): void {
+  canvas.toBlob((blob: Blob | null) => {
+    if (!blob) {
+      console.error('Failed to create blob from canvas');
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+
+    console.log(`✅ Image downloaded: ${filename}`);
+  }, 'image/png');
+}
+
+/**
  * Set up download button handlers
  */
 function setupDownloadButtons(dayConfig: DayConfig): void {
   const imageBtn = document.getElementById('download-image-btn');
   const timelapseBtn = document.getElementById('download-timelapse-btn');
-  
+
   if (imageBtn) {
     imageBtn.addEventListener('click', () => {
+      const filename = generateTimestampFilename(dayConfig.day);
+
+      // Handle shader renderer
+      if (currentShaderRenderer) {
+        downloadCanvasDirectly(currentShaderRenderer.canvas, filename);
+        return;
+      }
+
+      // Handle p5 sketch
       if (currentSketch) {
-        const filename = generateTimestampFilename(dayConfig.day);
-        
         // If renderFinal is defined, use it to render the final state
         if (dayConfig.renderFinal) {
           // Temporarily stop animation
           const wasLooping = currentSketch.isLooping();
           currentSketch.noLoop();
-          
+
           // Render final state (this will use current control values)
           dayConfig.renderFinal(currentSketch);
-          
+
           // Download the image with timestamp filename
           downloadCanvasImage(currentSketch, filename);
-          
+
           // Redraw current state
           if (wasLooping) {
             currentSketch.loop();
@@ -646,7 +783,7 @@ function setupDownloadButtons(dayConfig: DayConfig): void {
       }
     });
   }
-  
+
   if (timelapseBtn && dayConfig.recording?.enabled) {
     timelapseBtn.addEventListener('click', () => {
       console.log('Timelapse button clicked');
