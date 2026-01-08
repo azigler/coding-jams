@@ -47,6 +47,22 @@ export interface RecordingConfig {
 }
 
 // ============================================================================
+// Uniform Types (for GLSL shaders)
+// ============================================================================
+
+/**
+ * Uniform configuration for shader days
+ * Maps control values to shader uniforms
+ */
+export interface UniformConfig {
+  name: string;
+  type: 'float' | 'vec2' | 'vec3' | 'vec4' | 'int' | 'bool' | 'mat4' | 'sampler2D';
+  controlKey?: string; // Links to control slider
+  defaultValue?: number | number[];
+  value?: number | number[] | WebGLTexture;
+}
+
+// ============================================================================
 // Day Configuration Types
 // ============================================================================
 
@@ -69,19 +85,10 @@ export interface DayConfig {
   mousePressed?: (p: p5) => void;
   keyPressed?: (p: p5) => void;
 
-  // GLSL mode (for future WebGL shader support)
+  // GLSL mode properties
   fragmentShader?: string;
-  vertexShader?: string;
+  vertexShader?: string; // Optional, uses default fullscreen quad if not provided
   uniforms?: UniformConfig[];
-}
-
-/**
- * Uniform configuration for GLSL shaders
- */
-export interface UniformConfig {
-  name: string;
-  type: 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat4' | 'sampler2D';
-  value?: number | number[] | WebGLTexture;
 }
 
 /**

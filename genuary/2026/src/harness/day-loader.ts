@@ -16,6 +16,7 @@ import type {
 } from '../types';
 import { setControls, setRecording } from './state';
 import { registerCleanup } from './cleanup';
+import { createShaderRenderer, type ShaderRenderer } from './shader-renderer';
 
 // ============================================================================
 // Extended p5 properties (stored on instance)
@@ -358,6 +359,90 @@ function triggerRecording(sketch: P5WithExtensions, config: RecordingConfig): vo
 }
 
 // ============================================================================
+// GLSL Renderer Creation
+// ============================================================================
+
+interface GLSLRendererOptions {
+  config: DayConfig;
+  container: HTMLElement;
+  initialControls: ControlState;
+  onControlsChange: ControlChangeHandler;
+}
+
+/**
+ * Create a GLSL shader renderer wrapped as a DayRenderer
+ * This adapts the ShaderRenderer interface to the DayRenderer interface
+ */
+export function createGLSLRenderer(options: GLSLRendererOptions): DayRenderer | null {
+  const { config, container, initialControls, onControlsChange } = options;
+
+  let shaderRenderer: ShaderRenderer | null = null;
+  let running = false;
+  let animationId: number | null = null;
+  let cleanupFn: (() => void) | null = null;
+
+  // Create the shader renderer
+  shaderRenderer = createShaderRenderer(config, container, initialControls);
+  if (!shaderRenderer) {
+    return null;
+  }
+
+  const renderer = shaderRenderer;
+
+  return {
+    start: () => {
+      if (running || !renderer) return;
+      running = true;
+
+      // Animation loop
+      function animate() {
+        renderer.update();
+        animationId = requestAnimationFrame(animate);
+      }
+      animate();
+
+      // Register cleanup
+      cleanupFn = registerCleanup(() => {
+        if (animationId !== null) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        renderer.destroy();
+        running = false;
+      });
+    },
+
+    stop: () => {
+      if (!running) return;
+
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+
+      renderer.destroy();
+      running = false;
+
+      // Unregister cleanup
+      cleanupFn?.();
+      cleanupFn = null;
+    },
+
+    updateControls: (newControls: ControlState) => {
+      renderer.setControls(newControls);
+      setControls(newControls);
+      onControlsChange(newControls);
+    },
+
+    getCanvas: () => renderer.canvas,
+
+    getSketch: () => null, // GLSL renderer has no p5 sketch
+
+    isRunning: () => running,
+  };
+}
+
+// ============================================================================
 // Full Day Loader
 // ============================================================================
 
@@ -395,14 +480,33 @@ export async function loadDay(
   // Update global state
   setControls(controls);
 
-  // Create the renderer (unified code path!)
-  const renderer = createP5Renderer({
-    config,
-    container,
-    initialControls: controls,
-    onControlsChange,
-    hasControls,
-  });
+  // Create the appropriate renderer based on mode
+  let renderer: DayRenderer;
+
+  if (config.mode === 'glsl') {
+    // GLSL/WebGL shader mode
+    const glslRenderer = createGLSLRenderer({
+      config,
+      container,
+      initialControls: controls,
+      onControlsChange,
+    });
+
+    if (!glslRenderer) {
+      throw new Error(`Failed to create GLSL renderer for day ${dayNum}. WebGL may not be available.`);
+    }
+
+    renderer = glslRenderer;
+  } else {
+    // Default p5.js mode
+    renderer = createP5Renderer({
+      config,
+      container,
+      initialControls: controls,
+      onControlsChange,
+      hasControls,
+    });
+  }
 
   return {
     renderer,

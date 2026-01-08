@@ -142,6 +142,9 @@ export function cleanupContainers(): void {
   // Remove p5 canvas container
   removeElement('p5-canvas-container');
 
+  // Remove shader canvas container (for GLSL days)
+  removeElement('shader-canvas-container');
+
   // Remove HTML-only container (Day 28)
   removeElement('html-only-container');
 

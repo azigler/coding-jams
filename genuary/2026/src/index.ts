@@ -82,7 +82,7 @@ function updateDayInfo(config: DayConfig): void {
           📷 Download Image
         </button>
         <button id="download-timelapse-btn" ${timelapseDisabled} style="padding: 0.5rem 1rem; background: #2a2a2a; color: #e0e0e0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.9rem; ${timelapseStyle}">
-          🎬 Download Timelapse
+          🎬 Record GIF
         </button>
       </div>
     </div>
@@ -153,15 +153,15 @@ function setupDownloadButtons(config: DayConfig): void {
       const sketch = renderer?.getSketch();
       const canvas = renderer?.getCanvas();
 
-      if (!sketch || !canvas) {
+      if (!canvas) {
         console.error('No canvas available');
         return;
       }
 
       const filename = generateTimestampFilename(config.day);
 
-      // Use renderFinal if available
-      if (config.renderFinal) {
+      // Use renderFinal if available (p5 mode)
+      if (sketch && config.renderFinal) {
         const wasLooping = sketch.isLooping();
         sketch.noLoop();
         config.renderFinal(sketch);
@@ -238,7 +238,7 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
       setTimeout(() => {
         setRecording(false);
         if (timelapseBtn) {
-          timelapseBtn.textContent = '🎬 Download Timelapse';
+          timelapseBtn.textContent = '🎬 Record GIF';
           timelapseBtn.disabled = false;
         }
       }, totalTime);
