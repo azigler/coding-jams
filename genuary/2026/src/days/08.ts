@@ -239,15 +239,26 @@ const config: DayConfig = {
   draw: (p: p5) => {
     const controls: ControlState = (p as any)._controls || { ...defaultControls };
     const time = p.millis() / 1000;
+    const now = Date.now();
 
-    // Only regenerate city for controls that affect generation (not animation controls)
+    // Debounced regeneration - only regenerate 200ms after last control change
     const genConfigSig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}-${controls.starDensity}`;
+
     if ((p as any)._lastGenConfig !== genConfigSig) {
+      // Config changed - mark pending regeneration
+      (p as any)._pendingGenConfig = genConfigSig;
+      (p as any)._lastChangeTime = now;
+    }
+
+    // Only actually regenerate after 200ms of no changes
+    if ((p as any)._pendingGenConfig &&
+        (p as any)._pendingGenConfig !== (p as any)._lastGenConfig &&
+        now - ((p as any)._lastChangeTime || 0) > 200) {
       const rand = seededRandom(42);
       const city = generateCity(p.width, p.height, controls, rand);
       (p as any)._buildings = city.buildings;
       (p as any)._stars = city.stars;
-      (p as any)._lastGenConfig = genConfigSig;
+      (p as any)._lastGenConfig = (p as any)._pendingGenConfig;
     }
 
     const buildings: Building[] = (p as any)._buildings || [];
