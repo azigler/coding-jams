@@ -7,6 +7,8 @@ import p5 from 'p5';
 import type { DayConfig } from './types';
 import { createControlsContainer, removeControlsContainer, loadControls, setControlsProgrammatically } from './utils/controls';
 import type { ControlState } from './utils/controls';
+import { recordGif, downloadBlob, updateRecordButton, type RecordingStatus } from './utils/recording';
+import { createRecordingOverlay, type RecordingOverlay } from './utils/recording-overlay';
 
 // Ensure the programmatic API is exposed
 if (typeof window !== 'undefined') {
@@ -69,6 +71,10 @@ let currentSketch: p5 | null = null;
 let currentDay: number = 1;
 let currentControlsContainer: HTMLElement | null = null;
 
+// Recording state management
+let recordingAbortController: AbortController | null = null;
+let recordingOverlay: RecordingOverlay | null = null;
+
 /**
  * Keep CSS in sync with actual fixed header height.
  * Fixes canvas being clipped under the header when day-info wraps.
@@ -107,6 +113,21 @@ function getDayFromURL(): number {
  * Clean up all containers and sketches
  */
 function cleanupContainers(): void {
+  // Cancel any active recording
+  if (recordingAbortController) {
+    recordingAbortController.abort();
+    recordingAbortController = null;
+  }
+
+  // Clean up recording overlay
+  if (recordingOverlay) {
+    recordingOverlay.destroy();
+    recordingOverlay = null;
+  }
+
+  // Reset button state
+  updateRecordButton({ state: 'idle', progress: 0, message: '' });
+
   // Clean up previous sketch
   if (currentSketch) {
     // Clean up resize listener if it exists
@@ -544,7 +565,7 @@ function updateDayInfo(dayConfig: DayConfig): void {
             📷 Download Image
           </button>
           <button id="download-timelapse-btn" ${timelapseDisabled} style="padding: 0.5rem 1rem; background: #2a2a2a; color: #e0e0e0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.9rem; ${timelapseStyle}">
-            🎬 Download Timelapse
+            🎬 Record GIF
           </button>
         </div>
       </div>
@@ -656,134 +677,150 @@ function setupDownloadButtons(dayConfig: DayConfig): void {
 }
 
 /**
- * Start timelapse recording using gif.js
+ * Start timelapse recording using the new async/await flow
  */
-function startTimelapseRecording(dayConfig: DayConfig): void {
+async function startTimelapseRecording(dayConfig: DayConfig): Promise<void> {
   console.log('🎬 Start timelapse recording clicked');
-  
+
   if (!dayConfig.recording) {
     console.error('Recording not enabled for this day');
     return;
   }
-  
-  const timelapseBtn = document.getElementById('download-timelapse-btn') as HTMLButtonElement | null;
-  
-  // Update button state
-  if (timelapseBtn) {
-    timelapseBtn.textContent = '⏹️ Recording...';
-    timelapseBtn.disabled = true;
+
+  // Cancel any existing recording
+  if (recordingAbortController) {
+    recordingAbortController.abort();
+    recordingAbortController = null;
   }
-  
-  // Reload the day to restart the animation
+
+  // Clean up existing overlay
+  if (recordingOverlay) {
+    recordingOverlay.destroy();
+    recordingOverlay = null;
+  }
+
+  // Create new abort controller
+  recordingAbortController = new AbortController();
+
+  // Reload the day to restart the animation from the beginning
   const dayNum = dayConfig.day;
   console.log('Reloading day', dayNum);
-  
-  // Clean up current sketch
+
+  // Clean up current sketch (without aborting our new controller)
   if (currentSketch) {
     currentSketch.remove();
     currentSketch = null;
   }
-  
+
   // Small delay to ensure cleanup, then reload
-  setTimeout(() => {
-    loadDay(dayNum);
-    
-    // Wait for sketch to initialize, then start recording
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  // Reload day (but we need to wait for it to fully initialize)
+  loadDay(dayNum);
+
+  // Wait for sketch to initialize
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  if (!currentSketch) {
+    console.error('Current sketch is null after reload');
+    updateRecordButton({ state: 'error', progress: 0, message: 'Failed to load sketch' });
+    return;
+  }
+
+  // Store reference to the sketch immediately after null check
+  // (TypeScript flow analysis workaround for async functions)
+  const sketch: p5 = currentSketch;
+
+  // Get canvas and create overlay
+  const canvas = (sketch as any).canvas as HTMLCanvasElement | undefined;
+  if (!canvas) {
+    console.error('Canvas not available');
+    updateRecordButton({ state: 'error', progress: 0, message: 'Canvas not available' });
+    return;
+  }
+
+  // Create recording overlay
+  recordingOverlay = createRecordingOverlay(canvas);
+
+  // Combined status callback: update both button and overlay
+  const handleStatus = (status: RecordingStatus) => {
+    updateRecordButton(status);
+    recordingOverlay?.update(status);
+  };
+
+  // Ensure animation is running
+  sketch.loop();
+  console.log('✅ Animation started');
+
+  // Load and apply controls
+  try {
+    const dayModule = await import(`./days/${dayNum.toString().padStart(2, '0')}.ts`);
+    const defaultControls: ControlState = dayModule.defaultControls || {};
+    if (defaultControls && Object.keys(defaultControls).length > 0) {
+      const savedControls = loadControls(dayNum, defaultControls);
+      (sketch as any)._controls = savedControls;
+      console.log('✅ Controls loaded for recording:', savedControls);
+
+      // Reset data so it regenerates with correct control values
+      (sketch as any)._triangleData = null;
+      (sketch as any)._lastTriangleCount = null;
+      (sketch as any)._balls = null;
+      (sketch as any)._lastBallCount = null;
+      (sketch as any)._particles = null;
+      (sketch as any)._lastParticleCount = null;
+    }
+  } catch (error) {
+    console.log('No controls for this day or error loading:', error);
+  }
+
+  // Reset frame count to start from beginning
+  sketch.frameCount = 0;
+
+  // Small delay to ensure first frame is drawn with correct controls
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  console.log('🎬 Starting GIF recording...');
+  console.log('Canvas check:', {
+    canvas: canvas ? 'exists' : 'missing',
+    width: sketch.width,
+    height: sketch.height,
+    canvasWidth: canvas?.width,
+    canvasHeight: canvas?.height,
+  });
+
+  try {
+    // Record the GIF using the new async API
+    const blob = await recordGif(
+      sketch,
+      handleStatus,
+      recordingAbortController.signal
+    );
+
+    // Download the result
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `genuary-2026-day-${dayNum.toString().padStart(2, '0')}-${timestamp}.gif`;
+    downloadBlob(blob, filename);
+
+    console.log('✅ Recording complete and downloaded!');
+
+    // Clean up overlay after a delay to show completion
     setTimeout(() => {
-      if (!currentSketch) {
-        console.error('Current sketch is null after reload');
-        if (timelapseBtn) {
-          timelapseBtn.textContent = '❌ Error';
-          (timelapseBtn as HTMLButtonElement).disabled = false;
-        }
-        return;
+      if (recordingOverlay) {
+        recordingOverlay.update({ state: 'idle', progress: 0, message: '' });
       }
-      
-      console.log('Sketch loaded, importing recording module...');
-      
-      // Import and start recording
-      import('./utils/recording.js').then((recording) => {
-        console.log('✅ Recording module loaded');
-        
-        // Store recording module on sketch instance
-        (currentSketch as any)._recordingModule = recording;
-        
-        // Ensure animation is running
-        currentSketch!.loop();
-        console.log('✅ Animation started');
-        
-        // IMPORTANT: Ensure controls are loaded and applied before recording
-        // Import day module to get control defaults
-        import(`./days/${dayNum.toString().padStart(2, '0')}.ts`).then((dayModule: any) => {
-          const defaultControls: ControlState = dayModule.defaultControls || {};
-          if (defaultControls && Object.keys(defaultControls).length > 0) {
-            // Load saved controls and apply them immediately
-            const savedControls = loadControls(dayNum, defaultControls);
-            (currentSketch as any)._controls = savedControls;
-            console.log('✅ Controls loaded for recording:', savedControls);
-            
-            // Reset triangle data so it regenerates with correct control values
-            (currentSketch as any)._triangleData = null;
-            (currentSketch as any)._lastTriangleCount = null;
-          }
-          
-          // Reset frame count to start from beginning (after controls are set)
-          currentSketch!.frameCount = 0;
-          
-          // Small delay to ensure first frame is drawn with correct controls
-          setTimeout(() => {
-            console.log('Initializing encoder...');
-            const canvas = (currentSketch as any).canvas as HTMLCanvasElement | undefined;
-            console.log('Canvas check:', {
-              canvas: canvas ? 'exists' : 'missing',
-              width: currentSketch!.width,
-              height: currentSketch!.height,
-              canvasWidth: canvas?.width,
-              canvasHeight: canvas?.height,
-              controls: (currentSketch as any)._controls
-            });
-            
-            // Initialize encoder and start recording
-            const encoder = recording.initEncoder(currentSketch!, dayConfig.recording!);
-            if (encoder) {
-              console.log('✅ Encoder initialized, starting recording...');
-              recording.startRecording(currentSketch!, dayConfig.recording!);
-            
-            // Re-enable button after recording + encoding time
-            setTimeout(() => {
-              if (timelapseBtn) {
-                timelapseBtn.textContent = '🎬 Download Timelapse';
-                (timelapseBtn as HTMLButtonElement).disabled = false;
-              }
-            }, (dayConfig.recording?.duration || 8) * 1000 + 5000); // Extra time for encoding
-            } else {
-              console.error('❌ Failed to initialize GIF encoder');
-              if (timelapseBtn) {
-                timelapseBtn.textContent = '❌ Error';
-                timelapseBtn.disabled = false;
-              }
-            }
-          }, 300); // Delay to ensure canvas is fully ready with controls applied
-        }).catch((error) => {
-          console.error('❌ Error loading day module for controls:', error);
-          // Continue anyway - controls might not be needed
-          setTimeout(() => {
-            currentSketch!.frameCount = 0;
-            const encoder = recording.initEncoder(currentSketch!, dayConfig.recording!);
-            if (encoder) {
-              recording.startRecording(currentSketch!, dayConfig.recording!);
-            }
-          }, 300);
-        });
-      }).catch((error) => {
-        console.error('❌ Error loading recording module:', error);
-        if (timelapseBtn) {
-          timelapseBtn.textContent = '❌ Error';
-          (timelapseBtn as HTMLButtonElement).disabled = false;
-        }
-      });
-    }, 500);
-  }, 100);
+    }, 3000);
+
+  } catch (error: any) {
+    if (error.message === 'Recording cancelled') {
+      console.log('📹 Recording was cancelled');
+      handleStatus({ state: 'idle', progress: 0, message: '' });
+    } else {
+      console.error('❌ Recording failed:', error);
+      handleStatus({ state: 'error', progress: 0, message: error.message });
+    }
+  } finally {
+    recordingAbortController = null;
+  }
 }
 
 /**

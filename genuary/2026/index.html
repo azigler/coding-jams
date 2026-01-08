@@ -101,13 +101,44 @@
       background: #4a4a4a;
     }
 
-    #download-buttons button:hover {
+    #download-buttons button:hover:not(:disabled) {
       background: #3a3a3a;
     }
 
     #download-buttons button:disabled {
-      opacity: 0.5;
+      opacity: 0.8;
       cursor: not-allowed;
+    }
+
+    #download-buttons button:active:not(:disabled) {
+      background: #4a4a4a;
+    }
+
+    /* Recording button states */
+    #download-timelapse-btn {
+      transition: all 0.2s ease;
+      min-width: 140px;
+    }
+
+    #download-timelapse-btn.recording {
+      background: linear-gradient(90deg, #8b0000, #cc0000);
+      border-color: #ff4444;
+      animation: recording-pulse 1s infinite;
+    }
+
+    #download-timelapse-btn.encoding {
+      background: linear-gradient(90deg, #8b4500, #cc6600);
+      border-color: #ffaa44;
+    }
+
+    #download-timelapse-btn.complete {
+      background: linear-gradient(90deg, #006400, #008800);
+      border-color: #44ff44;
+    }
+
+    @keyframes recording-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
     }
 
     #day-info {

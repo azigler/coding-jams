@@ -1,9 +1,6 @@
 /**
  * Recording utilities for capturing animations as GIFs using gif.js
- */
-
-/**
- * Recording utilities for capturing animations as GIFs using gif.js
+ * Refactored with async/await flow, status callbacks, and AbortController support
  */
 
 import type p5 from 'p5';
@@ -12,42 +9,312 @@ import GIF from 'gif.js';
 // @ts-ignore - Vite handles this as a URL
 import workerScriptUrl from 'gif.js/dist/gif.worker.js?url';
 
+/**
+ * Recording status interface for tracking progress
+ */
+export interface RecordingStatus {
+  state: 'idle' | 'recording' | 'encoding' | 'complete' | 'error';
+  progress: number;        // 0-100
+  message: string;         // Human-readable status
+  startTime?: number;      // Recording start timestamp
+  frameCount?: number;     // Frames captured so far
+  fileSize?: number;       // Final GIF size in bytes
+}
+
+export type StatusCallback = (status: RecordingStatus) => void;
+
+/**
+ * Recording configuration
+ */
 export interface RecordingConfig {
   enabled: boolean;
-  duration: number; // seconds
+  duration: number; // seconds (legacy, now ignored - fixed to 10s)
   filename: string;
 }
 
-let encoder: GIF | null = null;
-let isRecording = false;
-let recordingStartFrame = 0;
-let recordingDuration = 0;
-let framesCaptured = 0;
-let lastCaptureTime = 0;
-let captureInterval = 33.33; // ~30fps in milliseconds (1000/30)
+// Constants
+const FIXED_DURATION_MS = 10_000;  // Fixed 10-second duration
+const FPS = 30;
+const TOTAL_FRAMES = (FIXED_DURATION_MS / 1000) * FPS; // 300 frames
+const SCALE = 0.5; // Downscale for better performance and smaller files
 
 /**
- * Initialize GIF encoder
+ * Record a GIF from the current p5 sketch
+ * Uses async/await for clean flow control
+ */
+export async function recordGif(
+  p: p5,
+  onStatus: StatusCallback,
+  abortSignal?: AbortSignal
+): Promise<Blob> {
+  // Emit initial status
+  onStatus({
+    state: 'recording',
+    progress: 0,
+    message: 'Starting...',
+    startTime: Date.now(),
+    frameCount: 0,
+  });
+
+  // Get canvas
+  const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
+  if (!canvas) {
+    throw new Error('Canvas not available');
+  }
+
+  // Calculate scaled dimensions
+  const scaledWidth = Math.floor(canvas.width * SCALE);
+  const scaledHeight = Math.floor(canvas.height * SCALE);
+
+  console.log('🎬 Recording started:', {
+    originalSize: `${canvas.width}x${canvas.height}`,
+    scaledSize: `${scaledWidth}x${scaledHeight}`,
+    duration: `${FIXED_DURATION_MS / 1000}s`,
+    totalFrames: TOTAL_FRAMES,
+    fps: FPS,
+  });
+
+  // Initialize GIF encoder
+  const encoder = new GIF({
+    workers: 2,
+    quality: 10,
+    width: scaledWidth,
+    height: scaledHeight,
+    workerScript: workerScriptUrl,
+    repeat: 0, // Loop forever
+  });
+
+  // Create reusable temp canvas for scaling (prevents memory leaks)
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = scaledWidth;
+  tempCanvas.height = scaledHeight;
+  const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+
+  if (!tempCtx) {
+    throw new Error('Failed to create temporary canvas context');
+  }
+
+  // Enable smooth scaling
+  tempCtx.imageSmoothingEnabled = true;
+  tempCtx.imageSmoothingQuality = 'high';
+
+  const frameDelay = 1000 / FPS; // ~33.33ms
+
+  // Capture frames
+  for (let frame = 0; frame < TOTAL_FRAMES; frame++) {
+    // Check for abort
+    if (abortSignal?.aborted) {
+      encoder.abort?.();
+      throw new Error('Recording cancelled');
+    }
+
+    // Wait for next animation frame
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    // Draw scaled frame to temp canvas
+    tempCtx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
+
+    // Add frame to encoder
+    encoder.addFrame(tempCtx, { copy: true, delay: frameDelay });
+
+    // Update status
+    const progress = ((frame + 1) / TOTAL_FRAMES) * 100;
+    const elapsed = ((frame + 1) / FPS).toFixed(1);
+
+    onStatus({
+      state: 'recording',
+      progress,
+      message: `Recording... ${elapsed}s / 10s`,
+      frameCount: frame + 1,
+      startTime: Date.now(),
+    });
+
+    // Log progress every 30 frames (1 second)
+    if ((frame + 1) % 30 === 0) {
+      console.log(`📹 Captured ${frame + 1}/${TOTAL_FRAMES} frames (${Math.round(progress)}%)`);
+    }
+  }
+
+  console.log('📹 Frame capture complete, encoding GIF...');
+
+  // Encoding phase
+  onStatus({
+    state: 'encoding',
+    progress: 0,
+    message: 'Encoding GIF...',
+    frameCount: TOTAL_FRAMES,
+  });
+
+  // Wait for encoding to complete
+  return new Promise((resolve, reject) => {
+    // Check for abort during encoding
+    if (abortSignal?.aborted) {
+      encoder.abort?.();
+      reject(new Error('Recording cancelled'));
+      return;
+    }
+
+    // Set up abort listener for encoding phase
+    const abortHandler = () => {
+      encoder.abort?.();
+      reject(new Error('Recording cancelled'));
+    };
+    abortSignal?.addEventListener('abort', abortHandler);
+
+    // Progress callback
+    encoder.on('progress', (p: number) => {
+      onStatus({
+        state: 'encoding',
+        progress: p * 100,
+        message: `Encoding... ${Math.round(p * 100)}%`,
+        frameCount: TOTAL_FRAMES,
+      });
+    });
+
+    // Completion callback
+    encoder.on('finished', (blob: Blob) => {
+      abortSignal?.removeEventListener('abort', abortHandler);
+
+      console.log('✅ GIF encoding complete!', {
+        size: `${(blob.size / 1024).toFixed(0)} KB`,
+        frames: TOTAL_FRAMES,
+      });
+
+      onStatus({
+        state: 'complete',
+        progress: 100,
+        message: `Done! ${(blob.size / 1024).toFixed(0)} KB`,
+        fileSize: blob.size,
+        frameCount: TOTAL_FRAMES,
+      });
+
+      resolve(blob);
+    });
+
+    // Error callback
+    encoder.on('error', (error: Error) => {
+      abortSignal?.removeEventListener('abort', abortHandler);
+      console.error('❌ GIF encoding error:', error);
+
+      onStatus({
+        state: 'error',
+        progress: 0,
+        message: `Error: ${error.message}`,
+      });
+
+      reject(error);
+    });
+
+    // Start encoding
+    encoder.render();
+  });
+}
+
+/**
+ * Download a blob as a file
+ */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+
+  // Clean up after a short delay
+  setTimeout(() => {
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, 100);
+
+  console.log(`✅ Downloaded: ${filename}`);
+}
+
+/**
+ * Update the recording button state based on status
+ */
+export function updateRecordButton(status: RecordingStatus): void {
+  const btn = document.getElementById('download-timelapse-btn') as HTMLButtonElement | null;
+  if (!btn) return;
+
+  switch (status.state) {
+    case 'idle':
+      btn.textContent = '🎬 Record GIF';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      break;
+    case 'recording':
+      btn.textContent = `⏺️ ${status.progress.toFixed(0)}%`;
+      btn.disabled = true;
+      btn.style.opacity = '0.8';
+      btn.style.cursor = 'not-allowed';
+      break;
+    case 'encoding':
+      btn.textContent = `⚙️ Encoding ${status.progress.toFixed(0)}%`;
+      btn.disabled = true;
+      btn.style.opacity = '0.8';
+      btn.style.cursor = 'not-allowed';
+      break;
+    case 'complete':
+      btn.textContent = '✅ Done!';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      // Reset after 3 seconds
+      setTimeout(() => {
+        if (btn.textContent === '✅ Done!') {
+          updateRecordButton({ state: 'idle', progress: 0, message: '' });
+        }
+      }, 3000);
+      break;
+    case 'error':
+      btn.textContent = '❌ Error';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      // Reset after 3 seconds
+      setTimeout(() => {
+        if (btn.textContent === '❌ Error') {
+          updateRecordButton({ state: 'idle', progress: 0, message: '' });
+        }
+      }, 3000);
+      break;
+  }
+}
+
+// ============================================
+// Legacy API for backwards compatibility
+// ============================================
+
+let legacyEncoder: GIF | null = null;
+let legacyIsRecording = false;
+let legacyRecordingDuration = 0;
+let legacyFramesCaptured = 0;
+let legacyLastCaptureTime = 0;
+let legacyCaptureInterval = 33.33;
+
+/**
+ * @deprecated Use recordGif() instead
  */
 export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
   const fps = 30;
-  recordingDuration = config.duration * fps;
-  captureInterval = 1000 / fps; // Calculate exact interval for fps
-  
+  legacyRecordingDuration = config.duration * fps;
+  legacyCaptureInterval = 1000 / fps;
+
   try {
-    // Get actual canvas dimensions (not CSS-scaled)
     const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
     if (!canvas) {
       console.error('Canvas not available');
       return null;
     }
-    
-    // Optionally downscale for better performance (0.5x = half size)
+
     const scale = 0.5;
     const canvasWidth = Math.floor(canvas.width * scale);
     const canvasHeight = Math.floor(canvas.height * scale);
-    
-    console.log('Initializing GIF encoder:', { 
+
+    console.log('Initializing GIF encoder:', {
       originalWidth: canvas.width,
       originalHeight: canvas.height,
       scaledWidth: canvasWidth,
@@ -55,27 +322,27 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
       scale: scale,
       fps: fps,
       duration: config.duration,
-      totalFrames: recordingDuration
+      totalFrames: legacyRecordingDuration
     });
-    
-    encoder = new GIF({
+
+    legacyEncoder = new GIF({
       workers: 2,
       quality: 10,
       width: canvasWidth,
       height: canvasHeight,
       workerScript: workerScriptUrl,
-      repeat: 0 // Loop forever
+      repeat: 0
     });
-    
+
     console.log('GIF encoder created successfully');
-    
-    encoder.on('finished', (blob: Blob) => {
+
+    legacyEncoder.on('finished', (blob: Blob) => {
       console.log('✅ GIF encoding finished!', {
         blobSize: blob.size,
-        framesCaptured: framesCaptured,
-        expectedFrames: recordingDuration
+        framesCaptured: legacyFramesCaptured,
+        expectedFrames: legacyRecordingDuration
       });
-      
+
       if (blob.size === 0) {
         console.error('❌ GIF blob is empty!');
         const timelapseBtn = document.getElementById('download-timelapse-btn') as HTMLButtonElement | null;
@@ -85,25 +352,9 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
         }
         return;
       }
-      
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${config.filename}.gif`;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      
-      // Clean up after a delay
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 100);
-      
-      console.log('✅ GIF created and downloaded!');
-      
-      // Update button if it exists
+
+      downloadBlob(blob, `${config.filename}.gif`);
+
       const timelapseBtn = document.getElementById('download-timelapse-btn');
       if (timelapseBtn) {
         timelapseBtn.textContent = '✅ Done!';
@@ -114,21 +365,21 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
           }
         }, 2000);
       }
-      
-      isRecording = false;
-      encoder = null;
-      framesCaptured = 0;
+
+      legacyIsRecording = false;
+      legacyEncoder = null;
+      legacyFramesCaptured = 0;
     });
-    
-    encoder.on('progress', (progress: number) => {
+
+    legacyEncoder.on('progress', (progress: number) => {
       console.log(`GIF encoding progress: ${Math.round(progress * 100)}%`);
     });
-    
-    encoder.on('error', (error: Error) => {
+
+    legacyEncoder.on('error', (error: Error) => {
       console.error('GIF encoding error:', error);
     });
-    
-    return encoder;
+
+    return legacyEncoder;
   } catch (error) {
     console.error('Error initializing GIF encoder:', error);
     return null;
@@ -136,111 +387,81 @@ export function initEncoder(p: p5, config: RecordingConfig): GIF | null {
 }
 
 /**
- * Start recording
+ * @deprecated Use recordGif() instead
  */
 export function startRecording(p: p5, config: RecordingConfig): void {
-  if (!encoder) {
-    encoder = initEncoder(p, config);
-    if (!encoder) {
+  if (!legacyEncoder) {
+    legacyEncoder = initEncoder(p, config);
+    if (!legacyEncoder) {
       console.error('Failed to initialize GIF encoder');
       return;
     }
   }
-  
-  recordingStartFrame = p.frameCount;
-  isRecording = true;
-  framesCaptured = 0;
-  lastCaptureTime = performance.now(); // Initialize timing
+
+  legacyIsRecording = true;
+  legacyFramesCaptured = 0;
+  legacyLastCaptureTime = performance.now();
   (p as any)._isRecording = true;
-  (p as any)._recordingStartFrame = recordingStartFrame;
-  
-  console.log('🎬 Recording started...', {
-    startFrame: recordingStartFrame,
-    targetFrames: recordingDuration,
-    fps: Math.round(1000 / captureInterval)
-  });
+
+  console.log('🎬 Recording started...');
 }
 
 /**
- * Capture current frame (call this in draw())
- * Throttled to capture exactly at the target fps
+ * @deprecated Use recordGif() instead
  */
 export function captureFrame(p: p5): void {
-  if (!isRecording || !encoder) {
+  if (!legacyIsRecording || !legacyEncoder) {
     return;
   }
-  
-  // Throttle frame capture to exactly target fps
+
   const now = performance.now();
-  if (framesCaptured > 0 && now - lastCaptureTime < captureInterval) {
-    return; // Skip this frame to maintain target fps
+  if (legacyFramesCaptured > 0 && now - legacyLastCaptureTime < legacyCaptureInterval) {
+    return;
   }
-  lastCaptureTime = now;
-  
+  legacyLastCaptureTime = now;
+
   try {
-    // Get canvas and its actual dimensions
     const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
     if (!canvas) {
       console.warn('Canvas not available');
       return;
     }
-    
-    // Get the 2D context - this gives us the actual canvas data
-    // Use willReadFrequently for better performance
+
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) {
       console.warn('Canvas context not available');
       return;
     }
-    
-    // Create an offscreen canvas for downscaling
-    const scale = encoder!.options.width / canvas.width;
-    const scaledWidth = encoder!.options.width;
-    const scaledHeight = encoder!.options.height;
-    
-    // Create temporary canvas for scaling if needed
+
+    const scale = legacyEncoder!.options.width / canvas.width;
+    const scaledWidth = legacyEncoder!.options.width;
+    const scaledHeight = legacyEncoder!.options.height;
+
     if (scale !== 1) {
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = scaledWidth;
       tempCanvas.height = scaledHeight;
       const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
       if (tempCtx) {
-        // Use smooth scaling for better quality
         tempCtx.imageSmoothingEnabled = true;
         tempCtx.imageSmoothingQuality = 'high';
-        // Draw scaled version
         tempCtx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
-        // Add the scaled frame
-        encoder.addFrame(tempCtx, { copy: true, delay: Math.round(captureInterval) });
+        legacyEncoder.addFrame(tempCtx, { copy: true, delay: Math.round(legacyCaptureInterval) });
       } else {
-        // Fallback to direct capture
-        encoder.addFrame(ctx, { copy: true, delay: Math.round(captureInterval) });
+        legacyEncoder.addFrame(ctx, { copy: true, delay: Math.round(legacyCaptureInterval) });
       }
     } else {
-      // No scaling needed, capture directly
-      encoder.addFrame(ctx, { copy: true, delay: Math.round(captureInterval) });
+      legacyEncoder.addFrame(ctx, { copy: true, delay: Math.round(legacyCaptureInterval) });
     }
-    
-    framesCaptured++;
-    
-    // Log progress every 30 frames
-    if (framesCaptured % 30 === 0) {
-      console.log(`📹 Captured ${framesCaptured}/${recordingDuration} frames (${Math.round((framesCaptured / recordingDuration) * 100)}%)`);
+
+    legacyFramesCaptured++;
+
+    if (legacyFramesCaptured % 30 === 0) {
+      console.log(`📹 Captured ${legacyFramesCaptured}/${legacyRecordingDuration} frames (${Math.round((legacyFramesCaptured / legacyRecordingDuration) * 100)}%)`);
     }
-    
-    // Log first frame details for debugging
-    if (framesCaptured === 1) {
-      console.log('📹 First frame captured:', {
-        originalCanvasSize: `${canvas.width}x${canvas.height}`,
-        scaledSize: `${scaledWidth}x${scaledHeight}`,
-        scale: scale,
-        delay: Math.round(captureInterval)
-      });
-    }
-    
-    // Stop recording after we've captured the target number of frames
-    if (framesCaptured >= recordingDuration) {
-      console.log(`📹 Recording complete! Captured ${framesCaptured}/${recordingDuration} frames, finalizing GIF...`);
+
+    if (legacyFramesCaptured >= legacyRecordingDuration) {
+      console.log(`📹 Recording complete! Captured ${legacyFramesCaptured}/${legacyRecordingDuration} frames, finalizing GIF...`);
       stopRecording(p);
     }
   } catch (error) {
@@ -249,30 +470,28 @@ export function captureFrame(p: p5): void {
 }
 
 /**
- * Stop recording and finalize GIF
+ * @deprecated Use recordGif() instead
  */
 export function stopRecording(p?: p5): void {
-  if (!isRecording || !encoder) {
+  if (!legacyIsRecording || !legacyEncoder) {
     console.warn('stopRecording called but not recording or no encoder');
     return;
   }
-  
-  console.log(`🎬 Stopping recording (captured ${framesCaptured} frames), rendering GIF...`);
-  isRecording = false;
-  
-  // Clear recording flags on p5 instance
+
+  console.log(`🎬 Stopping recording (captured ${legacyFramesCaptured} frames), rendering GIF...`);
+  legacyIsRecording = false;
+
   if (p) {
     (p as any)._isRecording = false;
   }
-  
-  // Render the GIF
-  encoder.render();
+
+  legacyEncoder.render();
   console.log('🎬 GIF rendering started...');
 }
 
 /**
- * Check if currently recording
+ * @deprecated Use recordGif() instead
  */
 export function isCurrentlyRecording(): boolean {
-  return isRecording;
+  return legacyIsRecording;
 }
