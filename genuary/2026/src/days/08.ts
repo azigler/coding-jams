@@ -235,6 +235,14 @@ const config: DayConfig = {
     (p as any)._stars = city.stars;
     (p as any)._lastGenConfig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}-${controls.starDensity}`;
     (p as any)._regenerateTimeout = null;
+    (p as any)._lastCheckedValues = {
+      buildingCount: controls.buildingCount,
+      maxHeight: controls.maxHeight,
+      windowDensity: controls.windowDensity,
+      litRatio: controls.litRatio,
+      warmthBias: controls.warmthBias,
+      starDensity: controls.starDensity,
+    };
     
     // Start animation loop
     p.loop();
@@ -244,10 +252,29 @@ const config: DayConfig = {
     const controls: ControlState = (p as any)._controls || { ...defaultControls };
     const time = p.millis() / 1000;
 
-    // Check if controls changed - regenerate asynchronously to avoid blocking
-    const genConfigSig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}-${controls.starDensity}`;
+    // Check for control changes - but only if we haven't already scheduled regeneration
+    // Cache the last checked values to avoid string creation every frame
+    const currentValues = {
+      buildingCount: controls.buildingCount,
+      maxHeight: controls.maxHeight,
+      windowDensity: controls.windowDensity,
+      litRatio: controls.litRatio,
+      warmthBias: controls.warmthBias,
+      starDensity: controls.starDensity,
+    };
+    
+    const lastChecked = (p as any)._lastCheckedValues;
+    const valuesChanged = !lastChecked ||
+      lastChecked.buildingCount !== currentValues.buildingCount ||
+      lastChecked.maxHeight !== currentValues.maxHeight ||
+      lastChecked.windowDensity !== currentValues.windowDensity ||
+      lastChecked.litRatio !== currentValues.litRatio ||
+      lastChecked.warmthBias !== currentValues.warmthBias ||
+      lastChecked.starDensity !== currentValues.starDensity;
 
-    if ((p as any)._lastGenConfig !== genConfigSig) {
+    if (valuesChanged && !(p as any)._regenerateTimeout) {
+      (p as any)._lastCheckedValues = { ...currentValues };
+      
       // Clear any pending regeneration
       if ((p as any)._regenerateTimeout) {
         clearTimeout((p as any)._regenerateTimeout);
@@ -259,7 +286,7 @@ const config: DayConfig = {
         const city = generateCity(p.width, p.height, controls, rand);
         (p as any)._buildings = city.buildings;
         (p as any)._stars = city.stars;
-        (p as any)._lastGenConfig = genConfigSig;
+        (p as any)._lastGenConfig = `${controls.buildingCount}-${controls.maxHeight}-${controls.windowDensity}-${controls.litRatio}-${controls.warmthBias}-${controls.starDensity}`;
         (p as any)._regenerateTimeout = null;
         // Trigger a redraw after regeneration
         if (p.isLooping()) {

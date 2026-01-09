@@ -102,7 +102,10 @@ export function createShaderRenderer(
       if (value !== undefined) {
         const loc = uniforms.get(uniformConfig.name);
         if (loc) {
-          setUniform(gl, loc, uniformConfig.type, value);
+          // Only set uniforms that setUniform supports
+          if (uniformConfig.type !== 'mat4' && uniformConfig.type !== 'sampler2D') {
+            setUniform(gl, loc, uniformConfig.type as 'float' | 'vec2' | 'vec3' | 'vec4' | 'int' | 'bool', value);
+          }
         }
       }
     }
@@ -113,7 +116,10 @@ export function createShaderRenderer(
         if (!u.controlKey && u.defaultValue !== undefined) {
           const loc = uniforms.get(u.name);
           if (loc) {
-            setUniform(gl, loc, u.type, u.defaultValue);
+            // Only set uniforms that setUniform supports
+            if (u.type !== 'mat4' && u.type !== 'sampler2D') {
+              setUniform(gl, loc, u.type as 'float' | 'vec2' | 'vec3' | 'vec4' | 'int' | 'bool', u.defaultValue);
+            }
           }
         }
       }
