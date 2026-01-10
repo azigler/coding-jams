@@ -198,6 +198,52 @@ This PR merges X feature branches:
 
 ---
 
+## ⚠️ Critical: Avoiding Stack Overflow in Controls
+
+The control system has a specific callback architecture that **must not be violated**:
+
+```
+Controls UI slider change
+    ↓
+renderer.updateControls(values)    ← Called by controls UI directly
+    ↓
+Updates sketch._controls
+    ↓
+Calls onControlsChange(values)     ← Notification callback
+    ↓
+handleControlsChange()             ← MUST NOT call renderer.updateControls()
+```
+
+**The infinite loop bug (DON'T DO THIS):**
+```typescript
+// ❌ WRONG - causes infinite recursion → stack overflow → browser crash
+function handleControlsChange(values: ControlState): void {
+  const renderer = getRenderer();
+  if (renderer) {
+    renderer.updateControls(values);  // This re-triggers handleControlsChange!
+  }
+}
+```
+
+**The correct pattern:**
+```typescript
+// ✅ CORRECT - notification only, no re-propagation
+function handleControlsChange(_values: ControlState): void {
+  // The controls UI already calls renderer.updateControls() directly.
+  // This callback is for external listeners only (analytics, state sync, etc.)
+  // NEVER call renderer.updateControls() here.
+}
+```
+
+**Why this matters:**
+- The controls UI (in `index.ts`) calls `renderer.updateControls()` when sliders change
+- `renderer.updateControls()` (in `day-loader.ts`) then calls `onControlsChange()` to notify listeners
+- If `onControlsChange()` calls `renderer.updateControls()` again → infinite loop
+
+This bug caused browser crashes on Day 9 and was fixed. Don't reintroduce it.
+
+---
+
 ## Common Patterns
 
 ### Responsive canvas

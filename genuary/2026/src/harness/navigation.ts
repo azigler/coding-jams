@@ -304,12 +304,20 @@ export async function navigateToDay(
 
 /**
  * Handle control value changes from the UI
+ *
+ * IMPORTANT: This callback is invoked by renderer.updateControls() to notify
+ * external listeners about control changes. It must NOT call renderer.updateControls()
+ * again, as that would create an infinite loop:
+ *
+ *   Controls UI → renderer.updateControls() → onControlsChange() → renderer.updateControls() → ∞
+ *
+ * The controls UI already calls renderer.updateControls() directly (see index.ts setupControlsUI).
+ * This callback is for external state synchronization only.
  */
-function handleControlsChange(values: ControlState): void {
-  const renderer = getRenderer();
-  if (renderer) {
-    renderer.updateControls(values);
-  }
+function handleControlsChange(_values: ControlState): void {
+  // Intentionally empty - the controls UI already updates the renderer directly.
+  // This callback exists for potential future use (e.g., analytics, state sync)
+  // but must NEVER call renderer.updateControls() to avoid infinite recursion.
 }
 
 // ============================================================================
