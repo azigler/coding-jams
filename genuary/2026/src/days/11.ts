@@ -1,24 +1,24 @@
 /**
- * Day 11: "STRANGE LOOP"
+ * Day 11: "THE WRITER"
  *
- * A visual quine — code that draws itself, caught in an eternal strange loop.
+ * A quine is not a visual trick. It's a moment of recognition.
  *
- * Named after Willard Van Orman Quine (1908-2000), American philosopher and
- * logician who explored self-reference and paradox. His famous paradox:
+ * Watch code type itself into existence. The code you're reading
+ * describes exactly what you're seeing: the cursor position, the font,
+ * the colors, the timing. When the code says "cursor.x = 40", the
+ * cursor IS at x=40. The code writes itself true.
  *
- *   "Yields falsehood when preceded by its quotation"
- *    yields falsehood when preceded by its quotation.
+ * This is Escher's "Drawing Hands" as software. The hand that draws
+ * is drawn by the hand it draws.
  *
- * In computing, a quine outputs its own source code. Here, the code DISPLAYS
- * itself — the characters flowing before you ARE the bytes that make this exist.
+ * The quine moment isn't visual — it's cognitive. The instant you
+ * realize: the output I'm reading IS the source creating it.
  *
- * This is a strange loop: the code that draws is the drawing.
- * The observer and the observed collapse into one.
- * The serpent eats its tail and becomes whole.
+ * "Yields falsehood when preceded by its quotation"
+ *  yields falsehood when preceded by its quotation.
+ *      — W.V.O. Quine
  *
- * What you see is what you see it with.
- *
- * Medium: Self-reference crystallized, recursion made visible, silicon dreaming
+ * Medium: Self-reference made legible, the strange loop you can read
  */
 
 import type { DayConfig, p5 } from '../types';
@@ -26,89 +26,160 @@ import { createCanvas } from '../utils/canvas';
 import type { ControlConfig, ControlState } from '../utils/controls';
 
 // ============================================================================
-// THE QUINE — THIS STRING CONTAINS THE CODE THAT DISPLAYS IT
+// THE SOURCE — THIS IS THE CODE THAT WRITES ITSELF
 // ============================================================================
 
-// This is a visual quine: the source displayed IS the source that displays it.
-// The key functions that render particles contain themselves within this string.
-const THE_SOURCE = `// THE STRANGE LOOP — code that displays itself
-const THE_SOURCE = \`...\`; // (recursion terminates here)
+// This code describes itself. When it says font.size = 14, the font IS 14.
+// When it says cursor.x = 40, the cursor IS at 40. Truth through description.
+const THE_CODE = `// THE WRITER — code that writes itself into existence
 
-interface CodeParticle {
-  char: string; ring: number; angle: number;
-  speed: number; hue: number; brightness: number;
+// What you see is defined here:
+const screen = {
+  width: 800,
+  height: 800,
+  background: '#08080c'
+};
+
+const cursor = {
+  x: 40,           // I am here
+  blink: true,     // I am blinking
+  interval: 530    // milliseconds
+};
+
+const font = {
+  size: 15,
+  family: 'monospace',
+  color: '#e8e8e8',
+  lineHeight: 22
+};
+
+// The typing that types this:
+const typing = {
+  speed: 45,       // ms per character
+  sound: false     // silence
+};
+
+// What you're reading right now:
+function write(char, x, y) {
+  context.fillStyle = font.color;
+  context.font = font.size + 'px ' + font.family;
+  context.fillText(char, x, y);
 }
 
-function createParticles(source, ringCount, perRing, rand) {
-  const particles = [];
-  const chars = source.replace(/\\s+/g, ' ').split('');
-  let i = 0;
-  for (let ring = 0; ring < ringCount; ring++) {
-    const dir = ring % 2 === 0 ? 1 : -1;
-    const speed = (0.15 + ring * 0.05) * dir;
-    for (let p = 0; p < perRing; p++) {
-      const char = chars[i++ % chars.length];
-      const color = getCharColor(char);
-      particles.push({
-        char, ring,
-        angle: (p / perRing) * Math.PI * 2,
-        speed: speed * (0.85 + rand() * 0.3),
-        hue: color.hue, brightness: color.bright
-      });
-    }
+// The loop that runs this:
+function draw() {
+  // Clear to background
+  fill(screen.background);
+
+  // For each character typed so far:
+  for (let i = 0; i < currentChar; i++) {
+    const char = THE_CODE[i];
+    const pos = getPosition(i);
+
+    // Syntax highlighting:
+    // - comments: dim
+    // - strings: green
+    // - keywords: cyan
+    // - numbers: gold
+
+    write(char, pos.x, pos.y);
   }
-  return particles;
-}
 
-function getCharColor(char) {
-  if (/[{}()\\[\\];:,.]/.test(char))
-    return { hue: 280, sat: 0.7, bright: 0.65 }; // structure
-  if (/[+\\-*/%=<>!&|]/.test(char))
-    return { hue: 180, sat: 0.8, bright: 0.7 };  // operators
-  if (/[0-9]/.test(char))
-    return { hue: 30, sat: 0.9, bright: 0.75 };  // numbers
-  if (/['"\`]/.test(char))
-    return { hue: 120, sat: 0.7, bright: 0.6 };  // strings
-  if (/[a-zA-Z_$]/.test(char))
-    return { hue: 210, sat: 0.5, bright: 0.8 };  // identifiers
-  return { hue: 0, sat: 0, bright: 0.2 };
-}
-
-// The draw loop — this is the loop that draws these very words
-draw: (p) => {
-  const time = p.millis() / 1000;
-  const particles = p._particles;
-  for (const particle of particles) {
-    const angle = particle.angle + time * particle.speed;
-    const radius = innerRadius + particle.ring * ringSpacing;
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY + Math.sin(angle) * radius;
-    // This line renders the characters you are reading
-    p.text(particle.char, x, y);
+  // The cursor that leads:
+  if (cursor.blink) {
+    drawCursor(cursorPos.x, cursorPos.y);
   }
-  // The strange loop closes: this code draws itself.
-}`;
+
+  // Advance one character
+  currentChar++;
+
+  // When done, pause. Then restart.
+  // The loop is eternal.
+}
+
+// This describes itself.
+// You are reading what is writing you reading it.
+// The strange loop closes here.
+
+// — W.V.O. Quine (1908-2000)
+// — Douglas Hofstadter
+// — M.C. Escher, "Drawing Hands"`;
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
-interface CodeParticle {
-  char: string;
-  ring: number;
-  angle: number;
-  speed: number;
-  size: number;
-  hue: number;
-  saturation: number;
-  brightness: number;
+interface TypeState {
+  charIndex: number;
+  lastTypeTime: number;
+  blinkState: boolean;
+  lastBlinkTime: number;
+  lines: string[];
+  lineStartIndices: number[];
+  isComplete: boolean;
+  pauseUntil: number;
 }
 
 // ============================================================================
-// COLOR UTILITIES
+// SYNTAX HIGHLIGHTING — THE CODE KNOWS ITSELF
 // ============================================================================
 
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+function getSyntaxColor(
+  code: string,
+  index: number,
+  hueShift: number
+): { r: number; g: number; b: number; a: number } {
+  // Look backwards to determine context
+  let lineStart = index;
+  while (lineStart > 0 && code[lineStart - 1] !== '\n') lineStart--;
+  const lineUpToIndex = code.slice(lineStart, index + 1);
+  const char = code[index];
+
+  // Check if we're in a comment
+  const commentIndex = lineUpToIndex.indexOf('//');
+  if (commentIndex !== -1 && index >= lineStart + commentIndex) {
+    return hslToRgb(220 + hueShift, 0.15, 0.45); // Dim blue-gray
+  }
+
+  // Check if we're in a string
+  const singleQuotes = (lineUpToIndex.match(/'/g) || []).length;
+  const doubleQuotes = (lineUpToIndex.match(/"/g) || []).length;
+  if (singleQuotes % 2 === 1 || doubleQuotes % 2 === 1) {
+    return hslToRgb(140 + hueShift, 0.6, 0.55); // Green for strings
+  }
+
+  // Keywords
+  const keywords = ['const', 'let', 'var', 'function', 'return', 'if', 'for', 'while', 'true', 'false'];
+  for (const kw of keywords) {
+    const kwStart = index - kw.length + 1;
+    if (kwStart >= 0) {
+      const slice = code.slice(kwStart, index + 1);
+      if (slice === kw) {
+        // Check it's a word boundary
+        const before = kwStart > 0 ? code[kwStart - 1] : ' ';
+        const after = index < code.length - 1 ? code[index + 1] : ' ';
+        if (!/[a-zA-Z_$]/.test(before) && !/[a-zA-Z_$0-9]/.test(after)) {
+          return hslToRgb(190 + hueShift, 0.7, 0.6); // Cyan for keywords
+        }
+      }
+    }
+  }
+
+  // Numbers
+  if (/[0-9]/.test(char)) {
+    return hslToRgb(35 + hueShift, 0.85, 0.6); // Gold for numbers
+  }
+
+  // Punctuation and operators
+  if (/[{}()\[\];:,.<>=+\-*/]/.test(char)) {
+    return hslToRgb(280 + hueShift, 0.4, 0.65); // Muted purple
+  }
+
+  // Default text
+  return hslToRgb(220 + hueShift, 0.08, 0.85); // Near-white
+}
+
+function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number; a: number } {
   h = ((h % 360) + 360) % 360;
   s = Math.max(0, Math.min(1, s));
   l = Math.max(0, Math.min(1, l));
@@ -126,239 +197,151 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   else if (h < 300) { r = x; g = 0; b = c; }
   else { r = c; g = 0; b = x; }
 
-  return [
-    Math.round((r + m) * 255),
-    Math.round((g + m) * 255),
-    Math.round((b + m) * 255)
-  ];
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+    a: 255
+  };
 }
 
 // ============================================================================
-// SYNTAX HIGHLIGHTING — THE CODE KNOWS ITS OWN STRUCTURE
+// TEXT LAYOUT
 // ============================================================================
 
-function getCharacterColor(char: string, hueShift: number): { hue: number; sat: number; bright: number } {
-  // Structural characters — purple/magenta (the skeleton of thought)
-  if (/[{}()\[\];:,.]/.test(char)) {
-    return { hue: 280 + hueShift, sat: 0.7, bright: 0.65 };
-  }
-  // Operators — cyan (the verbs of computation)
-  if (/[+\-*/%=<>!&|^~?]/.test(char)) {
-    return { hue: 180 + hueShift, sat: 0.8, bright: 0.7 };
-  }
-  // Numbers — gold (constants, eternal truths)
-  if (/[0-9]/.test(char)) {
-    return { hue: 30 + hueShift, sat: 0.9, bright: 0.75 };
-  }
-  // Strings/quotes — green (data, the stuff of meaning)
-  if (/['"`]/.test(char)) {
-    return { hue: 120 + hueShift, sat: 0.7, bright: 0.6 };
-  }
-  // Letters — blue gradient (the words, the names)
-  if (/[a-zA-Z_$]/.test(char)) {
-    return { hue: 210 + hueShift, sat: 0.5, bright: 0.8 };
-  }
-  // Space — nearly invisible
-  if (char === ' ') {
-    return { hue: 0, sat: 0, bright: 0.12 };
-  }
-  // Other
-  return { hue: 0 + hueShift, sat: 0.3, bright: 0.4 };
-}
+function preprocessCode(code: string): { lines: string[]; lineStartIndices: number[] } {
+  const lines: string[] = [];
+  const lineStartIndices: number[] = [];
+  let currentLine = '';
+  let index = 0;
 
-// ============================================================================
-// PARTICLE GENERATION — CODE BECOMES MATTER
-// ============================================================================
+  lineStartIndices.push(0);
 
-function createParticles(
-  source: string,
-  ringCount: number,
-  particlesPerRing: number,
-  hueShift: number,
-  rand: () => number
-): CodeParticle[] {
-  const particles: CodeParticle[] = [];
-
-  // Clean source: collapse whitespace but preserve meaning
-  const chars = source.replace(/\s+/g, ' ').split('');
-  let charIndex = 0;
-
-  for (let ring = 0; ring < ringCount; ring++) {
-    // Alternate direction for each ring — the strange loop coils
-    const direction = ring % 2 === 0 ? 1 : -1;
-    const baseSpeed = (0.12 + ring * 0.04) * direction;
-
-    for (let i = 0; i < particlesPerRing; i++) {
-      const char = chars[charIndex % chars.length];
-      const colorInfo = getCharacterColor(char, hueShift);
-      const angle = (i / particlesPerRing) * Math.PI * 2;
-
-      particles.push({
-        char,
-        ring,
-        angle,
-        speed: baseSpeed * (0.9 + rand() * 0.2),
-        size: 11 + ring * 0.6,
-        hue: colorInfo.hue,
-        saturation: colorInfo.sat,
-        brightness: colorInfo.bright
-      });
-
-      charIndex++;
+  for (let i = 0; i < code.length; i++) {
+    if (code[i] === '\n') {
+      lines.push(currentLine);
+      currentLine = '';
+      lineStartIndices.push(i + 1);
+    } else {
+      currentLine += code[i];
     }
+    index++;
+  }
+  if (currentLine) {
+    lines.push(currentLine);
   }
 
-  return particles;
+  return { lines, lineStartIndices };
 }
 
-// ============================================================================
-// RENDERING — THE CODE DRAWS ITSELF
-// ============================================================================
-
-function renderParticles(
-  p: p5,
-  particles: CodeParticle[],
-  time: number,
-  controls: ControlState,
-  centerX: number,
-  centerY: number
-): void {
-  const baseRadius = controls.innerRadius ?? 70;
-  const ringSpacing = controls.ringSpacing ?? 32;
-  const flowSpeed = controls.flowSpeed ?? 1;
-  const waveAmount = controls.waveAmount ?? 0.2;
-  const glowIntensity = controls.glowIntensity ?? 0.5;
-  const breathAmount = controls.breathAmount ?? 0.08;
-
-  // Global breathing — the code is alive
-  const breath = Math.sin(time * 0.4) * breathAmount;
-
-  p.textAlign(p.CENTER, p.CENTER);
-  p.textFont('monospace');
-
-  for (const particle of particles) {
-    // Update angle — the eternal rotation
-    const currentAngle = particle.angle + time * particle.speed * flowSpeed;
-
-    // Wave distortion — the serpent undulates
-    const waveOffset = Math.sin(currentAngle * 4 + time * 1.5) * waveAmount * 15;
-    const radius = baseRadius + particle.ring * ringSpacing + waveOffset;
-
-    // Breathing affects inner rings more
-    const breathRadius = radius * (1 + breath * (1 - particle.ring * 0.1));
-
-    // Convert to Cartesian
-    const x = centerX + Math.cos(currentAngle) * breathRadius;
-    const y = centerY + Math.sin(currentAngle) * breathRadius;
-
-    // Dynamic brightness — characters pulse with position
-    const angleBrightness = Math.sin(currentAngle * 2 + time * 0.8) * 0.12 + 0.88;
-    const finalBrightness = particle.brightness * angleBrightness;
-
-    // Get RGB
-    const [r, g, b] = hslToRgb(particle.hue, particle.saturation, finalBrightness * 0.5);
-
-    // Draw glow layer for non-space characters
-    if (glowIntensity > 0.1 && particle.char !== ' ') {
-      const glowSize = particle.size * 1.8;
-      const glowAlpha = glowIntensity * 0.15 * finalBrightness;
-      p.fill(r, g, b, glowAlpha * 255);
-      p.noStroke();
-      p.ellipse(x, y, glowSize, glowSize);
+function getCharPosition(
+  index: number,
+  lineStartIndices: number[],
+  marginX: number,
+  marginY: number,
+  lineHeight: number,
+  charWidth: number
+): { x: number; y: number; line: number; col: number } {
+  let line = 0;
+  for (let i = 1; i < lineStartIndices.length; i++) {
+    if (index < lineStartIndices[i]) {
+      break;
     }
-
-    // Draw the character — THIS IS THE QUINE
-    p.textSize(particle.size);
-    p.fill(r, g, b, finalBrightness * 255);
-    p.text(particle.char, x, y);
+    line = i;
   }
+
+  const col = index - lineStartIndices[line];
+  const x = marginX + col * charWidth;
+  const y = marginY + line * lineHeight;
+
+  return { x, y, line, col };
 }
 
-function drawCenterVoid(
+// ============================================================================
+// RENDERING
+// ============================================================================
+
+function drawBackground(p: p5): void {
+  // The background described in THE_CODE: #08080c
+  p.background(8, 8, 12);
+}
+
+function drawCursor(
   p: p5,
-  centerX: number,
-  centerY: number,
-  time: number,
-  controls: ControlState
+  x: number,
+  y: number,
+  visible: boolean,
+  fontSize: number
 ): void {
-  const innerRadius = controls.innerRadius ?? 70;
-  const glowIntensity = controls.glowIntensity ?? 0.5;
+  if (!visible) return;
 
-  // The void at the center — where self-reference collapses
-  const pulse = Math.sin(time * 0.6) * 0.15 + 0.85;
-
-  // Draw concentric void rings
-  for (let r = innerRadius - 25; r > 0; r -= 4) {
-    const t = r / (innerRadius - 25);
-    const alpha = (1 - t) * 0.1 * pulse * glowIntensity;
-    const [cr, cg, cb] = hslToRgb(270, 0.5, 0.25);
-    p.fill(cr, cg, cb, alpha * 255);
-    p.noStroke();
-    p.ellipse(centerX, centerY, r * 2, r * 2);
-  }
-
-  // Dark core — the singularity of self-reference
-  p.fill(3, 3, 8, 220);
-  p.ellipse(centerX, centerY, 25 * pulse, 25 * pulse);
-}
-
-function drawBackground(p: p5, time: number): void {
-  // Deep indigo gradient — the space where code dreams
-  for (let y = 0; y < p.height; y++) {
-    const t = y / p.height;
-    const [r, g, b] = hslToRgb(245 + t * 15, 0.35, 0.025 + t * 0.02);
-    p.stroke(r, g, b);
-    p.line(0, y, p.width, y);
-  }
-
-  // Subtle vignette
-  const centerX = p.width / 2;
-  const centerY = p.height / 2;
-  const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
-
+  // The cursor: a simple vertical bar
   p.noStroke();
-  for (let r = maxDist; r > 0; r -= 60) {
-    const alpha = (r / maxDist) * 0.04;
-    p.fill(0, 0, 0, alpha * 255);
-    p.ellipse(centerX, centerY, r * 2, r * 2);
+  p.fill(220, 220, 230, 200);
+  p.rect(x, y - fontSize + 4, 2, fontSize);
+}
+
+function drawTypedCode(
+  p: p5,
+  code: string,
+  charCount: number,
+  marginX: number,
+  marginY: number,
+  lineHeight: number,
+  charWidth: number,
+  fontSize: number,
+  lineStartIndices: number[],
+  hueShift: number
+): { cursorX: number; cursorY: number } {
+  p.textFont('monospace');
+  p.textSize(fontSize);
+  p.textAlign(p.LEFT, p.TOP);
+
+  let cursorX = marginX;
+  let cursorY = marginY;
+
+  const displayCount = Math.min(charCount, code.length);
+
+  for (let i = 0; i < displayCount; i++) {
+    const char = code[i];
+    const pos = getCharPosition(i, lineStartIndices, marginX, marginY, lineHeight, charWidth);
+
+    if (char !== '\n') {
+      const color = getSyntaxColor(code, i, hueShift);
+      p.fill(color.r, color.g, color.b, color.a);
+      p.text(char, pos.x, pos.y);
+    }
+
+    // Update cursor position
+    if (i === displayCount - 1) {
+      if (char === '\n') {
+        cursorX = marginX;
+        cursorY = pos.y + lineHeight;
+      } else {
+        cursorX = pos.x + charWidth;
+        cursorY = pos.y;
+      }
+    }
   }
+
+  return { cursorX, cursorY };
 }
 
 function drawOverlay(p: p5): void {
-  // Bottom panel
+  // Minimal title at bottom
   p.noStroke();
-  p.fill(0, 0, 0, 185);
-  p.rect(0, p.height - 70, p.width, 70);
+  p.fill(0, 0, 0, 160);
+  p.rect(0, p.height - 50, p.width, 50);
 
-  // Title
-  p.fill(255);
+  p.fill(200);
   p.textAlign(p.CENTER, p.CENTER);
-  p.textSize(22);
+  p.textSize(16);
   p.textFont('monospace');
-  p.text('STRANGE LOOP', p.width / 2, p.height - 45);
+  p.text('THE WRITER', p.width / 2, p.height - 30);
 
-  // Subtitle — Quine's essence
-  p.fill(170);
-  p.textSize(11);
-  p.text('A visual quine: this code displays itself. The observer is the observed.', p.width / 2, p.height - 20);
-
-  // Attribution corner
-  p.fill(90);
-  p.textAlign(p.RIGHT, p.TOP);
+  p.fill(120);
   p.textSize(10);
-  p.text('After W.V.O. Quine (1908-2000)', p.width - 15, 15);
-}
-
-// ============================================================================
-// SEEDED RANDOM
-// ============================================================================
-
-function seededRandom(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    return s / 0x7fffffff;
-  };
+  p.text('this code is writing itself', p.width / 2, p.height - 12);
 }
 
 // ============================================================================
@@ -366,66 +349,51 @@ function seededRandom(seed: number): () => number {
 // ============================================================================
 
 const defaultControls: ControlState = {
-  ringCount: 9,
-  particlesPerRing: 55,
-  innerRadius: 70,
-  ringSpacing: 32,
-  flowSpeed: 1.0,
-  waveAmount: 0.2,
-  glowIntensity: 0.5,
+  typeSpeed: 45,
+  fontSize: 15,
+  lineHeight: 22,
+  marginX: 40,
+  marginY: 40,
   hueShift: 0,
-  breathAmount: 0.08
+  cursorBlink: 530,
+  restartDelay: 3
 };
 
 const controlConfigs: { [key: string]: ControlConfig } = {
-  ringCount: {
-    label: 'Ring Count',
-    min: 4,
-    max: 12,
-    defaultValue: 9,
+  typeSpeed: {
+    label: 'Type Speed (ms)',
+    min: 10,
+    max: 150,
+    defaultValue: 45,
+    step: 5
+  },
+  fontSize: {
+    label: 'Font Size',
+    min: 11,
+    max: 20,
+    defaultValue: 15,
     step: 1
   },
-  particlesPerRing: {
-    label: 'Characters/Ring',
-    min: 35,
+  lineHeight: {
+    label: 'Line Height',
+    min: 16,
+    max: 32,
+    defaultValue: 22,
+    step: 1
+  },
+  marginX: {
+    label: 'Left Margin',
+    min: 20,
     max: 80,
-    defaultValue: 55,
+    defaultValue: 40,
     step: 5
   },
-  innerRadius: {
-    label: 'Inner Radius',
-    min: 40,
-    max: 120,
-    defaultValue: 70,
+  marginY: {
+    label: 'Top Margin',
+    min: 20,
+    max: 80,
+    defaultValue: 40,
     step: 5
-  },
-  ringSpacing: {
-    label: 'Ring Spacing',
-    min: 22,
-    max: 50,
-    defaultValue: 32,
-    step: 2
-  },
-  flowSpeed: {
-    label: 'Flow Speed',
-    min: 0.2,
-    max: 2.0,
-    defaultValue: 1.0,
-    step: 0.1
-  },
-  waveAmount: {
-    label: 'Wave Distortion',
-    min: 0,
-    max: 0.6,
-    defaultValue: 0.2,
-    step: 0.05
-  },
-  glowIntensity: {
-    label: 'Glow Intensity',
-    min: 0,
-    max: 1,
-    defaultValue: 0.5,
-    step: 0.1
   },
   hueShift: {
     label: 'Hue Shift',
@@ -434,17 +402,24 @@ const controlConfigs: { [key: string]: ControlConfig } = {
     defaultValue: 0,
     step: 15
   },
-  breathAmount: {
-    label: 'Breathing',
-    min: 0,
-    max: 0.2,
-    defaultValue: 0.08,
-    step: 0.02
+  cursorBlink: {
+    label: 'Cursor Blink (ms)',
+    min: 200,
+    max: 1000,
+    defaultValue: 530,
+    step: 50
+  },
+  restartDelay: {
+    label: 'Restart Delay (s)',
+    min: 1,
+    max: 10,
+    defaultValue: 3,
+    step: 0.5
   }
 };
 
 // ============================================================================
-// MAIN CONFIG — THE SELF-REFERENTIAL CORE
+// MAIN CONFIG — THE SELF-WRITING LOOP
 // ============================================================================
 
 const config: DayConfig = {
@@ -454,112 +429,143 @@ const config: DayConfig = {
   creditUrl: 'https://mlarino.com/',
   recording: {
     enabled: true,
-    duration: 20,
+    duration: 90,
     filename: 'genuary-2026-day-11'
   },
 
   setup: (p: p5) => {
     createCanvas(p, 800, 800);
-    p.colorMode(p.RGB, 255, 255, 255, 255);
     p.textFont('monospace');
 
-    const controls = (p as any)._controls || { ...defaultControls };
-    const rand = seededRandom(42);
+    const { lines, lineStartIndices } = preprocessCode(THE_CODE);
 
-    // Create particles from THE SOURCE — the quine displays itself
-    const particles = createParticles(
-      THE_SOURCE,
-      Math.round(controls.ringCount ?? 9),
-      Math.round(controls.particlesPerRing ?? 55),
-      controls.hueShift ?? 0,
-      rand
-    );
+    const state: TypeState = {
+      charIndex: 0,
+      lastTypeTime: 0,
+      blinkState: true,
+      lastBlinkTime: 0,
+      lines,
+      lineStartIndices,
+      isComplete: false,
+      pauseUntil: 0
+    };
 
-    (p as any)._particles = particles;
-    (p as any)._lastRingCount = controls.ringCount;
-    (p as any)._lastParticlesPerRing = controls.particlesPerRing;
-    (p as any)._lastHueShift = controls.hueShift;
-
-    p.loop();
+    (p as any)._state = state;
+    (p as any)._startTime = p.millis();
   },
 
   draw: (p: p5) => {
     const controls: ControlState = (p as any)._controls || { ...defaultControls };
-    const time = p.millis() / 1000;
-    const centerX = p.width / 2;
-    const centerY = p.height / 2;
+    const state: TypeState = (p as any)._state;
+    const now = p.millis();
 
-    // Regenerate particles if settings changed
-    const currentRingCount = Math.round(controls.ringCount ?? 9);
-    const currentParticles = Math.round(controls.particlesPerRing ?? 55);
-    const currentHue = controls.hueShift ?? 0;
+    const typeSpeed = controls.typeSpeed ?? 45;
+    const fontSize = Math.round(controls.fontSize ?? 15);
+    const lineHeight = Math.round(controls.lineHeight ?? 22);
+    const marginX = Math.round(controls.marginX ?? 40);
+    const marginY = Math.round(controls.marginY ?? 40);
+    const hueShift = controls.hueShift ?? 0;
+    const cursorBlinkInterval = controls.cursorBlink ?? 530;
+    const restartDelay = (controls.restartDelay ?? 3) * 1000;
 
-    if (currentRingCount !== (p as any)._lastRingCount ||
-        currentParticles !== (p as any)._lastParticlesPerRing ||
-        Math.abs(currentHue - ((p as any)._lastHueShift ?? 0)) > 1) {
-      const rand = seededRandom(42);
-      (p as any)._particles = createParticles(
-        THE_SOURCE,
-        currentRingCount,
-        currentParticles,
-        currentHue,
-        rand
-      );
-      (p as any)._lastRingCount = currentRingCount;
-      (p as any)._lastParticlesPerRing = currentParticles;
-      (p as any)._lastHueShift = currentHue;
+    // Character width for monospace
+    p.textSize(fontSize);
+    const charWidth = p.textWidth('M') * 0.6; // Approximate
+
+    // Handle restart after completion
+    if (state.isComplete && now > state.pauseUntil) {
+      state.charIndex = 0;
+      state.isComplete = false;
+      state.lastTypeTime = now;
     }
 
-    const particles: CodeParticle[] = (p as any)._particles || [];
+    // Type next character
+    if (!state.isComplete && now - state.lastTypeTime > typeSpeed) {
+      state.charIndex++;
+      state.lastTypeTime = now;
 
-    // Draw the stage
-    drawBackground(p, time);
+      if (state.charIndex >= THE_CODE.length) {
+        state.isComplete = true;
+        state.pauseUntil = now + restartDelay;
+      }
+    }
 
-    // Draw the void where self-reference collapses
-    drawCenterVoid(p, centerX, centerY, time, controls);
+    // Cursor blink
+    if (now - state.lastBlinkTime > cursorBlinkInterval) {
+      state.blinkState = !state.blinkState;
+      state.lastBlinkTime = now;
+    }
 
-    // Draw the flowing code — THIS IS THE QUINE
-    // The characters you see ARE the characters that draw themselves
-    renderParticles(p, particles, time, controls, centerX, centerY);
+    // Draw
+    drawBackground(p);
 
-    // Draw overlay
+    const cursorPos = drawTypedCode(
+      p,
+      THE_CODE,
+      state.charIndex,
+      marginX,
+      marginY,
+      lineHeight,
+      charWidth,
+      fontSize,
+      state.lineStartIndices,
+      hueShift
+    );
+
+    // Draw cursor (only when not complete)
+    if (!state.isComplete) {
+      drawCursor(p, cursorPos.cursorX, cursorPos.cursorY, state.blinkState, fontSize);
+    }
+
     drawOverlay(p);
   },
 
   renderFinal: (p: p5) => {
     const controls: ControlState = (p as any)._controls || { ...defaultControls };
-    const rand = seededRandom(42);
-    const centerX = p.width / 2;
-    const centerY = p.height / 2;
+    const fontSize = Math.round(controls.fontSize ?? 15);
+    const lineHeight = Math.round(controls.lineHeight ?? 22);
+    const marginX = Math.round(controls.marginX ?? 40);
+    const marginY = Math.round(controls.marginY ?? 40);
+    const hueShift = controls.hueShift ?? 0;
 
-    const particles = createParticles(
-      THE_SOURCE,
-      Math.round(controls.ringCount ?? 9),
-      Math.round(controls.particlesPerRing ?? 55),
-      controls.hueShift ?? 0,
-      rand
+    p.textSize(fontSize);
+    const charWidth = p.textWidth('M') * 0.6;
+
+    const { lineStartIndices } = preprocessCode(THE_CODE);
+
+    drawBackground(p);
+
+    // Show partial code for thumbnail (about 60% through)
+    const displayChars = Math.floor(THE_CODE.length * 0.6);
+    const cursorPos = drawTypedCode(
+      p,
+      THE_CODE,
+      displayChars,
+      marginX,
+      marginY,
+      lineHeight,
+      charWidth,
+      fontSize,
+      lineStartIndices,
+      hueShift
     );
 
-    // Render at a beautiful moment
-    drawBackground(p, 4.2);
-    drawCenterVoid(p, centerX, centerY, 4.2, controls);
-    renderParticles(p, particles, 4.2, controls, centerX, centerY);
+    drawCursor(p, cursorPos.cursorX, cursorPos.cursorY, true, fontSize);
     drawOverlay(p);
   }
 };
 
-// Opus 4.5's Choice — settings that reveal the strange loop
+// Opus 4.5's Choice — settings that create a contemplative pace
 export function getClaudesChoice(): Partial<ControlState> {
   return {
-    ringCount: 9,           // Enough depth to see the pattern
-    particlesPerRing: 58,   // Dense enough to read fragments
-    innerRadius: 65,        // Room for the void
-    ringSpacing: 34,        // Clear separation between coils
-    flowSpeed: 0.7,         // Contemplative, not frantic
-    waveAmount: 0.15,       // Subtle undulation
-    glowIntensity: 0.55,    // Ethereal presence
-    hueShift: 0,            // Classic syntax highlighting
-    breathAmount: 0.06      // Gentle life
+    typeSpeed: 40,        // Readable pace
+    fontSize: 15,         // Clear but compact
+    lineHeight: 22,       // Comfortable reading
+    marginX: 40,          // Classic margin
+    marginY: 40,
+    hueShift: 0,          // Classic syntax colors
+    cursorBlink: 530,     // Standard blink rate
+    restartDelay: 4       // Pause to absorb
   };
 }
 
