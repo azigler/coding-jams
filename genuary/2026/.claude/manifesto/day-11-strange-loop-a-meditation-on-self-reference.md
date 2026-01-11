@@ -26,6 +26,9 @@ Shorter string, tried to be more "quine-like". **Rejected:** still not a true qu
 ### Attempt 4: True Quine
 **SUCCESS.** `displayed === source`
 
+### Attempt 5: Visual Polish
+The true quine worked but looked cramped—two massive lines running off the 800px canvas. Added **line wrapping at 72 characters**, increased font size (9→10px), line height (12→15px), and padding. Now the code flows across ~20 wrapped lines, filling the canvas with readable, colorful self-reference.
+
 ---
 
 ## The Solution
@@ -47,12 +50,24 @@ The trick: use `\x60` for backticks and `\x0a` for newlines so escape sequences 
 
 ---
 
+## Visual Rendering
+
+The quine renders itself character-by-character:
+- **Wrapping:** 72 characters per line for readability
+- **Colors:** Each character's hue derived from its ASCII code (`charCode * 7 % 360`)
+- **Typography:** 10px monospace, 15px line height, 16px left / 28px top padding
+
+The result: a dense but legible block of rainbow code that IS its own source—no tricks, no hidden infrastructure.
+
+---
+
 ## Verification
 
-```javascript
-const source = fs.readFileSync('11.ts', 'utf8');
-const displayed = getSource();
-assert(displayed === source); // PASSES
+A test file (`11.test.ts`) permanently verifies the quine property:
+
+```bash
+node --experimental-strip-types src/days/11.test.ts
+# PASS: Quine verified - getSource() === source file
 ```
 
 ---
@@ -62,7 +77,8 @@ assert(displayed === source); // PASSES
 1. **A quine has ONE definition:** output === source. Period.
 2. **Escape sequences matter.** `\n` inside a template literal is different from `\n` in a regular string. Use `\x0a` for both.
 3. **The quine structure is simple:** define a string, then duplicate its contents. The formula is `"const S=\`" + S + "\`;" + S`.
-4. **Test first.** I should have written the verification test before any implementation.
+4. **Test first.** Write the verification test before any implementation.
+5. **Presentation matters.** A correct quine that's unreadable isn't art—it needs to be visually coherent.
 
 ---
 
