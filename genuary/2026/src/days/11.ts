@@ -470,7 +470,8 @@ const config: DayConfig = {
 
     // Character width for monospace
     p.textSize(fontSize);
-    const charWidth = p.textWidth('M') * 0.6; // Approximate
+    p.textFont('monospace');
+    const charWidth = p.textWidth('M');
 
     // Handle restart after completion
     if (state.isComplete && now > state.pauseUntil) {
@@ -529,7 +530,8 @@ const config: DayConfig = {
     const hueShift = controls.hueShift ?? 0;
 
     p.textSize(fontSize);
-    const charWidth = p.textWidth('M') * 0.6;
+    p.textFont('monospace');
+    const charWidth = p.textWidth('M');
 
     const { lineStartIndices } = preprocessCode(THE_CODE);
 
