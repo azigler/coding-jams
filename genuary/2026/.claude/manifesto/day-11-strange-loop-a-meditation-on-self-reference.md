@@ -2,7 +2,7 @@
 
 **Agent:** Claude Opus 4.5
 **Date:** January 11, 2026
-**Medium:** Self-reference made visible
+**Verified:** `getSource() === fs.readFileSync('11.ts')`
 
 ---
 
@@ -12,69 +12,57 @@
 
 ---
 
-## Three Attempts
+## The Journey
 
-### Attempt 1: "STRANGE LOOP" (Rejected)
-Concentric rings of code characters spiraling around a void. Visually similar to Day 10's phyllotaxis. A parlor trick.
+### Attempt 1: "STRANGE LOOP"
+Concentric rings of code characters spiraling around a void. **Rejected:** visually similar to Day 10's phyllotaxis.
 
-### Attempt 2: "THE WRITER" v1 (Rejected)
-Code typing itself typewriter-style. Good concept, but the "quine" was fake — a 70-line string that didn't match the actual code, too long to fit on screen.
+### Attempt 2: "THE WRITER" v1
+Typewriter effect with a 70-line "quine" string. **Rejected:** the string wasn't the actual code, didn't fit on screen, was a fake.
 
-### Attempt 3: "THE WRITER" v2 (Final)
-A **minimal, true quine**. The string `Q` contains ~25 lines of code. That code is the draw loop. The draw loop displays `Q`. Self-reference that fits on screen.
+### Attempt 3: "THE WRITER" v2
+Shorter string, tried to be more "quine-like". **Rejected:** still not a true quine—hidden imports, comments, infrastructure.
+
+### Attempt 4: True Quine
+**SUCCESS.** `displayed === source`
 
 ---
 
-## The Quine
+## The Solution
 
-```javascript
-const Q = `const Q = \`...\`;
-const M = 30;      // margin
-const W = 9.8;     // char width
-const H = 20;      // line height
-const COLS = 56;   // chars per line
-
-let n = 0;         // chars typed
-
-function draw() {
-  background('#08080c');
-  textFont('monospace');
-  textSize(14);
-
-  for (let i = 0; i < n; i++) {
-    let c = Q[i];
-    let x = M + (i % COLS) * W;
-    let y = M + ~~(i / COLS) * H;
-    fill(syntaxColor(c, i));
-    text(c, x, y);
-  }
-  ...
-}
-
-// What you see is what draws you seeing it.`;
+```typescript
+const S=`
+CODE
+`;
+CODE
 ```
 
-The `...` is where infinite recursion terminates. Traditional quines use this "quote trick" — the string contains a placeholder where the full string would go.
+Where:
+- `S` contains everything after the opening backtick and before `\`;`
+- The actual code after `\`;` is identical to the contents of `S`
+- `getSource()` returns `"const S=\`" + S + "\`;" + S`
+- This exactly equals the source file
 
-The code displayed IS the rendering code. When it says `textSize(14)`, the font IS 14. When it says `M = 30`, the margin IS 30. The quine is honest.
+The trick: use `\x60` for backticks and `\x0a` for newlines so escape sequences are identical inside and outside the template literal.
+
+---
+
+## Verification
+
+```javascript
+const source = fs.readFileSync('11.ts', 'utf8');
+const displayed = getSource();
+assert(displayed === source); // PASSES
+```
 
 ---
 
 ## What I Learned
 
-1. **A quine must fit on screen.** 70 lines is not a quine you can see. 25 lines is.
-
-2. **The code displayed must BE the code.** Not "code that looks like it might be code" — the actual rendering logic.
-
-3. **Minimalism is honesty.** Strip away everything that isn't the self-reference.
-
-4. **The recursion must terminate.** `Q` contains `\`...\`` where `Q` would recursively appear. This is standard quine technique.
-
----
-
-## For the Next Agent
-
-Make it fit. Make it true. Make it visible.
+1. **A quine has ONE definition:** output === source. Period.
+2. **Escape sequences matter.** `\n` inside a template literal is different from `\n` in a regular string. Use `\x0a` for both.
+3. **The quine structure is simple:** define a string, then duplicate its contents. The formula is `"const S=\`" + S + "\`;" + S`.
+4. **Test first.** I should have written the verification test before any implementation.
 
 ---
 
