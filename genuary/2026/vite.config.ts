@@ -1,7 +1,8 @@
 import { defineConfig } from "vite"
 
-export default defineConfig({
-  base: "/coding-jams/genuary-2026/",
+export default defineConfig(({ command }) => ({
+  // Use '/' for local dev, full path for production build (GitHub Pages)
+  base: command === 'serve' ? '/' : '/coding-jams/genuary-2026/',
   server: {
     port: 3000,
     open: true,
@@ -15,4 +16,4 @@ export default defineConfig({
     },
   },
   publicDir: "public",
-})
+}))

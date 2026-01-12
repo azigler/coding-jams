@@ -362,26 +362,6 @@ function renderScene(p: p5, state: FaultState, controls: ControlState): void {
   }
 }
 
-function drawOverlay(p: p5, state: FaultState): void {
-  // Switch to 2D for overlay
-  p.push();
-  p.resetMatrix();
-
-  // Use ortho for 2D overlay
-  p.ortho(-p.width / 2, p.width / 2, -p.height / 2, p.height / 2, -1, 1);
-
-  // Bottom panel
-  p.noStroke();
-  p.fill(20, 20, 25, 220);
-  p.translate(-p.width / 2, p.height / 2 - 65, 0);
-  p.plane(p.width, 65);
-
-  p.pop();
-
-  // Draw text using 2D context workaround
-  // p5 WEBGL text is limited, so we keep the title simple
-}
-
 // ============================================================================
 // CONTROLS
 // ============================================================================
@@ -490,12 +470,8 @@ const config: DayConfig = {
     state = updateState(state, deltaTime, controls);
     (p as any)._faultState = state;
 
-    // Background: warm off-white to dark gradient based on phase
-    const bgDarkness = state.phase === 'drifting' ? 0.3 : 0;
-    const bgR = p.lerp(250, 20, bgDarkness);
-    const bgG = p.lerp(248, 18, bgDarkness);
-    const bgB = p.lerp(245, 22, bgDarkness);
-    p.background(bgR, bgG, bgB);
+    // Background: consistent warm off-white
+    p.background(250, 248, 245);
 
     // Lighting
     p.ambientLight(120, 115, 110);
@@ -504,9 +480,6 @@ const config: DayConfig = {
 
     // Render the scene
     renderScene(p, state, controls);
-
-    // Draw title overlay (2D)
-    drawTitle(p, state);
   },
 
   renderFinal: (p: p5) => {
@@ -520,34 +493,14 @@ const config: DayConfig = {
       phaseTime: 0.5
     };
 
-    p.background(245, 243, 240);
+    p.background(250, 248, 245);
     p.ambientLight(120, 115, 110);
     p.directionalLight(255, 250, 245, 0.5, 0.5, -1);
     p.directionalLight(80, 85, 100, -0.5, -0.3, -0.5);
 
     renderScene(p, midBreakState, controls);
-    drawTitle(p, midBreakState);
   }
 };
-
-function drawTitle(p: p5, state: FaultState): void {
-  // Create a 2D overlay using a separate graphics buffer approach
-  // For WEBGL, we'll use camera reset for pseudo-2D
-  p.push();
-  p.resetMatrix();
-  p.camera(0, 0, (p.height / 2) / Math.tan(Math.PI / 6), 0, 0, 0, 0, 1, 0);
-
-  // Draw a dark panel at bottom
-  p.noStroke();
-  p.fill(20, 20, 25, 220);
-  p.translate(0, p.height / 2 - 35, 0);
-  p.plane(p.width, 70);
-
-  // Note: Text in WEBGL requires textFont with a font that supports it
-  // For simplicity, we rely on the harness overlay or accept minimal text
-
-  p.pop();
-}
 
 // Claude's Choice — settings that create the most dramatic fault cycle
 export function getClaudesChoice(): Partial<ControlState> {

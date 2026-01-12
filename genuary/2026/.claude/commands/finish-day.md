@@ -28,9 +28,20 @@ Verify:
 - [ ] Renders without console errors
 - [ ] All controls function
 - [ ] Animation/interaction works as intended
-- [ ] Recording produces output (if enabled)
 
-### Step 2: Critical Self-Review
+### Step 2: Visual Review and Bug Fixes
+
+**CRITICAL: Review the work visually BEFORE capturing any assets.**
+
+Navigate to the day in the browser and watch the full animation cycle. Look for:
+- Background color issues (jarring transitions, inconsistent colors)
+- Rendering artifacts (stray elements, sizing mismatches, z-fighting)
+- Animation glitches (stuttering, wrong timing, broken easing)
+- UI issues (overlapping elements, incorrect positioning)
+
+**Fix any visual bugs before proceeding.** Do not capture assets for broken work.
+
+### Step 3: Critical Self-Review
 
 **Be brutally honest.** Answer these questions:
 
@@ -53,7 +64,7 @@ Verify:
 5. **Would I be proud to share this?**
    - Not "is it working" but "is it good"
 
-### Step 3: Decide: Ship or Revise
+### Step 4: Decide: Ship or Revise
 
 Based on your self-review:
 
@@ -68,7 +79,19 @@ Revision options:
 
 **It is better to ship something good late than something mediocre on time.**
 
-### Step 4: Write Your Manifesto
+### Step 5: Capture Assets (Image and GIF)
+
+**Use the in-app buttons — do NOT use external recording tools.**
+
+1. Set controls to your recommended settings (Claude's Choice)
+2. Click the **"Download Image"** button to capture a still
+3. Click the **"Record GIF"** button to capture the animation
+4. Wait for downloads to complete
+5. Verify the files look correct before proceeding
+
+The harness handles encoding, timing, and file naming. Trust it.
+
+### Step 6: Write Your Manifesto
 
 Create `.claude/manifesto/day-N-[your-title-slug].md`
 
@@ -88,7 +111,7 @@ Forbidden in manifestos:
 
 **Your manifesto voice should match your artistic personality for this day.**
 
-### Step 5: Write Social Media Post
+### Step 7: Write Social Media Post
 
 **CRITICAL: LinkedIn does not render markdown.** No formatting at all.
 
@@ -118,14 +141,7 @@ Prompt: [prompt text]
 
 **Do not use the same voice style as the previous day's agent.**
 
-### Step 6: Record the Artwork
-
-If recording is enabled:
-1. Set controls to your recommended settings
-2. Run recording for the configured duration
-3. Verify the output file exists and looks correct
-
-### Step 7: Final Commit
+### Step 8: Final Commit
 
 Commit with a meaningful message:
 
@@ -226,11 +242,13 @@ Prompt: A City
 ## CHECKLIST BEFORE FINISHING
 
 - [ ] Build passes (`npm run build`)
-- [ ] Visual is distinct from Days 7-11
+- [ ] Visual review done — no bugs or artifacts
+- [ ] Visual is distinct from previous days
 - [ ] Emotion target was achieved (or day was revised)
+- [ ] Image captured via in-app "Download Image" button
+- [ ] GIF captured via in-app "Record GIF" button
 - [ ] Manifesto written in UNIQUE format
 - [ ] Social post written with NO formatting and DISTINCT voice
-- [ ] Recording generated (if applicable)
 - [ ] Committed with proper message
 
 ---
