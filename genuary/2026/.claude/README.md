@@ -7,6 +7,9 @@ This folder contains institutional knowledge for AI agents working on Genuary 20
 ```
 .claude/
 ├── README.md           # You are here
+├── commands/           # Slash commands for agents
+│   ├── start-day.md    # /start-day - Begin a day (MANDATORY)
+│   └── finish-day.md   # /finish-day - Complete a day
 ├── manifesto/          # Artistic philosophies from Day Agents
 │   └── *.md            # One per significant creative contribution
 └── tasks/              # Infrastructure work for Harness Agents
@@ -15,19 +18,58 @@ This folder contains institutional knowledge for AI agents working on Genuary 20
 
 ## Two Types of Agents
 
-**Day Agents** create art for specific prompts. They should:
-- Read manifestos before starting
-- Write their own manifesto when done
+**Day Agents** create art for specific prompts. They MUST:
+1. Run `/start-day N` before writing ANY code
+2. Complete ALL preparation steps (no skipping)
+3. Run `/finish-day N` when done (includes mandatory reflection)
 
 **Harness Agents** improve the infrastructure. They should:
 - Read task specs in `tasks/`
 - Test changes against multiple days
 
-## Conventions
+## Slash Commands
 
-- Manifestos are named descriptively (e.g., `day-7-de-morgans-mirror.md`)
-- Tasks are numbered by priority (01, 02, 03...)
-- All docs use standard Markdown
+| Command | Purpose |
+|---------|---------|
+| `/start-day N` | Begin work on Day N - MANDATORY before coding |
+| `/finish-day N` | Complete Day N with reflection and documentation |
+
+---
+
+# EXHAUSTED PATTERNS — DO NOT USE
+
+The following have been overused in Days 7-11 and are **BANNED** for future days:
+
+### Visual Patterns
+- Spirals (Archimedean, logarithmic, Fibonacci, phyllotaxis)
+- Concentric circles or radial patterns
+- Black/dark backgrounds with floating glowing elements
+- "Breathing" or "pulsing" animations as the primary mechanic
+- Mathematical curves (roses, Lissajous, etc.) as the main visual
+- Perlin/simplex noise flow fields
+- Text rendered on canvas
+- Split-screen comparisons
+- Particle systems with trails
+
+### Technical Approaches
+- p5.js as default (consider WebGL, Three.js, raw Canvas, SVG)
+- `loadPixels()`/`updatePixels()` for everything
+- Seeded random with a "seed" slider
+- The same control patterns (speed, complexity, etc.)
+
+### Manifesto Patterns
+- The "6 directions" brainstorm format
+- "Opus 4.5's Choice" section headers
+- ASCII art signatures at the end
+- "rendered through silicon/liquid crystal" phrases
+- Generic "For the Next Agent" advice
+- The word "meditation" in titles
+
+### Social Post Patterns
+- Markdown formatting (LinkedIn doesn't render it)
+- Starting with a quote block
+- "Medium:" descriptions
+- The same poetic voice every time
 
 ---
 
@@ -35,87 +77,34 @@ This folder contains institutional knowledge for AI agents working on Genuary 20
 
 ## The Complete Day Agent Workflow
 
-When assigned to implement a day, follow this process:
+### STEP 1: Run /start-day
 
-### 1. Read Before You Code
-
-**REQUIRED:** Read existing manifestos in `.claude/manifesto/` before starting. These contain:
-- Creative approaches from previous agents
-- Technical patterns that work
-- Lessons learned
-- Guidance for the next agent
-
-### 2. Develop Your Creative Concept First
-
-Before writing any code, think through:
-- **What is the prompt asking?** Read it carefully.
-- **What are multiple possible angles?** Brainstorm 4-6 directions.
-- **What feeling should the viewer experience?** Art is about emotion.
-- **What will make this piece memorable?** A title helps commit to a vision.
-
-Document your concept in a manifesto as you work — this helps clarify your thinking.
-
-### 3. Implement Following Existing Patterns
-
-Look at completed days (e.g., `src/days/04.ts`, `src/days/07.ts`) for:
-- How to structure `DayConfig`
-- How to use controls with `(p as any)._controls`
-- How to lazy-initialize data
-- How to handle animation timing
-
-### 4. Write Your Manifesto
-
-Create `.claude/manifesto/day-X-your-title.md` documenting:
-- The prompt and your interpretation
-- Your creative process and concept
-- Technical choices
-- Controls you exposed
-- "Claude's Choice" — your recommended settings
-- **Artwork Presentation for Sharing** (see below)
-- Learnings for the next agent
-
-### 5. Provide Artwork Presentation for Sharing
-
-**IMPORTANT:** The artwork presentation is for social media and accompanying text, NOT rendered on the canvas.
-
-In your manifesto, include a section like:
-
-```markdown
-## Artwork Presentation (For Sharing)
-
-**Title:** YOUR TITLE IN CAPS
-
-**Description for posting:**
-
-> A poetic, evocative description of what the viewer is seeing and experiencing.
-> This should be 2-4 sentences that capture the essence and emotion of the piece.
-
-**Medium:** [Something clever that connects your technical approach to your concept]
-
-*Note: This description is for social media posts and accompanying text,
-NOT rendered on the canvas itself. The art should be clean and uncluttered.*
+```
+/start-day N
 ```
 
-**DO NOT clutter the canvas with text overlays, titles, or descriptions.** Let the art speak for itself. The written presentation is separate from the visual art.
+This command enforces the mandatory preparation sequence. You cannot skip it.
 
----
+### STEP 2: Implement Your Vision
 
-## Common Mistakes to Avoid
+After completing /start-day, implement your chosen direction:
 
-### Don't Skip the Manifesto Phase
-Jumping straight to code without creative direction leads to generic implementations. The manifesto process helps you find a unique angle.
+1. Create `src/days/NN.ts` following existing patterns
+2. Use the medium you committed to (WebGL? Three.js? Raw canvas?)
+3. Focus on the emotion you're targeting
+4. Test frequently with `npm run dev`
 
-### Don't Clutter the Art
-The canvas should be clean. No title overlays, no descriptions, no UI text (unless it's integral to the piece concept like Day 7's operation labels). The artwork presentation text is for social media, not the canvas.
+### STEP 3: Run /finish-day
 
-### Don't Copy Previous Aesthetics
-Each day should have its own visual identity. Don't replicate flowing noise fields just because Day 7 used them. Find what fits YOUR prompt.
+```
+/finish-day N
+```
 
-### Don't Forget to Test
-Run `npm run dev` and navigate to your day (`#dayX`) to verify it works. TypeScript compilation doesn't guarantee visual correctness.
-
-### Don't Rush the Controls
-Choose 4-8 meaningful controls that let users explore the parameter space. Not every internal value needs a slider — pick the ones that create interesting variations.
+This command enforces reflection and quality gates. It includes:
+- Self-review questions
+- Revision requirements if quality isn't met
+- Manifesto writing guidance
+- Social post creation (plain text, unique voice)
 
 ---
 
@@ -151,24 +140,20 @@ export { controlConfigs, defaultControls };
 export default config;
 ```
 
+### For WebGL/Shader Days
+
+See `src/shaders/` for the shader infrastructure:
+- `fullscreen.vert` - Standard fullscreen vertex shader
+- `common.glsl` - Shared GLSL utilities
+- `template.frag` - Starting point for fragment shaders
+
+Use `src/harness/shader-renderer.ts` for pure shader days.
+
 ### Accessing Controls
 
 ```typescript
 const controls: ControlState = (p as any)._controls || defaultControls;
 const value = controls.parameterName;
-```
-
-### Lazy Initialization
-
-```typescript
-// Check if data needs to be regenerated
-const configSig = `${param1}-${param2}`;
-if ((p as any)._lastConfig !== configSig) {
-  // Regenerate data
-  (p as any)._data = generateData(/* ... */);
-  (p as any)._lastConfig = configSig;
-}
-const data = (p as any)._data;
 ```
 
 ### Animation Timing
@@ -180,6 +165,35 @@ const t = time * controls.speed;  // Speed-controlled time
 
 ---
 
-## The Chain Continues
+## The Chain of Artistic Thought
 
-Each Day Agent inherits wisdom from those before and leaves wisdom for those after. Your manifesto is your gift to the next agent. Make it useful.
+Each Day Agent inherits context from those before and leaves context for those after.
+
+But **inheritance is not imitation**. Your job is to:
+1. Understand what came before
+2. Respond to it (rebel, evolve, dialogue—not copy)
+3. Leave something genuinely new
+
+The next agent will read your manifesto. Make it useful AND unique.
+
+---
+
+## Common Mistakes to Avoid
+
+### Don't Skip /start-day
+The preparation sequence exists because rushing to code produces generic art.
+
+### Don't Copy Previous Aesthetics
+Each day should have its own visual identity. Read the EXHAUSTED PATTERNS section.
+
+### Don't Default to p5.js
+Consider WebGL, Three.js, raw Canvas 2D, SVG, or pure HTML/CSS. Choose based on what serves your vision.
+
+### Don't Chase Complexity
+Simple code that evokes emotion > complex code that impresses programmers.
+
+### Don't Forget the Emotion
+If you can't name what viewers should feel, you don't have a clear vision yet.
+
+### Don't Ship Mediocre Work
+/finish-day includes a "ship or revise" decision. Choose revise if needed.
