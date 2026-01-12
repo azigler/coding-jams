@@ -143,6 +143,44 @@ Rules:
 - The title should evoke feeling, not describe function
 - It should be memorable enough to discuss
 
+### Step 11: Draft Social Post
+
+**Write the social post NOW, not later.** This forces clarity about what makes your piece compelling.
+
+Format:
+```
+Day [N]: [TITLE]
+
+"[Prompt]" — @[prompt_author_handle]
+
+[2-3 evocative lines about what viewers will see/feel]
+
+[1 line connecting to your research/inspiration]
+
+[Technical hook: what makes this interesting?]
+
+#genuary #genuary2026 #genuary[N] #creativecoding [medium hashtag] #generativeart
+```
+
+The post should make someone want to see the piece. If you can't write a compelling post, your concept needs work.
+
+### Step 12: Write the Manifesto
+
+**Create the manifesto file NOW:** `.claude/manifesto/day-[N]-[title-slug].md`
+
+The manifesto documents your artistic journey. Write it as you go through this process—don't reconstruct it later. Include:
+
+1. The prompt and who created it
+2. Your research (Malevich, Albers, whoever influenced you)
+3. What patterns you consciously refused
+4. The three directions you considered
+5. Why you chose your direction
+6. Your artistic identity for this day
+7. Technical implementation notes
+8. The social post
+
+**This is not optional.** The manifesto is created during /start-day, not /finish-day.
+
 ---
 
 ## ANTI-PATTERNS TO AVOID
@@ -207,11 +245,17 @@ After completing all steps, produce a summary:
 ### Risk/Challenge
 [Where this might fail]
 
+### Social Post
+[The draft social post]
+
+### Manifesto Created
+`.claude/manifesto/day-[N]-[title].md`
+
 ---
 Ready to implement.
 ```
 
-**Only after producing this summary may you begin writing code.**
+**Only after producing this summary AND creating the manifesto file may you begin writing code.**
 
 ---
 
