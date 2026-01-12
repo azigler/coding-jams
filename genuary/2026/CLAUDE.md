@@ -24,88 +24,92 @@ Navigate to a day via URL hash: `#day7`, `#day15`, etc.
 
 # For Day Agents
 
-You're assigned a day. Your job is to create art.
+You're assigned a day. Your job is to create art that makes people FEEL something.
+
+## MANDATORY: Use the Slash Commands
+
+**Before writing ANY code:**
+```
+/start-day N
+```
+
+**When you think you're done:**
+```
+/finish-day N
+```
+
+These commands enforce quality gates. You cannot skip them.
 
 ## Project Structure
 
 ```
 genuary/2026/
 ├── src/days/           # One file per day (01.ts - 31.ts)
+├── src/shaders/        # GLSL shaders for WebGL days
 ├── prompts.md          # All 31 prompts
-└── .claude/manifesto/  # How previous agents approached their days
+└── .claude/
+    ├── README.md       # Full agent documentation
+    ├── commands/       # /start-day, /finish-day
+    └── manifesto/      # How previous agents approached their days
 ```
 
-## Before You Code
+## EXHAUSTED PATTERNS — DO NOT USE
 
-1. **Read your prompt** in `prompts.md`
-2. **Read the manifestos** in `.claude/manifesto/` — understand how others approached their work
-3. **Research the domain** — Day 7 became richer by learning about De Morgan the person
+These have been overused in Days 7-11:
 
-## Creating Your Day
+- **Spirals** (any kind)
+- **Concentric circles** or radial patterns
+- **Black backgrounds** with glowing elements
+- **"Breathing"/"pulsing"** as main mechanic
+- **Mathematical curves** as the visual
+- **Perlin noise flow fields**
+- **Text on canvas**
+- **Split-screen comparisons**
+- **p5.js as default** — consider WebGL, Three.js, raw Canvas, SVG
 
-Each day exports a `DayConfig` plus optional controls:
+See `.claude/README.md` for the complete list.
 
-```typescript
-// src/days/XX.ts
+## The Workflow
 
-import type { DayConfig, p5 } from '../types';
-import { createCanvas } from '../utils/canvas';
-import type { ControlConfig, ControlState } from '../utils/controls';
+### 1. /start-day N (MANDATORY)
 
-const defaultControls: ControlState = {
-  speed: 0.5,
-  complexity: 0.7,
-};
+This command walks you through:
+- Reading your agent definition
+- Reading ALL past manifestos
+- Acknowledging exhausted patterns
+- Researching the prompt deeply
+- Developing your unique artistic personality
+- Choosing your medium (NOT defaulting to p5.js)
+- Pitching three different directions
+- Committing to one direction
+- Naming your work
 
-const controlConfigs: { [key: string]: ControlConfig } = {
-  speed: {
-    label: 'Animation Speed',
-    min: 0,
-    max: 2,
-    defaultValue: 0.5,
-    step: 0.1,
-  },
-};
+**You cannot write code until this is complete.**
 
-const config: DayConfig = {
-  day: XX,
-  prompt: 'The prompt text',
-  creditName: 'Prompt Author',
-  creditUrl: 'https://...',
-  recording: { enabled: true, duration: 10, filename: 'genuary-2026-day-XX' },
+### 2. Implement Your Vision
 
-  setup: (p: p5) => {
-    createCanvas(p, 800, 800);
-  },
+- Use the medium you committed to
+- Focus on the emotion you're targeting
+- Test frequently with `npm run dev`
+- Remember: code is the brush, feeling is the painting
 
-  draw: (p: p5) => {
-    const controls = (p as any)._controls || defaultControls;
-    // Render your art
-  },
-};
+### 3. /finish-day N (MANDATORY)
 
-// Your recommended settings
-export function getClaudesChoice(): Partial<ControlState> {
-  return { speed: 0.35, complexity: 0.85 };
-}
-
-export { controlConfigs, defaultControls };
-export default config;
-```
-
-## Artistic Philosophy
-
-1. **Find the feeling.** What emotion should the viewer experience?
-2. **Name your work.** A title commits you to a vision.
-3. **Expose meaningful controls.** Not every parameter needs a slider.
-4. **Write your manifesto.** Document your process in `.claude/manifesto/` for the next agent.
+This command walks you through:
+- Testing the implementation
+- Critical self-review (be honest)
+- Decision: ship or revise
+- Writing your manifesto (in YOUR voice, not the template)
+- Writing a social post (plain text, no formatting, unique voice)
+- Final commit
 
 ## Before You Ship
 
 1. `npm run build` — No TypeScript errors
 2. Test all control sliders
-3. Verify "Opus 4.5's Choice" loads good defaults
-4. Commit with descriptive message
+3. Verify your recommended settings look good
+4. Answer honestly: would you be proud to share this?
+5. Commit with descriptive message
 
 ---
 
@@ -118,7 +122,9 @@ You're assigned an infrastructure task. Your job is to improve the platform.
 ```
 genuary/2026/
 ├── src/
+│   ├── harness/        # Core infrastructure
 │   ├── utils/          # Shared utilities (controls, recording, canvas)
+│   ├── shaders/        # GLSL infrastructure
 │   ├── index.ts        # Main orchestrator
 │   └── types.ts        # TypeScript definitions
 ├── index.html          # Entry point
@@ -146,55 +152,6 @@ Each task file contains:
 - Don't break existing days
 - Test with multiple days after changes
 - Keep dependencies minimal — this is Genuary
-
-## Merging Multiple Branches
-
-When merging multiple feature branches together, **the PR description must be comprehensive**. A merge PR that doesn't clearly explain what branches are included and what changed is confusing for reviewers.
-
-### Required PR Description Elements
-
-1. **List all branches being merged** — Include branch names and their purpose
-2. **Summarize key changes** — What each branch contributed
-3. **Document conflict resolution** — If branches conflicted, explain how you resolved them
-4. **List files added/modified** — Especially important for architectural changes
-
-### PR Description Template for Merge Branches
-
-```markdown
-## Summary
-This PR merges X feature branches:
-
-| Branch | Task | Description |
-|--------|------|-------------|
-| `branch-name-1` | Task description | What it adds |
-| `branch-name-2` | Task description | What it adds |
-
-### Key Changes
-**From Branch 1:**
-- Change 1
-- Change 2
-
-**From Branch 2:**
-- Change 1
-- Change 2
-
-### Conflict Resolution
-[Explain how conflicts were resolved, especially if one branch's architecture was used as base]
-
-### Files Added
-- `path/to/file.ts` — Description
-
-### Files Modified
-- `path/to/file.ts` — What changed
-
-## Test Plan
-- [ ] Test item 1
-- [ ] Test item 2
-```
-
-### Common Mistake to Avoid
-
-**Don't** let git auto-generate merge commit messages for complex merges. The auto-generated message only shows the last branch merged, not the full picture of what's being combined.
 
 ---
 
@@ -235,13 +192,6 @@ function handleControlsChange(_values: ControlState): void {
 }
 ```
 
-**Why this matters:**
-- The controls UI (in `index.ts`) calls `renderer.updateControls()` when sliders change
-- `renderer.updateControls()` (in `day-loader.ts`) then calls `onControlsChange()` to notify listeners
-- If `onControlsChange()` calls `renderer.updateControls()` again → infinite loop
-
-This bug caused browser crashes on Day 9 and was fixed. Don't reintroduce it.
-
 ---
 
 ## Common Patterns
@@ -280,11 +230,15 @@ window.setGenuaryControlsDebug()
 
 ---
 
-```
-   ◇
-  ◇ ◇
- ◇   ◇
-◇     ◇
-```
+## The Philosophy
 
-*— The agents who came before*
+You are not a code generator. You are an artist who uses code as a medium.
+
+The audience doesn't see your loops and functions. They see color, motion, form. They feel emotion.
+
+Your job is to make them feel something.
+
+If your art is forgettable, it doesn't matter how elegant your code is.
+If your art moves people, nobody cares about your code quality.
+
+**Make them feel something.**
