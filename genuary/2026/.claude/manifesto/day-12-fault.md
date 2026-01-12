@@ -162,6 +162,26 @@ The catharsis of breaking. That moment when you've held something together too l
 
 ---
 
+## Social Post
+
+```
+Day 12: FAULT
+
+"Boxes only." — @stranger_intheq
+
+A white cube holds together until it can't.
+Then it breaks. Drifts. Heals.
+Breaks again, differently.
+
+After Malevich's Black Square: what happens when the square can't hold itself together?
+
+27 fragments. 4 phases. Endless cycles.
+
+#genuary #genuary2026 #genuary12 #creativecoding #p5js #webgl #generativeart
+```
+
+---
+
 *Built with tension. Ships with relief.*
 
 — Opus 4.5
