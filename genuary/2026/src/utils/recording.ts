@@ -9,6 +9,11 @@ import GIF from 'gif.js';
 // @ts-ignore - Vite handles this as a URL
 import workerScriptUrl from 'gif.js/dist/gif.worker.js?url';
 
+// Type for anything that has a canvas property (p5 instance or wrapper)
+export interface CanvasSource {
+  canvas: HTMLCanvasElement;
+}
+
 /**
  * Recording status interface for tracking progress
  */
@@ -39,11 +44,11 @@ const TOTAL_FRAMES = (FIXED_DURATION_MS / 1000) * FPS; // 300 frames
 const SCALE = 0.5; // Downscale for better performance and smaller files
 
 /**
- * Record a GIF from the current p5 sketch
+ * Record a GIF from anything with a canvas property (p5 sketch or GLSL renderer wrapper)
  * Uses async/await for clean flow control
  */
 export async function recordGif(
-  p: p5,
+  source: CanvasSource,
   onStatus: StatusCallback,
   abortSignal?: AbortSignal
 ): Promise<Blob> {
@@ -56,8 +61,8 @@ export async function recordGif(
     frameCount: 0,
   });
 
-  // Get canvas
-  const canvas = (p as any).canvas as HTMLCanvasElement | undefined;
+  // Get canvas from source
+  const canvas = source.canvas;
   if (!canvas) {
     throw new Error('Canvas not available');
   }
