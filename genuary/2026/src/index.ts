@@ -29,7 +29,7 @@ import {
   setControlsProgrammatically,
   loadControls,
 } from './utils/controls';
-import { recordGif, downloadBlob, updateRecordButton, type RecordingStatus } from './utils/recording';
+import { recordGif, downloadBlob, updateRecordButton, type RecordingStatus, type CanvasSource } from './utils/recording';
 import { createRecordingOverlay, type RecordingOverlay } from './utils/recording-overlay';
 
 // ============================================================================
@@ -236,13 +236,12 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
     const sketch = renderer?.getSketch();
     const canvas = renderer?.getCanvas();
 
-    if (!sketch) {
-      throw new Error('Sketch not available');
-    }
-
     if (!canvas) {
       throw new Error('Canvas not available');
     }
+
+    // Determine if this is a GLSL day (no sketch available)
+    const isGLSLDay = !sketch;
 
     // Create recording overlay
     recordingOverlay = createRecordingOverlay(canvas);
@@ -253,34 +252,38 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
       recordingOverlay?.update(status);
     };
 
-    // Ensure animation is running
-    sketch.loop();
-    console.log('✅ Animation started');
+    // For p5.js days, ensure animation is running and load controls
+    if (sketch) {
+      sketch.loop();
+      console.log('✅ Animation started (p5.js mode)');
 
-    // Load and apply controls
-    try {
-      const dayModule = await import(`./days/${dayNum.toString().padStart(2, '0')}.ts`);
-      const defaultControls: ControlState = dayModule.defaultControls || {};
-      if (defaultControls && Object.keys(defaultControls).length > 0) {
-        const savedControls = loadControls(dayNum, defaultControls);
-        (sketch as unknown as Record<string, unknown>)._controls = savedControls;
-        console.log('✅ Controls loaded for recording:', savedControls);
+      // Load and apply controls
+      try {
+        const dayModule = await import(`./days/${dayNum.toString().padStart(2, '0')}.ts`);
+        const defaultControls: ControlState = dayModule.defaultControls || {};
+        if (defaultControls && Object.keys(defaultControls).length > 0) {
+          const savedControls = loadControls(dayNum, defaultControls);
+          (sketch as unknown as Record<string, unknown>)._controls = savedControls;
+          console.log('✅ Controls loaded for recording:', savedControls);
 
-        // Reset cached data so it regenerates with correct control values
-        const extSketch = sketch as unknown as Record<string, unknown>;
-        extSketch._triangleData = null;
-        extSketch._lastTriangleCount = null;
-        extSketch._balls = null;
-        extSketch._lastBallCount = null;
-        extSketch._particles = null;
-        extSketch._lastParticleCount = null;
+          // Reset cached data so it regenerates with correct control values
+          const extSketch = sketch as unknown as Record<string, unknown>;
+          extSketch._triangleData = null;
+          extSketch._lastTriangleCount = null;
+          extSketch._balls = null;
+          extSketch._lastBallCount = null;
+          extSketch._particles = null;
+          extSketch._lastParticleCount = null;
+        }
+      } catch {
+        console.log('No controls for this day');
       }
-    } catch {
-      console.log('No controls for this day');
-    }
 
-    // Reset frame count to start from beginning
-    sketch.frameCount = 0;
+      // Reset frame count to start from beginning
+      sketch.frameCount = 0;
+    } else {
+      console.log('✅ Animation running (GLSL mode)');
+    }
 
     // Small delay to ensure first frame is drawn with correct controls
     await delay(300);
@@ -288,17 +291,22 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
     console.log('🎬 Starting GIF recording...');
     console.log('Canvas check:', {
       canvas: canvas ? 'exists' : 'missing',
-      width: sketch.width,
-      height: sketch.height,
+      mode: isGLSLDay ? 'GLSL' : 'p5.js',
       canvasWidth: canvas.width,
       canvasHeight: canvas.height,
     });
 
     setRecording(true);
 
+    // Create a canvas source for recording
+    // For p5.js, use the sketch (which has .canvas); for GLSL, wrap the canvas
+    const recordingSource: CanvasSource = sketch
+      ? (sketch as unknown as CanvasSource)
+      : { canvas };
+
     // Record the GIF using the async API
     const blob = await recordGif(
-      sketch,
+      recordingSource,
       handleStatus,
       recordingAbortController.signal
     );
