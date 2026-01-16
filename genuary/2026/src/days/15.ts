@@ -127,10 +127,12 @@ function lerp(a: number, b: number, t: number): number {
 // ============================================================================
 
 function initShadow(canvasWidth: number, canvasHeight: number): Shadow {
+  // Position the shadow in the sunlight beam area
+  // The shadow will be cast onto the wall at this X position
   return {
-    x: canvasWidth * 0.65,
-    y: canvasHeight * 0.35,
-    baseX: canvasWidth * 0.65,
+    x: canvasWidth * 0.55,
+    y: canvasHeight * 0.35, // y is used for behavior, actual shadow drawn at wall
+    baseX: canvasWidth * 0.55,
     baseY: canvasHeight * 0.35,
     headSize: 45,
     bodyHeight: 120,
@@ -258,57 +260,80 @@ function updateShadow(
   }
 }
 
-function drawShadow(p: p5, shadow: Shadow): void {
+function drawShadow(p: p5, shadow: Shadow, canvasWidth: number, canvasHeight: number): void {
+  // The shadow is CAST onto the wall by sunlight coming from upper-left
+  // It should look like a projection, stretched and distorted
+
+  const wallHeight = canvasHeight * 0.6;
+
+  // Shadow is cast onto the wall, stretching upward from floor line
+  // The invisible creature is standing in the sunlight on the floor
+  const shadowBaseY = wallHeight - 10; // Shadow starts near floor/wall junction
+
+  // Shadow stretches UP the wall (light comes from window above)
+  const stretchFactor = 1.8 + shadow.squash * 0.3;
+
   p.push();
-  p.translate(shadow.x, shadow.y + shadow.hopY);
-  p.rotate(shadow.lookAngle);
-  p.scale(1, shadow.squash);
 
-  p.noStroke();
-  p.fill(COLORS.shadow[0], COLORS.shadow[1], COLORS.shadow[2], 0.6);
+  // Position at the wall where shadow is cast
+  p.translate(shadow.x, shadowBaseY);
 
-  // Head (slightly squished oval)
-  const headW = shadow.headSize * 1.1;
-  const headH = shadow.headSize * 0.95;
-  p.ellipse(0, 0, headW, headH);
+  // Shadows stretch upward (negative Y) and skew slightly
+  p.scale(1.2, -stretchFactor); // Flip Y so shadow goes UP the wall
+  p.rotate(shadow.lookAngle * 0.5);
 
-  // Little ear bumps (Seussian!)
-  p.ellipse(-headW * 0.35, -headH * 0.3, 15, 20);
-  p.ellipse(headW * 0.35, -headH * 0.3, 15, 20);
+  // Draw multiple layers for soft shadow effect
+  const layers = 3;
+  for (let layer = layers; layer >= 0; layer--) {
+    const blur = layer * 4;
+    const alpha = layer === 0 ? 0.02 : 0.005;
 
-  // Body (rounded blob)
-  p.beginShape();
-  const bodyW = 35;
-  const bodyH = shadow.bodyHeight;
-  for (let a = 0; a < Math.PI * 2; a += 0.1) {
-    const r = a < Math.PI ? bodyW : bodyW * 0.8;
-    const stretch = a > Math.PI * 0.3 && a < Math.PI * 0.7 ? 1.1 : 1;
-    const x = Math.sin(a) * r * stretch;
-    const y = Math.cos(a) * bodyH * 0.5 + bodyH * 0.5 + headH * 0.3;
-    p.vertex(x, y);
+    p.noStroke();
+    p.fill(COLORS.shadow[0], COLORS.shadow[1], COLORS.shadow[2], alpha);
+
+    const scale = 1 + layer * 0.08;
+
+    p.push();
+    p.scale(scale, scale);
+
+    // Head (slightly squished oval)
+    const headW = shadow.headSize * 0.9;
+    const headH = shadow.headSize * 0.7;
+    const headY = shadow.bodyHeight * 0.8 + shadow.hopY * 0.5;
+    p.ellipse(0, headY, headW + blur, headH + blur);
+
+    // Little ear bumps (Seussian!)
+    p.ellipse(-headW * 0.4, headY + headH * 0.25, 12 + blur, 18 + blur);
+    p.ellipse(headW * 0.4, headY + headH * 0.25, 12 + blur, 18 + blur);
+
+    // Body (elongated blob for shadow)
+    const bodyW = 30;
+    const bodyH = shadow.bodyHeight * 0.7;
+    p.ellipse(0, bodyH * 0.4, bodyW + blur, bodyH + blur);
+
+    // Arms (stretched in shadow)
+    p.push();
+    p.translate(-bodyW * 0.7, bodyH * 0.35);
+    p.rotate(-0.2 + shadow.armAngle * 0.4);
+    p.ellipse(0, 15, 10 + blur, 35 + blur);
+    p.pop();
+
+    p.push();
+    p.translate(bodyW * 0.7, bodyH * 0.35);
+    p.rotate(0.2 + shadow.armAngle * 0.8);
+    p.ellipse(0, 15, 10 + blur, 35 + blur);
+    // Hand when waving
+    if (shadow.state === 'waving') {
+      p.ellipse(4, 30, 14 + blur, 10 + blur);
+    }
+    p.pop();
+
+    // Legs (merge into base of shadow)
+    p.ellipse(-12 + shadow.legOffset, 8, 18 + blur, 25 + blur);
+    p.ellipse(12 - shadow.legOffset, 8, 18 + blur, 25 + blur);
+
+    p.pop();
   }
-  p.endShape(p.CLOSE);
-
-  // Arms
-  p.push();
-  p.translate(-bodyW * 0.8, bodyH * 0.3);
-  p.rotate(-0.3 + shadow.armAngle * 0.5);
-  p.ellipse(0, 20, 12, 40);
-  p.pop();
-
-  p.push();
-  p.translate(bodyW * 0.8, bodyH * 0.3);
-  p.rotate(0.3 + shadow.armAngle);
-  p.ellipse(0, 20, 12, 40);
-  // Little hand wave
-  if (shadow.state === 'waving') {
-    p.ellipse(5, 38, 18, 14);
-  }
-  p.pop();
-
-  // Legs (stubby)
-  p.ellipse(-15 + shadow.legOffset, bodyH + headH * 0.3, 20, 30);
-  p.ellipse(15 - shadow.legOffset, bodyH + headH * 0.3, 20, 30);
 
   p.pop();
 }
@@ -696,8 +721,8 @@ const config: DayConfig = {
     // Footprints (on floor)
     drawFootprints(p, state.footprints);
 
-    // Shadow (on wall)
-    drawShadow(p, state.shadow);
+    // Shadow (cast onto wall by sunlight)
+    drawShadow(p, state.shadow, p.width, p.height);
 
     // Cookies
     drawCookies(p, state.cookies, p.width * 0.25, p.height * 0.75);
@@ -714,7 +739,7 @@ const config: DayConfig = {
     state.shadow.state = 'waving';
 
     drawRoom(p, p.width, p.height);
-    drawShadow(p, state.shadow);
+    drawShadow(p, state.shadow, p.width, p.height);
     drawCookies(p, state.cookies, p.width * 0.25, p.height * 0.75);
     drawDustMotes(p, state.dustMotes);
   },
