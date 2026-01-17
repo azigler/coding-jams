@@ -13,6 +13,7 @@ import type {
   ControlState,
   RecordingConfig,
   ControlChangeHandler,
+  ThreeContext,
 } from '../types';
 import { setControls, setRecording } from './state';
 import { registerCleanup } from './cleanup';
@@ -443,6 +444,117 @@ export function createGLSLRenderer(options: GLSLRendererOptions): DayRenderer | 
 }
 
 // ============================================================================
+// Three.js Renderer Creation
+// ============================================================================
+
+interface ThreeRendererOptions {
+  config: DayConfig;
+  container: HTMLElement;
+  initialControls: ControlState;
+  onControlsChange: ControlChangeHandler;
+}
+
+/**
+ * Create a Three.js renderer wrapped as a DayRenderer
+ */
+export function createThreeRenderer(options: ThreeRendererOptions): DayRenderer | null {
+  const { config, container, initialControls, onControlsChange } = options;
+
+  if (!config.threeSetup) {
+    console.error('Three.js day missing threeSetup function');
+    return null;
+  }
+
+  let ctx: ThreeContext | null = null;
+  let controls = { ...initialControls };
+  let running = false;
+  let animationId: number | null = null;
+  let cleanupFn: (() => void) | null = null;
+  let lastTime = performance.now();
+
+  return {
+    start: () => {
+      if (running) return;
+
+      // Initialize Three.js context
+      ctx = config.threeSetup!(container, controls);
+      if (!ctx) {
+        console.error('threeSetup returned null');
+        return;
+      }
+
+      running = true;
+      lastTime = performance.now();
+
+      // Animation loop
+      function animate() {
+        if (!ctx || !running) return;
+
+        const now = performance.now();
+        const deltaTime = (now - lastTime) / 1000;
+        lastTime = now;
+
+        // Update scene
+        config.threeUpdate?.(ctx, controls, deltaTime);
+
+        // Render
+        ctx.renderer.render(ctx.scene, ctx.camera);
+
+        animationId = requestAnimationFrame(animate);
+      }
+      animate();
+
+      // Register cleanup
+      cleanupFn = registerCleanup(() => {
+        if (animationId !== null) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        if (ctx) {
+          config.threeCleanup?.(ctx);
+          ctx.renderer.dispose();
+          ctx.canvas.remove();
+          ctx = null;
+        }
+        running = false;
+      });
+    },
+
+    stop: () => {
+      if (!running) return;
+
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+
+      if (ctx) {
+        config.threeCleanup?.(ctx);
+        ctx.renderer.dispose();
+        ctx.canvas.remove();
+        ctx = null;
+      }
+
+      running = false;
+      cleanupFn?.();
+      cleanupFn = null;
+    },
+
+    updateControls: (newControls: ControlState) => {
+      controls = { ...newControls };
+      setControls(controls);
+      onControlsChange(controls);
+    },
+
+    getCanvas: () => ctx?.canvas ?? null,
+
+    getSketch: () => null, // Three.js renderer has no p5 sketch
+
+    isRunning: () => running,
+  };
+}
+
+// ============================================================================
 // Full Day Loader
 // ============================================================================
 
@@ -497,6 +609,20 @@ export async function loadDay(
     }
 
     renderer = glslRenderer;
+  } else if (config.mode === 'three') {
+    // Three.js mode
+    const threeRenderer = createThreeRenderer({
+      config,
+      container,
+      initialControls: controls,
+      onControlsChange,
+    });
+
+    if (!threeRenderer) {
+      throw new Error(`Failed to create Three.js renderer for day ${dayNum}.`);
+    }
+
+    renderer = threeRenderer;
   } else {
     // Default p5.js mode
     renderer = createP5Renderer({

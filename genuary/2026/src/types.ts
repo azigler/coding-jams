@@ -74,7 +74,7 @@ export interface DayConfig {
   prompt: string;
   creditName: string;
   creditUrl: string;
-  mode?: 'p5' | 'glsl';  // Rendering mode (p5 default, glsl for WebGL shaders)
+  mode?: 'p5' | 'glsl' | 'three';  // Rendering mode (p5 default, glsl for WebGL shaders, three for Three.js)
   recording?: RecordingConfig;
 
   // p5 mode lifecycle methods
@@ -89,6 +89,24 @@ export interface DayConfig {
   fragmentShader?: string;
   vertexShader?: string; // Optional, uses default fullscreen quad if not provided
   uniforms?: UniformConfig[];
+
+  // Three.js mode properties
+  threeSetup?: (container: HTMLElement, controls: ControlState) => ThreeContext;
+  threeUpdate?: (ctx: ThreeContext, controls: ControlState, deltaTime: number) => void;
+  threeCleanup?: (ctx: ThreeContext) => void;
+}
+
+/**
+ * Context object for Three.js days
+ * Holds renderer, scene, camera, and any day-specific data
+ */
+export interface ThreeContext {
+  renderer: import('three').WebGLRenderer;
+  scene: import('three').Scene;
+  camera: import('three').Camera;
+  canvas: HTMLCanvasElement;
+  // Day-specific data can be added here
+  [key: string]: unknown;
 }
 
 /**
