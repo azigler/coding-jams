@@ -240,8 +240,8 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
       throw new Error('Canvas not available');
     }
 
-    // Determine if this is a GLSL day (no sketch available)
-    const isGLSLDay = !sketch;
+    // Determine if this is a non-p5 day (GLSL or Three.js)
+    const isNonP5Day = !sketch;
 
     // Create recording overlay
     recordingOverlay = createRecordingOverlay(canvas);
@@ -282,7 +282,7 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
       // Reset frame count to start from beginning
       sketch.frameCount = 0;
     } else {
-      console.log('✅ Animation running (GLSL mode)');
+      console.log('✅ Animation running (WebGL mode)');
     }
 
     // Small delay to ensure first frame is drawn with correct controls
@@ -291,7 +291,7 @@ async function startTimelapseRecording(config: DayConfig): Promise<void> {
     console.log('🎬 Starting GIF recording...');
     console.log('Canvas check:', {
       canvas: canvas ? 'exists' : 'missing',
-      mode: isGLSLDay ? 'GLSL' : 'p5.js',
+      mode: isNonP5Day ? 'WebGL' : 'p5.js',
       canvasWidth: canvas.width,
       canvasHeight: canvas.height,
     });
