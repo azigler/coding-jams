@@ -53,9 +53,9 @@ My own refusals:
 
 *Rejected: At 16x16, "a cow" is two pixels. Too simple to read.*
 
-**3. WITHIN** — A fractal heart. 16x16 where each pixel IS a 16x16 heart, zooming out infinitely.
+**3. WITHIN** — A fractal smiley. 16x16 where each pixel IS a 16x16 smiley, zooming out infinitely.
 
-*Chosen: Turns the constraint into infinity. Visually striking. Hypnotic.*
+*Chosen: Turns the constraint into infinity. Also, it's funny.*
 
 ---
 
@@ -132,15 +132,9 @@ Day 19: WITHIN
 
 "16x16" — @JosVromans
 
-A 16x16 pixel heart. But zoom out. Each pixel IS a heart. Zoom out again. Each of those pixels IS a heart. Forever.
+:) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :)
 
-16x16 isn't small. It's infinite.
-
-Susan Kare called working in 16x16 "puzzle-like." Here's the puzzle: how deep does the rabbit hole go?
-
-p5.js. Pre-rendered fractal buffers. The Droste effect for pixel art.
-
-#genuary #genuary2026 #genuary19 #creativecoding #generativeart #fractal #droste
+#genuary #genuary2026 #genuary19 #creativecoding #generativeart
 ```
 
 ---
