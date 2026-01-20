@@ -419,11 +419,6 @@ const config: DayConfig = {
     // Draw the path (the trace)
     drawPath(p, seeker.path, lineWeight, palette.line, fadeTrail);
 
-    // Draw the seeker's current position (small dot)
-    p.noStroke();
-    p.fill(palette.line[0], palette.line[1], palette.line[2]);
-    p.ellipse(seeker.x, seeker.y, lineWeight * 3, lineWeight * 3);
-
     // Optionally show attractor
     if (attractorType === 0) {
       drawAttractor(p, attractor, showAttractor);
