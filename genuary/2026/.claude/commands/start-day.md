@@ -134,7 +134,51 @@ Choose your direction. State:
 - What will make people remember this piece
 - What's the risk (where might this fail?)
 
-### Step 10: Name Your Work
+### Step 10: Museum Integration
+
+**READ:** `.claude/museum-plan.md`
+
+On Day 31, all 31 days will be assembled into a WebXR virtual museum. Your piece won't just hang on a wall—it might BE the architecture.
+
+**Consider and document:**
+
+1. **Display Type:** How should this be shown?
+   - `framed` — Traditional 2D art on wall
+   - `sculpture` — 3D object in space
+   - `architectural` — Part of the museum itself (wall, floor, ceiling, window)
+   - `ambient` — Background effect (lighting, atmosphere)
+   - `interactive` — Touch/click terminal
+   - `window` — View through a window to another world
+
+2. **Could this BE architecture?**
+   - Day 17's hallway became the museum entrance
+   - Could your piece be a floor pattern? A ceiling? Wallpaper?
+   - If yes, how would it integrate?
+
+3. **Suggested Zone:** Where in the museum?
+   - Reference the zones in `museum-plan.md`
+   - Or propose a new zone
+
+4. **Placard Text:** Write ~50 words for the museum placard
+   - What should visitors read when standing before your piece?
+
+5. **Update the plan:** If you see opportunities to improve the museum plan or connect your piece to others, update `.claude/museum-plan.md`
+
+**Export museum metadata in your implementation:**
+
+```typescript
+export const museumMetadata = {
+  displayType: 'framed',  // or sculpture, architectural, etc.
+  viewingDistance: 2,     // meters
+  dimensions: [1.5, 1.5], // width x height in meters
+  animated: true,
+  suggestedZone: 'poster-gallery',
+  canBecomeArchitecture: false,
+  placard: 'Your 50-word description...',
+};
+```
+
+### Step 11: Name Your Work
 
 **Name it BEFORE you code.** The name commits you to a vision.
 
@@ -143,7 +187,7 @@ Rules:
 - The title should evoke feeling, not describe function
 - It should be memorable enough to discuss
 
-### Step 11: Draft Social Post
+### Step 12: Draft Social Post
 
 **Write the social post NOW, not later.** This forces clarity about what makes your piece compelling.
 
@@ -164,7 +208,7 @@ Day [N]: [TITLE]
 
 The post should make someone want to see the piece. If you can't write a compelling post, your concept needs work.
 
-### Step 12: Write the Manifesto
+### Step 13: Write the Manifesto
 
 **Create the manifesto file NOW:** `.claude/manifesto/day-[N]-[title-slug].md`
 
@@ -177,7 +221,8 @@ The manifesto documents your artistic journey. Write it as you go through this p
 5. Why you chose your direction
 6. Your artistic identity for this day
 7. Technical implementation notes
-8. The social post
+8. Museum integration notes (display type, zone, placard)
+9. The social post
 
 **This is not optional.** The manifesto is created during /start-day, not /finish-day.
 
@@ -244,6 +289,12 @@ After completing all steps, produce a summary:
 
 ### Risk/Challenge
 [Where this might fail]
+
+### Museum Integration
+- Display type: [framed/sculpture/architectural/ambient/interactive/window]
+- Suggested zone: [zone name]
+- Can become architecture: [yes/no, if yes how?]
+- Placard: [50-word description]
 
 ### Social Post
 [The draft social post]
