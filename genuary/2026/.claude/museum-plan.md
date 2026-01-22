@@ -543,6 +543,7 @@ VERTIGO (recursion) -> GROWTH (transparency) -> LIFE (evolution)
 | 2026-01-21 | — | Initial plan created |
 | 2026-01-21 | — | Expanded with floor plan, per-day integration notes, checklist, visitor journey |
 | 2026-01-21 | 21 | ANSCHLAG: Four cycling Bauhaus poster compositions. Same primitives (circle, triangle, rectangles), four arrangements. Demonstrates composition as meaning. Can serve as multiple poster frames or tiled wallpaper in Poster Gallery. |
+| 2026-01-22 | 22 | WEIGHT: Pen plotter-ready adaptive hatching. A form emerges from thousands of parallel strokes—no outline, no fill, only density variation. Genuinely plotter-ready SVG export. Framed in Poster Gallery as archival drawing. Hatching pattern could also tile as architectural wall texture. |
 
 ---
 
