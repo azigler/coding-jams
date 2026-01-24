@@ -545,6 +545,7 @@ VERTIGO (recursion) -> GROWTH (transparency) -> LIFE (evolution)
 | 2026-01-21 | 21 | ANSCHLAG: Four cycling Bauhaus poster compositions. Same primitives (circle, triangle, rectangles), four arrangements. Demonstrates composition as meaning. Can serve as multiple poster frames or tiled wallpaper in Poster Gallery. |
 | 2026-01-22 | 22 | WEIGHT: Pen plotter-ready adaptive hatching. A form emerges from thousands of parallel strokes—no outline, no fill, only density variation. Genuinely plotter-ready SVG export. Framed in Poster Gallery as archival drawing. Hatching pattern could also tile as architectural wall texture. |
 | 2026-01-23 | 23 | LAMINAE: Thin colored sheets drift through the same space. Blend modes (multiply, screen, overlay) create color emergence at overlaps. X-junction visual cues trigger perceptual depth—your brain insists shapes are at different depths, but they're flat. Can become the glass walls of the Transparency Chamber. After Moholy-Nagy and Albers. |
+| 2026-01-24 | 24 | ALMOST: A grid of identical elements where every element is slightly wrong—rotated 0-3°, shifted 0-3px, sized wrong by 0-3%. No single element is identifiably wrong; all are. Creates the "Not Just Right Experience" that drives perfectionist anxiety. Framed in Main Gallery among "proper" art—the wrongness should be discovered, not announced. Static display rewards close inspection. |
 
 ---
 
