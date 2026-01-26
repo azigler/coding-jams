@@ -9,3 +9,7 @@ temp-frames/
 *.gif
 *.png
 *.jpg
+
+# Allow PR assets (captured screenshots/GIFs for pull requests)
+!pr-assets/
+!pr-assets/**
