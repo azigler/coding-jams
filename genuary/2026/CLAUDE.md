@@ -14,11 +14,17 @@ Read the section that matches your assignment.
 
 ```bash
 cd genuary/2026
-npm install
-npm run dev    # Opens http://localhost:3000/coding-jams/genuary-2026/
+bun install
+bun run dev    # Opens http://localhost:3000/coding-jams/genuary-2026/
 ```
 
 Navigate to a day via URL hash: `#day7`, `#day15`, etc.
+
+**IMPORTANT: Use `bun` for everything.** npm and node are NOT installed on this system. All commands use bun:
+- `bun install` — Install dependencies
+- `bun run dev` — Start dev server
+- `bun run build` — Build for production
+- `bunx <package>` — Run npx-style commands
 
 ---
 
@@ -90,7 +96,7 @@ This command walks you through:
 
 - Use the medium you committed to
 - Focus on the emotion you're targeting
-- Test frequently with `npm run dev`
+- Test frequently with `bun run dev`
 - Remember: code is the brush, feeling is the painting
 
 ### 3. /finish-day N (MANDATORY)
@@ -105,11 +111,97 @@ This command walks you through:
 
 ## Before You Ship
 
-1. `npm run build` — No TypeScript errors
+1. `bun run build` — No TypeScript errors
 2. Test all control sliders
 3. Verify your recommended settings look good
 4. Answer honestly: would you be proud to share this?
 5. Commit with descriptive message
+
+### 4. /pull-request (RECOMMENDED)
+
+After `/finish-day`, create a full-service PR:
+
+```
+/pull-request
+```
+
+This command automatically:
+- Captures a PNG screenshot using Playwright
+- Records a 10-second GIF of the animation
+- Saves outputs to `outputs/` directory
+- Creates a PR with embedded previews
+- Includes the social post for easy review
+
+**Why use this?** Reviewers can see your art without running the code. The PR becomes a complete package ready for merge.
+
+---
+
+# Full-Service PR Flow
+
+Day Agents should create PRs that include everything needed for review and social posting.
+
+## What Gets Captured
+
+| Asset | Description | Location |
+|-------|-------------|----------|
+| PNG | High-quality screenshot of the canvas | `outputs/genuary-2026-day-XX-YYYYMMDD.png` |
+| GIF | 10-second animation recording | `outputs/genuary-2026-day-XX-YYYYMMDD.gif` |
+
+## The Capture Script
+
+```bash
+# Capture both PNG and GIF for Day 12
+bun run capture 12
+
+# PNG only
+bun run capture 12 --png
+
+# GIF only
+bun run capture 12 --gif
+```
+
+The script:
+1. Starts the Vite dev server
+2. Launches headless Chromium with SwiftShader (for WebGL)
+3. Navigates to the specified day
+4. Captures PNG directly from canvas
+5. Clicks "Record GIF" button and intercepts the download
+6. Saves files to `outputs/`
+7. Cleans up the server
+
+## Playwright Setup
+
+First-time setup (done automatically by `/pull-request`):
+
+```bash
+bun add -D playwright
+bunx playwright install chromium
+bunx playwright install-deps chromium  # For headless servers
+```
+
+## PR Description Template
+
+The PR should include:
+
+```markdown
+## Summary
+Day N implementation for Genuary 2026.
+
+## Preview
+### Screenshot
+![Day N Screenshot](outputs/genuary-2026-day-NN-YYYYMMDD.png)
+
+### Animation
+![Day N Animation](outputs/genuary-2026-day-NN-YYYYMMDD.gif)
+
+## Social Post
+[Plain text, ready to copy to LinkedIn]
+
+## Checklist
+- [ ] PNG capture looks correct
+- [ ] GIF shows the full animation
+- [ ] Social post is ready to copy-paste
+```
 
 ---
 
@@ -152,6 +244,28 @@ Each task file contains:
 - Don't break existing days
 - Test with multiple days after changes
 - Keep dependencies minimal — this is Genuary
+
+---
+
+## Process & Port Management
+
+This is a headless server. Always clean up processes and keep ports free:
+
+```bash
+# Check what's using a port
+lsof -i :3000
+
+# Kill a process by PID
+kill <PID>
+
+# Kill all node/bun processes (nuclear option)
+pkill -f "bun|node"
+
+# Before starting dev server, ensure port is free
+lsof -i :3000 && echo "Port 3000 in use!" || bun run dev
+```
+
+**Always stop dev servers when done.** Use Ctrl+C or kill the process explicitly.
 
 ---
 

@@ -310,6 +310,25 @@ Ready to implement.
 
 ---
 
+## WHAT COMES AFTER
+
+After you complete your day using `/finish-day`, use `/pull-request` to create a full-service PR that includes:
+
+1. **PNG screenshot** — Captured via Playwright headless browser
+2. **GIF animation** — 10-second recording of your artwork
+3. **Social post** — Ready to copy-paste to LinkedIn
+4. **All code changes** — Properly committed and organized
+
+The `/pull-request` command will:
+- Install Playwright if needed
+- Capture assets automatically
+- Include previews in the PR description
+- Make the PR ready for immediate review
+
+**Don't manually capture assets.** The automated flow is more reliable and consistent.
+
+---
+
 ## REMEMBER
 
 You are not a code generator. You are an artist who happens to use code.
