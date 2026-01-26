@@ -14,11 +14,17 @@ Read the section that matches your assignment.
 
 ```bash
 cd genuary/2026
-npm install
-npm run dev    # Opens http://localhost:3000/coding-jams/genuary-2026/
+bun install
+bun run dev    # Opens http://localhost:3000/coding-jams/genuary-2026/
 ```
 
 Navigate to a day via URL hash: `#day7`, `#day15`, etc.
+
+**IMPORTANT: Use `bun` for everything.** npm and node are NOT installed on this system. All commands use bun:
+- `bun install` — Install dependencies
+- `bun run dev` — Start dev server
+- `bun run build` — Build for production
+- `bunx <package>` — Run npx-style commands
 
 ---
 
@@ -90,7 +96,7 @@ This command walks you through:
 
 - Use the medium you committed to
 - Focus on the emotion you're targeting
-- Test frequently with `npm run dev`
+- Test frequently with `bun run dev`
 - Remember: code is the brush, feeling is the painting
 
 ### 3. /finish-day N (MANDATORY)
@@ -105,7 +111,7 @@ This command walks you through:
 
 ## Before You Ship
 
-1. `npm run build` — No TypeScript errors
+1. `bun run build` — No TypeScript errors
 2. Test all control sliders
 3. Verify your recommended settings look good
 4. Answer honestly: would you be proud to share this?
@@ -152,6 +158,28 @@ Each task file contains:
 - Don't break existing days
 - Test with multiple days after changes
 - Keep dependencies minimal — this is Genuary
+
+---
+
+## Process & Port Management
+
+This is a headless server. Always clean up processes and keep ports free:
+
+```bash
+# Check what's using a port
+lsof -i :3000
+
+# Kill a process by PID
+kill <PID>
+
+# Kill all node/bun processes (nuclear option)
+pkill -f "bun|node"
+
+# Before starting dev server, ensure port is free
+lsof -i :3000 && echo "Port 3000 in use!" || bun run dev
+```
+
+**Always stop dev servers when done.** Use Ctrl+C or kill the process explicitly.
 
 ---
 

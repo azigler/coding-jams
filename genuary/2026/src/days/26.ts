@@ -51,9 +51,10 @@ function gridToScreen(
   // Classic 2:1 isometric projection
   const screenX = (gridX - gridY) * ISO_COS * scale;
   const screenY = (gridX + gridY) * ISO_SIN * scale - gridZ * scale;
+  // Round to nearest half-pixel for crisp 1px strokes
   return {
-    x: centerX + screenX,
-    y: centerY + screenY,
+    x: Math.round((centerX + screenX) * 2) / 2,
+    y: Math.round((centerY + screenY) * 2) / 2,
   };
 }
 
@@ -348,9 +349,11 @@ function drawBlock(
   ctx.closePath();
   ctx.fill();
 
-  // Draw edges for definition
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
-  ctx.lineWidth = 1;
+  // Draw edges for definition - use solid colors for crisper rendering
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+  ctx.lineWidth = 0.5; // Thinner lines look crisper at half-pixel coordinates
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
 
   // Top face edges
   ctx.beginPath();
@@ -361,7 +364,7 @@ function drawBlock(
   ctx.closePath();
   ctx.stroke();
 
-  // Vertical edges
+  // Vertical edges - only visible ones
   ctx.beginPath();
   ctx.moveTo(b3.x, b3.y);
   ctx.lineTo(t3.x, t3.y);
@@ -514,6 +517,11 @@ const config: DayConfig = {
     canvas2d.width = 800;
     canvas2d.height = 800;
     ctx = canvas2d.getContext('2d');
+    if (ctx) {
+      // Enable antialiasing for smooth edges
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    }
 
     const controls: ControlState = (p as any)._controls || { ...defaultControls };
     const seed = Math.floor((controls.seed ?? 42) as number);
@@ -572,10 +580,26 @@ const config: DayConfig = {
     ctx.fillRect(0, 0, canvas2d.width, canvas2d.height);
 
     // Calculate scale and center
+    // The grid goes from (0,0) to (gridSize, gridSize)
+    // In isometric projection:
+    // - Horizontal extent: from x=0,y=gridSize to x=gridSize,y=0 = gridSize * ISO_COS * 2
+    // - Vertical extent: base (gridSize * ISO_SIN * 2) + building heights
+    const maxPossibleHeight = (maxDepth * 0.8 + 0.5) * heightMultiplier; // From targetHeight formula
+    const horizontalExtent = gridSize * ISO_COS * 2;
+    const verticalExtent = gridSize * ISO_SIN * 2 + maxPossibleHeight;
+
     const canvasSize = Math.min(canvas2d.width, canvas2d.height);
-    const scale = canvasSize / (gridSize * 2.5); // Leave some margin
+    const scale = (canvasSize * 0.85) / Math.max(horizontalExtent, verticalExtent); // Leave 15% margin
+
     const centerX = canvas2d.width / 2;
-    const centerY = canvas2d.height / 2 + canvasSize * 0.15; // Shift down a bit
+    // The visual vertical range spans from the tallest building top to the bottom-front corner
+    // Top: grid point (0,0) at max height -> y = 0 - maxHeight*scale
+    // Bottom: grid point (gridSize, gridSize) at z=0 -> y = gridSize * ISO_SIN * 2 * scale
+    // Visual center should be at canvas center
+    const visualTop = -maxPossibleHeight * scale;
+    const visualBottom = gridSize * ISO_SIN * 2 * scale;
+    const visualCenterOffset = (visualTop + visualBottom) / 2;
+    const centerY = canvas2d.height / 2 - visualCenterOffset;
 
     // Sort and draw cells
     const sortedCells = sortCellsForDrawing(cells);
@@ -597,6 +621,10 @@ const config: DayConfig = {
       canvas2d.width = 800;
       canvas2d.height = 800;
       ctx = canvas2d.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+      }
     }
     if (!ctx || !canvas2d) return;
 
@@ -629,10 +657,19 @@ const config: DayConfig = {
     ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, canvas2d.width, canvas2d.height);
 
+    // Calculate scale and center (same as draw function)
+    const maxPossibleHeight = (maxDepth * 0.8 + 0.5) * heightMultiplier;
+    const horizontalExtent = gridSize * ISO_COS * 2;
+    const verticalExtent = gridSize * ISO_SIN * 2 + maxPossibleHeight;
+
     const canvasSize = Math.min(canvas2d.width, canvas2d.height);
-    const scale = canvasSize / (gridSize * 2.5);
+    const scale = (canvasSize * 0.85) / Math.max(horizontalExtent, verticalExtent);
+
     const centerX = canvas2d.width / 2;
-    const centerY = canvas2d.height / 2 + canvasSize * 0.15;
+    const visualTop = -maxPossibleHeight * scale;
+    const visualBottom = gridSize * ISO_SIN * 2 * scale;
+    const visualCenterOffset = (visualTop + visualBottom) / 2;
+    const centerY = canvas2d.height / 2 - visualCenterOffset;
 
     const sortedCells = sortCellsForDrawing(cells);
     for (const cell of sortedCells) {
