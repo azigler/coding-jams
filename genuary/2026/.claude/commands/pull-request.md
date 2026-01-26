@@ -104,14 +104,18 @@ ls .claude/manifesto/day-<DAY>-*.md
 
 Read the manifesto and copy the social post section.
 
-### Step 8: Commit Outputs
+### Step 8: Copy to pr-assets and Commit
+
+The `outputs/` directory is gitignored. Copy captures to `pr-assets/`:
 
 ```bash
-git add outputs/
+mkdir -p pr-assets
+cp outputs/genuary-2026-day-*.png outputs/genuary-2026-day-*.gif pr-assets/
+git add pr-assets/
 git status
 ```
 
-If there are new output files:
+If there are new files:
 
 ```bash
 git commit -m "chore: add Day <N> captures (PNG + GIF)
@@ -129,23 +133,36 @@ git push -u origin $(git branch --show-current)
 
 ### Step 10: Create PR
 
-Use `gh pr create` with embedded media:
+Use `gh api` to create PR with embedded media. **IMPORTANT:** Use HTML `<img>` tags (not markdown `![]()`) to avoid escaping issues:
 
 ```bash
-gh pr create --title "feat(genuary): Day <N> - <TITLE>" --body "$(cat <<'EOF'
-## Summary
+# Get branch name and construct raw GitHub URLs
+BRANCH=$(git branch --show-current)
+REPO="azigler/coding-jams"  # Update if different
+PNG_FILE=$(ls pr-assets/genuary-2026-day-*.png | head -1 | xargs basename)
+GIF_FILE=$(ls pr-assets/genuary-2026-day-*.gif | head -1 | xargs basename)
 
-Day <N> implementation for Genuary 2026.
+# Create PR using REST API (avoids escaping issues with gh pr create)
+gh api repos/${REPO}/pulls -X POST \
+  -f title="feat(genuary): Day <N> - <TITLE>" \
+  -f head="${BRANCH}" \
+  -f base="main" \
+  --raw-field body='## Summary
 
-**Prompt:** "<PROMPT_TEXT>"
+Day <N>: **<TITLE>** — <Brief description>
 
 ## Preview
 
 ### Screenshot
-![Day <N> Screenshot](outputs/genuary-2026-day-<NN>-<TIMESTAMP>.png)
+<img src="https://raw.githubusercontent.com/'${REPO}'/'${BRANCH}'/genuary/2026/pr-assets/'${PNG_FILE}'" alt="Day <N>" width="600">
 
 ### Animation
-![Day <N> Animation](outputs/genuary-2026-day-<NN>-<TIMESTAMP>.gif)
+<img src="https://raw.githubusercontent.com/'${REPO}'/'${BRANCH}'/genuary/2026/pr-assets/'${GIF_FILE}'" alt="Day <N> Animation" width="600">
+
+## Features
+
+- **Feature 1** — Description
+- **Feature 2** — Description
 
 ## Social Post
 
@@ -153,24 +170,15 @@ Day <N> implementation for Genuary 2026.
 <PASTE SOCIAL POST TEXT HERE - NO MARKDOWN FORMATTING>
 ```
 
-## Implementation Details
+## Also Included
 
-- **Medium:** <p5.js / WebGL / Three.js / etc.>
-- **Key techniques:** <Brief description>
-- **Manifesto:** `.claude/manifesto/day-<N>-<title>.md`
+- Manifesto: `.claude/manifesto/day-<N>-<title>.md`
+- Museum metadata for Day 31 integration
 
-## Checklist
-
-- [ ] `bun run build` passes
-- [ ] PNG capture looks correct
-- [ ] GIF shows the full animation
-- [ ] Social post is ready to copy-paste to LinkedIn
-
----
-Generated with Claude Code
-EOF
-)"
+🤖 Generated with [Claude Code](https://claude.com/claude-code)'
 ```
+
+**Note:** The `--raw-field` flag prevents escaping of special characters in the body.
 
 ### Step 11: Return PR URL
 
