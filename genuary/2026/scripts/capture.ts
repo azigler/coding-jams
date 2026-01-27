@@ -31,7 +31,7 @@ const OUTPUT_DIR = path.join(import.meta.dir, '..', 'outputs');
 const CANVAS_WAIT_MS = 3000;      // Wait for canvas to initialize
 const PNG_DELAY_MS = 2000;        // Wait before capturing PNG (let animation settle)
 const GIF_RECORD_TIME_MS = 12000; // GIF recording takes 10s + encoding time
-const GIF_TOTAL_TIMEOUT_MS = 60000; // Max time to wait for GIF download
+const GIF_TOTAL_TIMEOUT_MS = 180000; // Max time to wait for GIF download (3 minutes for recording + encoding)
 
 // ============================================================================
 // Types
@@ -197,6 +197,19 @@ async function captureDay(options: CaptureOptions): Promise<CaptureResult> {
     if (gif) {
       console.log('Capturing GIF (this takes ~15-30 seconds)...');
 
+      // Listen for console messages to debug
+      page.on('console', (msg) => {
+        const text = msg.text();
+        if (text.includes('🎬') || text.includes('📹') || text.includes('✅') || text.includes('❌') || text.includes('Recording') || text.includes('GIF')) {
+          console.log(`[Page Console] ${text}`);
+        }
+      });
+
+      // Listen for errors
+      page.on('pageerror', (err) => {
+        console.error(`[Page Error] ${err.message}`);
+      });
+
       try {
         // Set up download handler before clicking
         const downloadPromise = page.waitForEvent('download', {
@@ -216,14 +229,40 @@ async function captureDay(options: CaptureOptions): Promise<CaptureResult> {
           await recordBtn.click();
           console.log('Recording started...');
 
-          // Wait for download to complete
-          const download = await downloadPromise;
-          const gifFilename = `genuary-2026-day-${dayStr}-${timestamp}.gif`;
-          const gifPath = path.join(OUTPUT_DIR, gifFilename);
+          // Poll button text to track progress
+          const pollProgress = async () => {
+            let lastText = '';
+            const pollInterval = setInterval(async () => {
+              try {
+                const text = await recordBtn.textContent();
+                if (text && text !== lastText) {
+                  console.log(`[Button status] ${text}`);
+                  lastText = text;
+                }
+              } catch {
+                // Page might have closed
+              }
+            }, 2000);
+            return pollInterval;
+          };
 
-          await download.saveAs(gifPath);
-          result.gifPath = gifPath;
-          console.log(`GIF saved: ${gifPath}`);
+          const progressInterval = await pollProgress();
+
+          try {
+            // Wait for download to complete
+            const download = await downloadPromise;
+            clearInterval(progressInterval);
+
+            const gifFilename = `genuary-2026-day-${dayStr}-${timestamp}.gif`;
+            const gifPath = path.join(OUTPUT_DIR, gifFilename);
+
+            await download.saveAs(gifPath);
+            result.gifPath = gifPath;
+            console.log(`GIF saved: ${gifPath}`);
+          } catch (downloadError) {
+            clearInterval(progressInterval);
+            throw downloadError;
+          }
         }
       } catch (error) {
         const msg = `GIF capture failed: ${error instanceof Error ? error.message : String(error)}`;
