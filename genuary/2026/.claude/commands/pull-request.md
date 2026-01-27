@@ -133,16 +133,20 @@ git push -u origin $(git branch --show-current)
 
 ### Step 10: Create PR
 
-Use `gh api` to create PR with embedded media. **IMPORTANT:** Use HTML `<img>` tags (not markdown `![]()`) to avoid escaping issues:
+Use `gh api` to create PR with embedded media. **IMPORTANT:**
+- Use HTML `<img>` tags (not markdown `![]()`) to avoid escaping issues
+- Use commit SHA (not branch name) in image URLs so they survive branch deletion
 
 ```bash
-# Get branch name and construct raw GitHub URLs
+# Get commit SHA and branch name for PR creation
 BRANCH=$(git branch --show-current)
+COMMIT_SHA=$(git rev-parse HEAD)
 REPO="azigler/coding-jams"  # Update if different
 PNG_FILE=$(ls pr-assets/genuary-2026-day-*.png | head -1 | xargs basename)
 GIF_FILE=$(ls pr-assets/genuary-2026-day-*.gif | head -1 | xargs basename)
 
 # Create PR using REST API (avoids escaping issues with gh pr create)
+# NOTE: Image URLs use COMMIT_SHA, not BRANCH, so they survive branch deletion
 gh api repos/${REPO}/pulls -X POST \
   -f title="feat(genuary): Day <N> - <TITLE>" \
   -f head="${BRANCH}" \
@@ -154,10 +158,10 @@ Day <N>: **<TITLE>** — <Brief description>
 ## Preview
 
 ### Screenshot
-<img src="https://raw.githubusercontent.com/'${REPO}'/'${BRANCH}'/genuary/2026/pr-assets/'${PNG_FILE}'" alt="Day <N>" width="600">
+<img src="https://raw.githubusercontent.com/'${REPO}'/'${COMMIT_SHA}'/genuary/2026/pr-assets/'${PNG_FILE}'" alt="Day <N>" width="600">
 
 ### Animation
-<img src="https://raw.githubusercontent.com/'${REPO}'/'${BRANCH}'/genuary/2026/pr-assets/'${GIF_FILE}'" alt="Day <N> Animation" width="600">
+<img src="https://raw.githubusercontent.com/'${REPO}'/'${COMMIT_SHA}'/genuary/2026/pr-assets/'${GIF_FILE}'" alt="Day <N> Animation" width="600">
 
 ## Features
 
@@ -179,6 +183,8 @@ Day <N>: **<TITLE>** — <Brief description>
 ```
 
 **Note:** The `--raw-field` flag prevents escaping of special characters in the body.
+
+**Why commit SHA?** Branch names are deleted after PR merge, breaking any URLs that reference them. Commit SHAs are permanent—the files remain accessible at that URL even after the branch is gone.
 
 ### Step 11: Return PR URL
 
