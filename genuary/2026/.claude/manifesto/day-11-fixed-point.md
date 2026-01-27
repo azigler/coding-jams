@@ -72,7 +72,7 @@ The result: a dense but legible block of rainbow code that IS its own source—n
 A test file (`11.test.ts`) permanently verifies the quine property:
 
 ```bash
-node --experimental-strip-types src/days/11.test.ts
+bun run src/days/11.test.ts
 # PASS: Quine verified - getSource() === source file
 ```
 

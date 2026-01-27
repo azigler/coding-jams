@@ -92,7 +92,7 @@ After completing /start-day, implement your chosen direction:
 1. Create `src/days/NN.ts` following existing patterns
 2. Use the medium you committed to (WebGL? Three.js? Raw canvas?)
 3. Focus on the emotion you're targeting
-4. Test frequently with `npm run dev`
+4. Test frequently with `bun run dev`
 
 ### STEP 3: Run /finish-day
 

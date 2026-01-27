@@ -4,8 +4,8 @@
 
 ```bash
 cd genuary/2026
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 The app will open at `http://localhost:3000` and automatically load today's prompt (if it's January) or Day 1.

@@ -1,0 +1,48 @@
+# Genuary 2026 Daily Agent Service
+#
+# This is a oneshot service that runs the daily agent script.
+# It's triggered by the accompanying timer unit.
+#
+# Installation:
+#   cp genuary-daily-agent.service ~/.config/systemd/user/
+#   cp genuary-daily-agent.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable genuary-daily-agent.timer
+#   systemctl --user start genuary-daily-agent.timer
+#
+# Check status:
+#   systemctl --user status genuary-daily-agent.timer
+#   systemctl --user list-timers
+#
+# View logs:
+#   journalctl --user -u genuary-daily-agent.service -f
+#
+
+[Unit]
+Description=Genuary 2026 Daily Agent
+Documentation=https://github.com/azigler/coding-jams
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=3600
+# Adjust path to your installation
+ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent.sh
+WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
+
+# Environment - set your API keys here or in a separate EnvironmentFile
+Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
+# EnvironmentFile=/home/ubuntu/.config/genuary/env
+
+# Resource limits
+MemoryMax=4G
+CPUQuota=100%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=genuary-agent
+
+[Install]
+WantedBy=default.target

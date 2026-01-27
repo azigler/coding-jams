@@ -19,8 +19,8 @@ This command guides the completion and documentation of a Genuary day. **Reflect
 
 ```bash
 cd genuary/2026
-npm run build    # Must pass
-npm run dev      # Must render correctly at #dayN
+bun run build    # Must pass
+bun run dev      # Must render correctly at #dayN
 ```
 
 Verify:
@@ -241,7 +241,7 @@ Prompt: A City
 
 ## CHECKLIST BEFORE FINISHING
 
-- [ ] Build passes (`npm run build`)
+- [ ] Build passes (`bun run build`)
 - [ ] Visual review done — no bugs or artifacts
 - [ ] Visual is distinct from previous days
 - [ ] Emotion target was achieved (or day was revised)

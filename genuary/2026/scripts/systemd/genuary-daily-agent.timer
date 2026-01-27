@@ -1,0 +1,31 @@
+# Genuary 2026 Daily Agent Timer
+#
+# Triggers the daily agent service at 6:30 AM Pacific (14:30 UTC)
+# Only during January.
+#
+# Installation (see service file for details):
+#   systemctl --user enable genuary-daily-agent.timer
+#   systemctl --user start genuary-daily-agent.timer
+#
+# Check next trigger time:
+#   systemctl --user list-timers genuary-daily-agent.timer
+#
+
+[Unit]
+Description=Run Genuary Daily Agent at 6:30 AM Pacific
+Documentation=https://github.com/azigler/coding-jams
+
+[Timer]
+# 6:30 AM Pacific = 14:30 UTC (during PST, not PDT)
+# During daylight saving (PDT), Pacific is UTC-7, so 6:30 AM = 13:30 UTC
+# Adjust the hour if needed based on your timezone requirements
+OnCalendar=*-01-* 14:30:00
+# Also accept being triggered slightly late (if system was asleep)
+AccuracySec=5min
+# Don't run if we missed the time and system just started
+Persistent=false
+# Randomize start by up to 5 minutes to avoid thundering herd
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
