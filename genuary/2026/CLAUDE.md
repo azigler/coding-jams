@@ -220,30 +220,29 @@ genuary/2026/
 │   ├── index.ts        # Main orchestrator
 │   └── types.ts        # TypeScript definitions
 ├── index.html          # Entry point
-└── .claude/tasks/      # Task specifications
+└── .beads/             # Task tracking (beads)
 ```
 
-## Open Tasks
+## Finding Work
 
-Check `.claude/tasks/` for detailed specifications:
+Use beads to find and track work:
 
-| Task | Description |
-|------|-------------|
-| `01-fix-gif-recorder-with-visual-status.md` | Add progress overlay, fix memory leaks |
-| `02-create-pure-webgl-shader-day-template.md` | Enable GLSL-only days |
-| `03-refactor-harness-architecture.md` | Eliminate duplication, proper types |
+```bash
+br ready                    # See available work
+br show mu-xxx              # View bead details
+br update mu-xxx --claim    # Start working on it
+br close mu-xxx             # Mark complete
+br sync --flush-only        # Export to git
+```
 
-Each task file contains:
-- Problem statement
-- Requirements
-- Technical specification with code examples
-- Testing checklist
+Beads with `domain:harness` label are infrastructure tasks.
 
 ## Guidelines
 
 - Don't break existing days
 - Test with multiple days after changes
 - Keep dependencies minimal — this is Genuary
+- Reference bead IDs in commits: `fix: description (mu-xxx)`
 
 ---
 

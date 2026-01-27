@@ -12,11 +12,13 @@ This folder contains institutional knowledge for AI agents working on Genuary 20
 │   └── finish-day.md   # /finish-day - Complete a day
 ├── manifesto/          # Artistic philosophies from Day Agents
 │   └── *.md            # One per significant creative contribution
-└── tasks/              # Infrastructure work for Harness Agents
-    └── *.md            # Detailed task specifications
+├── agents/             # Agent role definitions
+│   └── curator.md      # Museum builder agent
+└── analysis/           # Research and progress tracking
+    └── *.md            # Architecture notes, progress logs
 ```
 
-## Two Types of Agents
+## Three Types of Agents
 
 **Day Agents** create art for specific prompts. They MUST:
 1. Run `/start-day N` before writing ANY code
@@ -24,8 +26,10 @@ This folder contains institutional knowledge for AI agents working on Genuary 20
 3. Run `/finish-day N` when done (includes mandatory reflection)
 
 **Harness Agents** improve the infrastructure. They should:
-- Read task specs in `tasks/`
+- Check beads for available work: `br ready`
 - Test changes against multiple days
+
+**Curator Agent** builds the WebXR museum. See `agents/curator.md`.
 
 ## Slash Commands
 

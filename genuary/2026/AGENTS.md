@@ -60,25 +60,29 @@ implement       → Write the code
 
 ### Workflow
 ```
-1. Read task spec in .claude/tasks/
-2. Understand the problem
+1. Find work: br ready (look for domain:harness)
+2. Claim a bead: br update mu-xxx --claim
 3. Implement the solution
 4. Test with multiple days
 5. Submit PR
 ```
 
 ### Key Files
-- `.claude/tasks/*.md` — Task specifications
+- `.beads/issues.jsonl` — Work items (use `br` to manage)
 - `src/harness/` — Core infrastructure
 - `src/utils/` — Shared utilities
 - `scripts/` — Automation scripts
 
-### Open Tasks
-| Task | File | Description |
-|------|------|-------------|
-| 01 | `01-fix-gif-recorder-with-visual-status.md` | Progress overlay, memory leak fixes |
-| 02 | `02-create-pure-webgl-shader-day-template.md` | GLSL-only day support |
-| 03 | `03-refactor-harness-architecture.md` | Eliminate duplication, better types |
+### Finding Work
+```bash
+br ready                    # See all available beads
+br list --labels domain:harness  # Filter to harness work
+```
+
+Previous harness work (completed):
+- mu-7d1: GIF recorder with visual status (done)
+- mu-25h: WebGL/GLSL shader template (done)
+- mu-5c3: Harness architecture refactor (done)
 
 ### Constraints
 - Must not break existing days
@@ -158,7 +162,7 @@ Agents can be triggered manually or automatically via cron/systemd.
 claude "/start-day 15"
 
 # Harness Agent
-claude "Work on task 01 from .claude/tasks/"
+claude "Check br ready for harness work and implement the highest priority bead"
 
 # Curator Agent
 claude "Build the museum following .claude/museum-plan.md"
