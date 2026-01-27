@@ -1,0 +1,22 @@
+# Genuary 2026 Curator Agent Timer
+#
+# Triggers the curator agent daily for incremental museum building.
+# Runs at 15:30 UTC (7:30 AM Pacific) — one hour after Day Agent.
+#
+# This staggers the agents so they don't compete for resources,
+# but they can still see each other's PRs.
+#
+
+[Unit]
+Description=Run Genuary Curator Agent daily
+Documentation=https://github.com/azigler/coding-jams
+
+[Timer]
+# 7:30 AM Pacific = 15:30 UTC (during PST)
+OnCalendar=*-01-* 15:30:00
+AccuracySec=5min
+Persistent=false
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,4 @@
+# Beads JSONL merge strategy
+# For now, just mark as union merge (simpler than custom driver)
+# On conflict: both versions get included, dedup by hand if needed
+.beads/*.jsonl merge=union

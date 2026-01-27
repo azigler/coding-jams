@@ -1,0 +1,36 @@
+# Genuary 2026 Curator Agent Service
+#
+# Runs the Curator Agent for incremental museum development.
+# Triggered by the accompanying timer unit.
+#
+# Installation:
+#   cp genuary-curator-agent.service ~/.config/systemd/user/
+#   cp genuary-curator-agent.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable genuary-curator-agent.timer
+#   systemctl --user start genuary-curator-agent.timer
+#
+
+[Unit]
+Description=Genuary 2026 Curator Agent (Museum Builder)
+Documentation=https://github.com/azigler/coding-jams
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=7200
+ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/curator-agent.sh
+WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
+
+Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
+
+MemoryMax=4G
+CPUQuota=100%
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=genuary-curator
+
+[Install]
+WantedBy=default.target
