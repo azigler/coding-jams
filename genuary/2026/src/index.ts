@@ -18,7 +18,9 @@ import {
   navigateToDay,
   navigateToNextDay,
   navigateToPrevDay,
+  navigateToMuseum,
   getDayFromURL,
+  isMuseumURL,
   setDayInfoCallback,
   setControlsSetupCallback,
   setErrorCallback,
@@ -402,6 +404,27 @@ function setupNavigation(initialDay: number): void {
     navigateToDay(dayNum);
   });
 
+  // Museum option
+  const museumOption = document.createElement('option');
+  museumOption.value = 'museum';
+  museumOption.textContent = 'Virtual Museum';
+  select.appendChild(museumOption);
+
+  // Select museum if that's the initial URL
+  if (initialDay === -1) {
+    museumOption.selected = true;
+  }
+
+  select.addEventListener('change', (e) => {
+    const value = (e.target as HTMLSelectElement).value;
+    if (value === 'museum') {
+      navigateToMuseum();
+    } else {
+      const dayNum = parseInt(value, 10);
+      navigateToDay(dayNum);
+    }
+  });
+
   // Prev/Next buttons
   const prevBtn = document.createElement('button');
   prevBtn.textContent = '← Previous';
@@ -419,13 +442,27 @@ function setupNavigation(initialDay: number): void {
     select.value = getCurrentDay().toString();
   });
 
+  // Museum button
+  const museumBtn = document.createElement('button');
+  museumBtn.textContent = 'Museum';
+  museumBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 1rem; margin: 0.5rem; background: #2a4a2a;';
+  museumBtn.addEventListener('click', () => {
+    navigateToMuseum();
+    select.value = 'museum';
+  });
+
   navEl.appendChild(select);
   navEl.appendChild(prevBtn);
   navEl.appendChild(nextBtn);
+  navEl.appendChild(museumBtn);
 
   // Keep selector in sync on hash change
   window.addEventListener('hashchange', () => {
-    select.value = getCurrentDay().toString();
+    if (isMuseumURL()) {
+      select.value = 'museum';
+    } else {
+      select.value = getCurrentDay().toString();
+    }
   });
 }
 
@@ -500,12 +537,20 @@ async function init(): Promise<void> {
 
   // Handle hash changes
   window.addEventListener('hashchange', () => {
-    const newDay = getDayFromURL();
-    navigateToDay(newDay, { skipUrlUpdate: true });
+    if (isMuseumURL()) {
+      navigateToMuseum();
+    } else {
+      const newDay = getDayFromURL();
+      navigateToDay(newDay, { skipUrlUpdate: true });
+    }
   });
 
-  // Load initial day
-  await navigateToDay(dayNum);
+  // Load initial content
+  if (isMuseumURL()) {
+    await navigateToMuseum();
+  } else {
+    await navigateToDay(dayNum);
+  }
 }
 
 // Start app when DOM is ready

@@ -3,6 +3,8 @@
  *
  * Handles async day navigation with proper cancellation,
  * replacing callback chains with async/await.
+ *
+ * Also handles the #museum route for the virtual museum.
  */
 
 import type {
@@ -24,6 +26,9 @@ import {
 import { runAllCleanups, removeElement, clearContainer } from './cleanup';
 import { loadDay, LoadDayResult } from './day-loader';
 import { loadControls } from '../utils/controls';
+
+// Museum imports (dynamic to avoid circular deps)
+let museumModule: typeof import('../museum') | null = null;
 
 // ============================================================================
 // Navigation State
@@ -73,10 +78,24 @@ export function setErrorCallback(callback: ErrorCallback): void {
 // ============================================================================
 
 /**
+ * Check if URL is requesting the museum
+ */
+export function isMuseumURL(): boolean {
+  return window.location.hash === '#museum';
+}
+
+/**
  * Get day number from URL hash
+ * Returns -1 if this is a museum URL
  */
 export function getDayFromURL(): number {
   const hash = window.location.hash;
+
+  // Check for museum route
+  if (hash === '#museum') {
+    return -1; // Special value indicating museum
+  }
+
   if (hash) {
     const match = hash.match(/#day(\d+)/);
     if (match) {
@@ -100,6 +119,13 @@ export function getDayFromURL(): number {
  */
 export function updateURLForDay(dayNum: number): void {
   window.location.hash = `#day${dayNum}`;
+}
+
+/**
+ * Update URL hash for museum
+ */
+export function updateURLForMuseum(): void {
+  window.location.hash = '#museum';
 }
 
 // ============================================================================
@@ -139,6 +165,11 @@ export function cleanupContainers(): void {
     setRenderer(null);
   }
 
+  // Clean up museum if running
+  if (museumModule) {
+    museumModule.disposeMuseum();
+  }
+
   // Remove p5 canvas container
   removeElement('p5-canvas-container');
 
@@ -148,10 +179,82 @@ export function cleanupContainers(): void {
   // Remove HTML-only container (Day 28)
   removeElement('html-only-container');
 
+  // Remove museum container
+  removeElement('museum-container');
+
   // Destroy controls manager
   if (currentControlsManager) {
     currentControlsManager.destroy();
     currentControlsManager = null;
+  }
+}
+
+// ============================================================================
+// Museum Handler
+// ============================================================================
+
+/**
+ * Load the museum
+ */
+async function loadMuseum(): Promise<void> {
+  const contentArea = document.getElementById('content');
+  if (!contentArea) {
+    console.error('Content area not found');
+    return;
+  }
+
+  // Update day info for museum
+  const museumConfig: DayConfig = {
+    day: 0, // Special value for museum
+    prompt: 'Virtual Museum',
+    creditName: 'Genuary 2026',
+    creditUrl: 'https://genuary.art',
+  };
+  onDayInfoUpdate?.(museumConfig);
+
+  // Reset content area margin
+  contentArea.style.marginBottom = '0';
+
+  // Create museum container
+  const container = document.createElement('div');
+  container.id = 'museum-container';
+  container.style.cssText = 'width: 100%; height: 100%;';
+  contentArea.appendChild(container);
+
+  // Dynamically import museum module
+  if (!museumModule) {
+    museumModule = await import('../museum');
+  }
+
+  // Initialize and start museum
+  museumModule.initMuseum(container);
+  museumModule.startMuseum();
+
+  console.log('Museum loaded. Use WASD to move, click and drag to look around.');
+}
+
+/**
+ * Navigate to museum
+ */
+export async function navigateToMuseum(): Promise<void> {
+  // Clean up previous content
+  cleanupContainers();
+
+  // Update URL
+  updateURLForMuseum();
+
+  // Set special "day" value
+  setCurrentDay(0);
+
+  // Load museum
+  setLoading(true);
+  try {
+    await loadMuseum();
+  } catch (error) {
+    console.error('Error loading museum:', error);
+    onError?.(0, error as Error);
+  } finally {
+    setLoading(false);
   }
 }
 
