@@ -6,6 +6,12 @@
  */
 
 import * as THREE from 'three';
+import {
+  createEntranceZone,
+  updateEntranceZone,
+  disposeEntranceZone,
+  type EntranceZone,
+} from './zones/entrance';
 
 // ============================================================================
 // Types
@@ -16,6 +22,7 @@ export interface MuseumScene {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
   time: number;
+  entranceZone: EntranceZone | null;
 }
 
 // ============================================================================
@@ -25,8 +32,8 @@ export interface MuseumScene {
 // Human eye height when standing
 const CAMERA_HEIGHT = 1.6;
 
-// Initial camera position (entrance)
-const INITIAL_POSITION = new THREE.Vector3(0, CAMERA_HEIGHT, 5);
+// Initial camera position (inside entrance hallway, looking toward the main gallery)
+const INITIAL_POSITION = new THREE.Vector3(0, CAMERA_HEIGHT, -2);
 
 // Canvas size
 const CANVAS_SIZE = 800;
@@ -79,17 +86,19 @@ export function createScene(container: HTMLElement): MuseumScene {
   // Add basic lighting
   addLighting(scene);
 
-  // Add ground plane
+  // Add ground plane (outside the entrance hallway)
   addGround(scene);
 
-  // Add placeholder entrance structure
-  addEntranceStructure(scene);
+  // Create entrance zone (Day 17 hallway)
+  const entranceZone = createEntranceZone();
+  scene.add(entranceZone.group);
 
   return {
     renderer,
     scene,
     camera,
     time: 0,
+    entranceZone,
   };
 }
 
@@ -153,84 +162,6 @@ function addGround(scene: THREE.Scene): void {
   scene.add(gridHelper);
 }
 
-/**
- * Add placeholder entrance structure
- * This will be replaced with Day 17 hallway integration
- */
-function addEntranceStructure(scene: THREE.Scene): void {
-  // Simple archway to mark the entrance
-  const archMaterial = new THREE.MeshStandardMaterial({
-    color: 0x444455,
-    roughness: 0.7,
-    metalness: 0.2,
-  });
-
-  // Left pillar
-  const pillarGeometry = new THREE.BoxGeometry(0.5, 4, 0.5);
-  const leftPillar = new THREE.Mesh(pillarGeometry, archMaterial);
-  leftPillar.position.set(-2, 2, 0);
-  leftPillar.castShadow = true;
-  leftPillar.receiveShadow = true;
-  scene.add(leftPillar);
-
-  // Right pillar
-  const rightPillar = new THREE.Mesh(pillarGeometry, archMaterial);
-  rightPillar.position.set(2, 2, 0);
-  rightPillar.castShadow = true;
-  rightPillar.receiveShadow = true;
-  scene.add(rightPillar);
-
-  // Top beam
-  const beamGeometry = new THREE.BoxGeometry(5, 0.5, 0.5);
-  const beam = new THREE.Mesh(beamGeometry, archMaterial);
-  beam.position.set(0, 4.25, 0);
-  beam.castShadow = true;
-  scene.add(beam);
-
-  // Sign above entrance
-  const signGeometry = new THREE.PlaneGeometry(3, 0.6);
-  const signMaterial = new THREE.MeshStandardMaterial({
-    color: 0x888899,
-    roughness: 0.5,
-    metalness: 0.3,
-    emissive: 0x222233,
-    emissiveIntensity: 0.3,
-  });
-  const sign = new THREE.Mesh(signGeometry, signMaterial);
-  sign.position.set(0, 3.8, 0.26);
-  scene.add(sign);
-
-  // TODO: Add text to sign using CanvasTexture
-  // For now, use a placeholder
-
-  // Placeholder wall behind entrance (leads into museum)
-  const wallMaterial = new THREE.MeshStandardMaterial({
-    color: 0x333340,
-    roughness: 0.9,
-    metalness: 0.0,
-  });
-
-  const backWallGeometry = new THREE.PlaneGeometry(20, 5);
-  const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
-  backWall.position.set(0, 2.5, -10);
-  backWall.receiveShadow = true;
-  scene.add(backWall);
-
-  // Side walls
-  const sideWallGeometry = new THREE.PlaneGeometry(10, 5);
-
-  const leftWall = new THREE.Mesh(sideWallGeometry, wallMaterial);
-  leftWall.position.set(-10, 2.5, -5);
-  leftWall.rotation.y = Math.PI / 2;
-  leftWall.receiveShadow = true;
-  scene.add(leftWall);
-
-  const rightWall = new THREE.Mesh(sideWallGeometry, wallMaterial);
-  rightWall.position.set(10, 2.5, -5);
-  rightWall.rotation.y = -Math.PI / 2;
-  rightWall.receiveShadow = true;
-  scene.add(rightWall);
-}
 
 // ============================================================================
 // Scene Update
@@ -241,6 +172,11 @@ function addEntranceStructure(scene: THREE.Scene): void {
  */
 export function updateScene(museumScene: MuseumScene, deltaTime: number): void {
   museumScene.time += deltaTime;
+
+  // Update entrance zone (flickering lights)
+  if (museumScene.entranceZone) {
+    updateEntranceZone(museumScene.entranceZone, deltaTime);
+  }
 
   // Future: animate exhibits, update LOD, etc.
 }
@@ -253,6 +189,11 @@ export function updateScene(museumScene: MuseumScene, deltaTime: number): void {
  * Dispose of all scene resources
  */
 export function disposeScene(museumScene: MuseumScene): void {
+  // Dispose of entrance zone
+  if (museumScene.entranceZone) {
+    disposeEntranceZone(museumScene.entranceZone);
+  }
+
   // Dispose of all geometries and materials
   museumScene.scene.traverse((object) => {
     if (object instanceof THREE.Mesh) {
