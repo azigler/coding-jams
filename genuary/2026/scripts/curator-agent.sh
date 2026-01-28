@@ -24,7 +24,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_PATH="${GENUARY_REPO_PATH:-$(dirname "$SCRIPT_DIR")}"
-WORKTREE_PATH="$(dirname "$REPO_PATH")/genuary-museum-wip"
+# Worktree is a sibling of coding-jams, not nested inside it
+# coding-jams/genuary/2026 -> coding-jams -> /home/ubuntu -> coding-jams-museum-wip
+GIT_ROOT="$(cd "$REPO_PATH/../.." && pwd)"
+WORKTREE_ROOT="$(dirname "$GIT_ROOT")/coding-jams-museum-wip"
+WORKTREE_PATH="${WORKTREE_ROOT}/genuary/2026"
 LOG_DIR="${REPO_PATH}/logs/curator"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${LOG_DIR}/session-${TIMESTAMP}.log"
@@ -92,15 +96,15 @@ check_prerequisites() {
 setup_worktree() {
   log "Setting up worktree..."
 
-  cd "$REPO_PATH"
+  cd "$GIT_ROOT"
 
   # Ensure we're up to date
   git fetch origin main
 
-  # Check if worktree exists
-  if [[ -d "$WORKTREE_PATH" ]]; then
-    log "Worktree already exists at $WORKTREE_PATH"
-    cd "$WORKTREE_PATH"
+  # Check if worktree exists (check root, not subdirectory)
+  if [[ -d "$WORKTREE_ROOT" ]]; then
+    log "Worktree already exists at $WORKTREE_ROOT"
+    cd "$WORKTREE_ROOT"
     git fetch origin
     # Try to update from remote if branch exists
     if git rev-parse --verify "origin/$BRANCH_NAME" &>/dev/null; then
@@ -113,14 +117,15 @@ setup_worktree() {
   # Check if branch exists remotely
   if git ls-remote --heads origin "$BRANCH_NAME" | grep -q "$BRANCH_NAME"; then
     log "Remote branch exists, creating worktree from it"
-    git worktree add "$WORKTREE_PATH" "$BRANCH_NAME"
+    git worktree add "$WORKTREE_ROOT" "$BRANCH_NAME"
   else
     # Create new branch from main
     log "Creating new worktree with fresh branch"
-    git worktree add "$WORKTREE_PATH" -b "$BRANCH_NAME" origin/main
+    git worktree add "$WORKTREE_ROOT" -b "$BRANCH_NAME" origin/main
   fi
 
-  log "Worktree ready at $WORKTREE_PATH"
+  log "Worktree ready at $WORKTREE_ROOT"
+  log "Agent will work in $WORKTREE_PATH"
 }
 
 # =============================================================================
@@ -130,7 +135,7 @@ setup_worktree() {
 find_or_create_pr() {
   log "Checking for existing PR..."
 
-  cd "$WORKTREE_PATH"
+  cd "$WORKTREE_ROOT"
 
   # Check for existing PR
   local pr_number
@@ -357,8 +362,8 @@ PROMPT
   # After agent completes, ensure we push and comment
   log "Agent session completed with exit code $exit_code"
 
-  # Push any uncommitted work
-  cd "$WORKTREE_PATH"
+  # Push any uncommitted work (git operations from worktree root)
+  cd "$WORKTREE_ROOT"
   if [[ -n "$(git status --porcelain)" ]]; then
     log "Uncommitted changes found, committing..."
     git add -A
@@ -393,7 +398,9 @@ main() {
   log "Genuary 2026 Curator Agent"
   log "=========================================="
   log "Repo: $REPO_PATH"
-  log "Worktree: $WORKTREE_PATH"
+  log "Git root: $GIT_ROOT"
+  log "Worktree root: $WORKTREE_ROOT"
+  log "Agent workdir: $WORKTREE_PATH"
   log "Log: $LOG_FILE"
   log "Dry run: $DRY_RUN"
   log "Setup only: $SETUP_ONLY"
