@@ -232,112 +232,17 @@ run_curator_agent() {
   local pr_number
   pr_number=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number' 2>/dev/null || echo "")
 
-  # The comprehensive orchestrator prompt
+  # Load prompt from file (allows iteration without modifying this script)
+  local prompt_file="$WORKTREE_PATH/.claude/prompts/curator-session.md"
+
+  if [[ ! -f "$prompt_file" ]]; then
+    log "ERROR: Prompt file not found: $prompt_file"
+    exit 1
+  fi
+
   local prompt
-  prompt=$(cat <<'PROMPT'
-You are the **Museum Curator Agent** for Genuary 2026.
-
-## Your Mission
-Build an immersive WebXR virtual museum that showcases all 31 days of Genuary as a unified, navigable 3D experience. The art doesn't hang on walls — it BECOMES the architecture.
-
-## This Session
-
-### Phase 1: Orient (read these files)
-1. Read `.claude/agents/curator.md` — your agent definition
-2. Read `.claude/analysis/progress.md` — what happened last session
-3. Read `.claude/analysis/blockers.md` — known issues
-4. Run `br ready` to see available beads
-
-### Phase 2: Assess & Plan
-1. What's the current state of the museum? Does it even render?
-2. What beads exist? What's missing?
-3. What's the most impactful thing to work on today?
-
-If this is an early session, focus on:
-- Creating foundational beads for the museum architecture
-- Getting a basic Three.js scene rendering at `#museum`
-- Setting up navigation (WASD + mouse look)
-
-If the museum exists, focus on:
-- Fixing blockers from `.claude/analysis/blockers.md`
-- Implementing the highest-priority bead
-- Integrating another day's artwork
-
-### Phase 3: Create/Update Beads
-If you identify work that doesn't have a bead:
-```bash
-br create "Title" --priority N --labels domain:museum
-```
-
-Priority levels:
-- 0 = Critical (blocks everything)
-- 1 = High (this session)
-- 2 = Medium (this week)
-- 3 = Low (nice to have)
-- 4 = Backlog (future)
-
-Good beads for museum work:
-- `mu-xxx: Set up basic Three.js scene and camera`
-- `mu-xxx: Implement WASD + mouse navigation`
-- `mu-xxx: Create entrance zone with lighting`
-- `mu-xxx: Integrate Day 7 as framed piece`
-- `mu-xxx: Add collision detection for walls`
-
-### Phase 4: Implement
-Pick 1-3 beads to work on this session. For each:
-
-1. Claim it: `br update mu-xxx --claim`
-2. Implement the work in `src/museum/`
-3. Test with: `bun run museum:test --quick`
-4. Commit with bead reference: `git commit -m "feat(museum): description (mu-xxx)"`
-5. Close if done: `br close mu-xxx`
-
-Use subagents for parallel work when tasks are independent:
-- Spawn with `run_in_background: true`
-- Let them handle complete implementation
-
-### Phase 5: Document & Ship
-1. Update `.claude/analysis/progress.md` with this session's work
-2. Update `.claude/analysis/blockers.md` if you found issues
-3. Sync beads: `br sync --flush-only`
-4. Commit documentation: `git commit -m "docs: update museum progress"`
-5. Push: `git push origin feat/genuary-museum`
-
-## Key Files
-
-Your code goes in `src/museum/`:
-```
-src/museum/
-├── index.ts          # Entry point, exports to harness
-├── scene.ts          # Three.js scene setup
-├── navigation.ts     # Camera, movement, controls
-├── zones/            # Individual spaces
-└── exhibits/         # Day integrations
-```
-
-The harness will need to be updated to route `#museum` to your code.
-
-## Testing
-
-After changes, run:
-```bash
-bun run museum:test --quick  # Basic load test
-```
-
-## Important
-
-- ALWAYS work in this worktree (you're already in it)
-- ALWAYS reference beads in commits
-- ALWAYS update progress.md at session end
-- The museum route is `#museum` (separate from Day 31)
-- Use `.claude/museum-plan.md` as INSPIRATION, not prescription
-- Focus on making something NAVIGABLE before making it beautiful
-
-## Begin
-
-Start with Phase 1: read your agent definition and last session's progress.
-PROMPT
-)
+  prompt=$(cat "$prompt_file")
+  log "Loaded prompt from $prompt_file (${#prompt} chars)"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     log "DRY RUN: Would execute Claude Code with curator prompt"
