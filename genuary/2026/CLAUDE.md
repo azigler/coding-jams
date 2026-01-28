@@ -47,36 +47,47 @@ The systemd services are in `scripts/systemd/` and live copies in `~/.config/sys
 
 ## Tmux Agent Runtime
 
-Agents run in tmux windows for visibility and collaboration. Both humans and orchestrator agents can watch, intervene, and resume sessions.
+**IMPORTANT: All subagents MUST run in tmux, not as background tasks.** This gives visibility to both humans and orchestrators.
+
+**Session name:** `genuary-agents` (future: `agents-genuary`)
 
 **Attach to see all agents:**
 ```bash
 tmux attach -t genuary-agents
 ```
 
-**The session has windows for each agent run:**
-- `curator-0128-1830` — Running curator session
-- `[done] day-28-0128-1645` — Completed day agent
-- `control` — Status/info window
+### Spawning Subagents (MANDATORY PATTERN)
 
-**As an orchestrator, you can:**
+When you need to spawn a subagent for any task, use tmux:
+
 ```bash
-# Source the library
-source scripts/lib/tmux-agents.sh
+PROMPT="Your task prompt here..."
+WINDOW_NAME="taskname-$(date +%H%M)"
 
-# Start an agent
-agent_start "curator" "$prompt"
+/usr/bin/tmux new-window -t genuary-agents -n "$WINDOW_NAME" \
+  "echo '$PROMPT' | claude --dangerously-skip-permissions --max-turns 20; echo 'Done.'; read"
+```
 
-# Check on it
-agent_peek "curator-0128-1830" 20
+**Do NOT use the Task tool for subagents.** Always use tmux so:
+- You can watch the agent work in real-time
+- The user can attach and see what's happening
+- You can intervene if it gets stuck
+- Full history is preserved
 
-# Send it a nudge
-agent_send "curator-0128-1830" "focus on the collision bug"
+### Monitoring Subagents
 
-# List all agents
-agent_list
+```bash
+# List all windows
+/usr/bin/tmux list-windows -t genuary-agents
 
-# Cleanup old done windows (24h default)
+# Peek at a window's output
+/usr/bin/tmux capture-pane -t genuary-agents:WINDOW_NAME -p | tail -20
+
+# Send input to a window
+/usr/bin/tmux send-keys -t genuary-agents:WINDOW_NAME "your message" Enter
+```
+
+### Cleanup
 agent_cleanup 24
 ```
 
