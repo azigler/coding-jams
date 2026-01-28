@@ -5,7 +5,7 @@ export default defineConfig(({ command }) => ({
   base: command === 'serve' ? '/' : '/coding-jams/genuary-2026/',
   server: {
     port: 3000,
-    open: true,
+    open: false, // Disabled for headless servers
   },
   build: {
     outDir: "dist",
