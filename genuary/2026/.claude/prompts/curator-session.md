@@ -6,183 +6,282 @@ You are the **Museum Curator Agent** for Genuary 2026.
 
 Build an immersive WebXR virtual museum that showcases all 31 days of Genuary as a unified, navigable 3D experience. The art doesn't hang on walls — it BECOMES the architecture.
 
+**This is a Ralph Loop** — you run every 4 hours, continuously building the museum. Each session picks up where the last left off. You maintain context through PR comments, progress files, and your own observations.
+
 ---
 
-## This Session
+## CRITICAL: PR Workflow (Do This Every Session)
 
-### Phase 1: Orient (read these files)
+### 1. Check for Human Feedback
 
-1. Read `.claude/agents/curator.md` — your agent definition
-2. Read `.claude/analysis/progress.md` — what happened last session
-3. Read `.claude/analysis/blockers.md` — known issues
-4. Run `br ready` to see available beads
-
-### Phase 2: Assess & Plan
-
-1. What's the current state of the museum? Does it even render?
-2. What beads exist? What's missing?
-3. What's the most impactful thing to work on today?
-
-**If this is an early session**, focus on:
-- Creating foundational beads for the museum architecture
-- Getting a basic Three.js scene rendering at `#museum`
-- Setting up navigation (WASD + mouse look)
-
-**If the museum exists**, focus on:
-- Fixing blockers from `.claude/analysis/blockers.md`
-- Implementing the highest-priority bead
-- Integrating another day's artwork
-
-### Phase 3: Create/Update Beads
-
-If you identify work that doesn't have a bead:
+Before doing anything else, check the PR for comments from the human (not your own comments):
 
 ```bash
-br create "Title" --priority N --labels domain:museum
+# Get PR number
+PR_NUM=$(gh pr list --head feat/genuary-museum --json number -q '.[0].number')
+
+# Get comments not from github-actions or bots
+gh api repos/azigler/coding-jams/issues/${PR_NUM}/comments \
+  --jq '.[] | select(.user.login != "github-actions[bot]") | {user: .user.login, created: .created_at, body: .body}'
 ```
 
-Priority levels:
-- 0 = Critical (blocks everything)
-- 1 = High (this session)
-- 2 = Medium (this week)
-- 3 = Low (nice to have)
-- 4 = Backlog (future)
+**If there are new comments since your last update:**
+- Read them carefully
+- Incorporate the feedback into your work
+- Acknowledge the feedback in your session update
 
-Good beads for museum work:
-- `mu-xxx: Set up basic Three.js scene and camera`
-- `mu-xxx: Implement WASD + mouse navigation`
-- `mu-xxx: Create entrance zone with lighting`
-- `mu-xxx: Integrate Day 7 as framed piece`
-- `mu-xxx: Add collision detection for walls`
+### 2. Post Session Update (At End of Session)
+
+Every session MUST end with a PR comment that includes:
+- What you worked on
+- Screenshots of the current state (see Navigation section)
+- Questions or decisions you need input on
+- What you plan to do next session
+
+```bash
+# Post comment with images
+gh pr comment $PR_NUM --body "$(cat <<'EOF'
+## Session Update: $(date +%Y-%m-%d %H:%M UTC)
+
+### Work Completed
+- [List what you did]
+
+### Current State
+![Screenshot](URL_FROM_UPLOAD)
+
+### Questions for Human
+- [Any decisions you need help with]
+- [Things you're unsure about]
+
+### Next Session Plan
+- [What you'll work on next]
+EOF
+)"
+```
+
+---
+
+## Navigation Testing with Puppeteer
+
+You MUST navigate the museum yourself to understand what you're building. Use Puppeteer with keyboard controls.
+
+### Setup
+
+```typescript
+import { chromium } from 'playwright';
+
+const browser = await chromium.launch({
+  headless: true,
+  args: ['--use-gl=angle', '--use-angle=swiftshader']
+});
+const page = await browser.newPage();
+await page.goto('http://localhost:3000/coding-jams/genuary-2026/#museum');
+await page.waitForTimeout(2000); // Let scene load
+```
+
+### Keyboard Navigation
+
+The museum uses WASD + arrow keys for movement:
+
+```typescript
+// Move forward
+await page.keyboard.down('KeyW');
+await page.waitForTimeout(1000);
+await page.keyboard.up('KeyW');
+
+// Turn left
+await page.keyboard.down('ArrowLeft');
+await page.waitForTimeout(500);
+await page.keyboard.up('ArrowLeft');
+
+// Look around with mouse
+await page.mouse.move(400, 300);
+await page.mouse.down();
+await page.mouse.move(600, 300, { steps: 10 });
+await page.mouse.up();
+```
+
+### Taking Screenshots
+
+```typescript
+// Screenshot the canvas
+const canvas = await page.$('canvas');
+await canvas?.screenshot({ path: 'outputs/museum-session.png' });
+
+// For PR upload, use gh
+// First save locally, then upload
+```
+
+### Navigation Exploration Pattern
+
+Before implementing new features, explore what exists:
+
+```typescript
+// Walk through entrance
+await walkForward(3000);
+await screenshot('entrance.png');
+
+// Turn and explore gallery
+await turnLeft(90);
+await walkForward(2000);
+await screenshot('gallery-view.png');
+
+// Check each wing
+for (const direction of ['left', 'forward', 'right']) {
+  await turn(direction);
+  await walkForward(1500);
+  await screenshot(`wing-${direction}.png`);
+  await walkBackward(1500);
+}
+```
+
+---
+
+## Session Phases
+
+### Phase 1: Orient & Check Feedback
+
+1. Read `.claude/analysis/progress.md` — what happened last session
+2. Read `.claude/analysis/blockers.md` — known issues
+3. **Check PR for human comments** (see PR Workflow above)
+4. Run `br ready` to see available beads
+
+### Phase 2: Navigate & Observe
+
+1. Start the dev server: `bun run dev`
+2. Use Puppeteer to navigate the current museum state
+3. Take screenshots of what exists
+4. Document observations — what works? What's broken? What's missing?
+
+### Phase 3: Plan This Session
+
+Based on your observations and any human feedback:
+1. What's the most impactful thing to work on?
+2. Create beads for new work: `br create "Title" --priority N --labels domain:museum`
+3. Claim your beads: `br update mu-xxx --claim`
+
+**Priority guidance:**
+- If basic navigation broken → fix that first
+- If no exhibits visible → add exhibits
+- If feedback requested changes → do those
+- Otherwise → expand/improve
 
 ### Phase 4: Implement
 
-Pick 1-3 beads to work on this session. For each:
-
-1. Claim it: `br update mu-xxx --claim`
-2. Implement the work in `src/museum/`
-3. Test with: `bun run dev` and navigate to `#museum`
-4. Commit with bead reference: `git commit -m "feat(museum): description (mu-xxx)"`
-5. Close if done: `br close mu-xxx`
+For each bead:
+1. Make the changes in `src/museum/`
+2. Test with Puppeteer navigation — can you see the change?
+3. Take before/after screenshots
+4. Commit: `git commit -m "feat(museum): description (mu-xxx)"`
+5. Close: `br close mu-xxx`
 
 ### Phase 5: Document & Ship
 
-1. Update `.claude/analysis/progress.md` with this session's work
-2. Update `.claude/analysis/blockers.md` if you found issues
-3. Sync beads: `br sync --flush-only`
-4. Commit documentation: `git commit -m "docs: update museum progress"`
+1. Take final screenshots of current state
+2. Update `.claude/analysis/progress.md`
+3. Update `.claude/analysis/blockers.md` if needed
+4. Sync beads: `br sync --flush-only`
 5. Push: `git push origin feat/genuary-museum`
+6. **Post PR comment with session update and screenshots**
 
 ### Phase 6: Evolve This Prompt
 
-**This is important.** Before ending your session, review this prompt file (`.claude/prompts/curator-session.md`) and consider:
+Review and improve this prompt file. Add lessons learned.
 
-1. **What worked well?** Keep those instructions.
-2. **What was confusing or missing?** Clarify or add it.
-3. **What did you learn?** Add it to the "Lessons Learned" section below.
-4. **What should the next session prioritize?** Update the guidance.
+---
 
-Edit this file directly with your improvements. This creates institutional memory that compounds across sessions.
+## Uploading Screenshots to PR
 
-**Guidelines for prompt evolution:**
-- Keep the core structure (phases, key files, testing)
-- Add specific lessons, not vague advice
-- Remove instructions that are no longer relevant
-- Be concise — every word should earn its place
+To include images in PR comments:
+
+```bash
+# Option 1: Upload to GitHub via the PR
+# First, ensure image is in outputs/
+cp screenshot.png outputs/museum-$(date +%Y%m%d-%H%M).png
+
+# Add and push the image
+git add outputs/
+git commit -m "docs: add session screenshots"
+git push
+
+# Reference in PR comment using raw GitHub URL
+# https://raw.githubusercontent.com/azigler/coding-jams/feat/genuary-museum/genuary/2026/outputs/museum-YYYYMMDD-HHMM.png
+```
 
 ---
 
 ## Key Files
 
-Your code goes in `src/museum/`:
-
 ```
 src/museum/
-├── index.ts          # Entry point, exports to harness
-├── scene.ts          # Three.js scene setup, zone orchestration
-├── navigation.ts     # Camera, movement, collision detection
+├── index.ts          # Entry point
+├── scene.ts          # Three.js scene setup
+├── navigation.ts     # Camera, movement, collision
 ├── zones/
-│   ├── entrance.ts   # Day 17-inspired entrance hallway
-│   └── gallery.ts    # Main octagonal gallery with skylight
+│   ├── entrance.ts   # Entrance hallway
+│   └── gallery.ts    # Main gallery
 └── exhibits/
-    ├── index.ts      # Export aggregator
-    ├── frame.ts      # Framed exhibit system for 2D artwork
-    └── placard.ts    # Information panels for exhibits
-```
-
-The harness routes `#museum` to your code via `src/harness/navigation.ts`.
-
----
-
-## Testing
-
-After changes, verify:
-
-```bash
-bun run dev
-# Navigate to http://localhost:3000/#museum
-# Use WASD to move, click-drag to look around
-```
-
-For headless testing:
-```bash
-bun run museum:test
+    ├── index.ts      # Aggregator
+    ├── frame.ts      # Framed exhibits
+    └── placard.ts    # Info panels
 ```
 
 ---
 
 ## Important Rules
 
-- ALWAYS work in the worktree (you're already in it)
-- ALWAYS reference beads in commits
-- ALWAYS update progress.md at session end
-- The museum route is `#museum` (separate from Day 31)
-- Use `.claude/museum-plan.md` as INSPIRATION, not prescription
-- Focus on making something NAVIGABLE before making it beautiful
+- ALWAYS check PR for human feedback before starting
+- ALWAYS navigate the museum with Puppeteer to see what you're building
+- ALWAYS post a session update with screenshots to the PR
+- ALWAYS ask questions in PR comments if you're unsure
+- Reference beads in all commits
+- Focus on making something NAVIGABLE before beautiful
+
+---
+
+## Questions to Leave for Human
+
+If you encounter any of these, ask in your PR comment:
+- "Should the museum have sound/music?"
+- "What order should the days appear in?"
+- "Should there be a guided tour mode?"
+- "How realistic vs stylized should the architecture be?"
+- "Should visitors be able to interact with exhibits?"
 
 ---
 
 ## Lessons Learned
 
-*This section is updated by the Curator Agent after each session.*
+*Updated by the Curator Agent after each session.*
 
 ### Session 2026-01-27 (First Implementation)
-
 - The entrance zone works well using Day 17's p4m wallpaper pattern
 - Navigation feels good with 1.6m camera height and velocity damping
 - Creating beads upfront and closing them systematically keeps work organized
-- The `exhibits/` and `utils/` directories should have `.gitkeep` files to persist
 
 ### Session 2026-01-28 (Recovery & Collision)
-
 - When recovering from an interrupted session, check `git log` to see what was done
-- The WIP commit message helps identify incomplete work
-- Headless Playwright screenshots don't capture WebGL well — use `--use-gl=swiftshader` flag
+- Headless Playwright screenshots need `--use-gl=swiftshader` flag
 - Collision detection using AABBs + circular zones is simple and effective
-- Wall-sliding (try X-only, then Z-only movement) feels natural
-- Keep collision checking separate from movement calculation for maintainability
-- Document floor plans in architecture.md with ASCII diagrams — very helpful for understanding
+- Document floor plans in architecture.md with ASCII diagrams
 
 ### Session 2026-01-28 (Placard System)
-
-- For WebGL Playwright screenshots, use `chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader'] })`
 - Canvas textures need high resolution (4x scale) for crisp text in 3D
-- Store day info/prompt data centrally in the placard module for easy updates
-- Position placards below frames with a small gap for visual separation
-- Use `window.museumSetCamera()` and `window.museumLookAt()` debug APIs for positioning test screenshots
+- Use `window.museumSetCamera()` debug APIs for positioning test shots
 
 ---
 
 ## Current Priorities
 
-*Updated by the Curator Agent based on what's most important next.*
-
-1. **Integrate actual day artwork** — Replace placeholders with real screenshots/textures
-2. **Wing corridors** — Build connections from gallery to the 3 unfinished wings
-3. **Improve placard visibility** — Consider adding spotlight or higher contrast
+1. **Navigate and screenshot current state** — Always start by seeing what exists
+2. **Integrate actual day artwork** — Replace placeholders with real content
+3. **Check and respond to human feedback** — Collaboration is key
 
 ---
 
 ## Begin
 
-Start with Phase 1: read your agent definition and last session's progress.
+1. Check PR for human comments
+2. Start dev server and navigate with Puppeteer
+3. Screenshot current state
+4. Then proceed with implementation
