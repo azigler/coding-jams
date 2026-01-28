@@ -49,7 +49,7 @@ Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
 # Optional: Load API keys from a separate file
 # EnvironmentFile=/home/ubuntu/.config/genuary/env
 
-ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent.sh
+ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent-tmux.sh
 WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
 
 # Resource limits

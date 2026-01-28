@@ -37,7 +37,7 @@ Environment="HOME=/home/ubuntu"
 Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
 # Environment="GENUARY_YEAR=2026"
 
-ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/curator-agent.sh
+ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/curator-agent-tmux.sh
 WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
 
 MemoryMax=4G

@@ -68,17 +68,25 @@ main() {
   fi
 
   local window_name="curator-$(date +%m%d-%H%M)"
+  local signal="${window_name}-done"
 
-  # Create session if needed (first window becomes the agent, no placeholder)
-  if ! tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
-    tmux new-session -d -s "$TMUX_SESSION" -n "$window_name" \
-      "cd '$WORKTREE_PATH' && cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 75; echo ''; echo 'Done. Press Enter to close...'; read"
+  # Create session if needed, spawn window with signal
+  if ! /usr/bin/tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    /usr/bin/tmux new-session -d -s "$TMUX_SESSION" -n "$window_name" \
+      "cd '$WORKTREE_PATH' && cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 75; \
+       /usr/bin/tmux wait-for -S $signal; \
+       /usr/bin/tmux rename-window '[done] $window_name'; \
+       echo ''; echo 'Done. Press Enter to close...'; read"
   else
-    tmux new-window -t "$TMUX_SESSION" -n "$window_name" \
-      "cd '$WORKTREE_PATH' && cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 75; echo ''; echo 'Done. Press Enter to close...'; read"
+    /usr/bin/tmux new-window -t "$TMUX_SESSION" -n "$window_name" \
+      "cd '$WORKTREE_PATH' && cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 75; \
+       /usr/bin/tmux wait-for -S $signal; \
+       /usr/bin/tmux rename-window '[done] $window_name'; \
+       echo ''; echo 'Done. Press Enter to close...'; read"
   fi
 
   log "Started: $window_name"
+  log "Signal: $signal"
   log "Watch: tmux attach -t $TMUX_SESSION"
 }
 
