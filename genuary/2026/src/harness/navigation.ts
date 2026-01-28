@@ -156,40 +156,28 @@ export function cleanupContainers(): void {
 }
 
 // ============================================================================
-// Day 28 Special Handler
+// HTML Mode Container
 // ============================================================================
 
 /**
- * Load Day 28's HTML-only content
+ * Get or create the HTML-only container for Day 28 and similar days
  */
-function loadDay28HTML(config: DayConfig): void {
-  // Update day info
-  onDayInfoUpdate?.(config);
+function getOrCreateHtmlContainer(): HTMLElement {
+  const existing = document.getElementById('html-only-container');
+  if (existing) return existing;
 
   const contentArea = document.getElementById('content');
   if (!contentArea) {
-    console.error('Content area not found');
-    return;
+    throw new Error('Content area not found');
   }
 
-  // Reset content area margin
-  contentArea.style.marginBottom = '0';
-
-  // Create HTML-only container
   const container = document.createElement('div');
   container.id = 'html-only-container';
   container.style.cssText =
-    'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;';
+    'width: 100%; height: calc(100vh - var(--header-height)); display: flex; align-items: center; justify-content: center;';
   contentArea.appendChild(container);
 
-  // TODO: Implement Day 28 HTML-only content
-  container.innerHTML = `
-    <div style="text-align: center; padding: 2rem;">
-      <h1>Day 28: HTML Only</h1>
-      <p>This day uses only HTML elements, no canvas or libraries.</p>
-      <p>Implementation coming soon...</p>
-    </div>
-  `;
+  return container;
 }
 
 // ============================================================================
@@ -244,26 +232,10 @@ export async function navigateToDay(
       updateURLForDay(dayNum);
     }
 
-    // Special handling for Day 28 (HTML only)
-    if (dayNum === 28) {
-      const day28Config: DayConfig = {
-        day: 28,
-        prompt: 'HTML Only',
-        creditName: 'Genuary',
-        creditUrl: 'https://genuary.art',
-      };
-      loadDay28HTML(day28Config);
-      setLoading(false);
-      return;
-    }
-
-    // Get or create container
-    const container = getOrCreateContainer();
-
-    // Load the day
+    // Load the day module first to check mode
     const result = await loadDay(
       dayNum,
-      container,
+      dayNum === 28 ? getOrCreateHtmlContainer() : getOrCreateContainer(),
       handleControlsChange,
       loadControls
     );
