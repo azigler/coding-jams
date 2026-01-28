@@ -45,6 +45,49 @@ The systemd services are in `scripts/systemd/` and live copies in `~/.config/sys
 
 ---
 
+## Tmux Agent Runtime
+
+Agents run in tmux windows for visibility and collaboration. Both humans and orchestrator agents can watch, intervene, and resume sessions.
+
+**Attach to see all agents:**
+```bash
+tmux attach -t genuary-agents
+```
+
+**The session has windows for each agent run:**
+- `curator-0128-1830` — Running curator session
+- `[done] day-28-0128-1645` — Completed day agent
+- `control` — Status/info window
+
+**As an orchestrator, you can:**
+```bash
+# Source the library
+source scripts/lib/tmux-agents.sh
+
+# Start an agent
+agent_start "curator" "$prompt"
+
+# Check on it
+agent_peek "curator-0128-1830" 20
+
+# Send it a nudge
+agent_send "curator-0128-1830" "focus on the collision bug"
+
+# List all agents
+agent_list
+
+# Cleanup old done windows (24h default)
+agent_cleanup 24
+```
+
+**Cleanup rules:**
+- Windows marked `[done]` are candidates for cleanup
+- `agent_cleanup 24` removes done windows older than 24 hours
+- Running windows are never touched
+- Users can close any window manually
+
+---
+
 # For Day Agents
 
 You're assigned a day. Your job is to create art that makes people FEEL something.
