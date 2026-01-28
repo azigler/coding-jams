@@ -1,26 +1,21 @@
 # Genuary Curator Agent Timer (Year-Agnostic)
 #
-# Triggers the curator agent daily for incremental museum building.
-# Runs at 15:30 UTC (7:30 AM Pacific) — one hour after Day Agent.
-#
-# This staggers the agents so they don't compete for resources,
-# but they can still see each other's PRs.
+# Triggers the curator agent every 4 hours for continuous museum building.
+# Runs at :45 past the hour (0:45, 4:45, 8:45, 12:45, 16:45, 20:45 UTC).
 #
 # The timer pattern *-01-* works for any year - just update the
 # SERVICE file paths each January.
 #
 
 [Unit]
-Description=Run Genuary Curator Agent daily (January only)
+Description=Run Genuary Curator Agent every 4 hours (January only)
 Documentation=https://github.com/azigler/coding-jams
 
 [Timer]
-# 7:30 AM Pacific = 15:30 UTC (during PST)
-# Pattern: *-01-* means any year, January only
-OnCalendar=*-01-* 15:30:00
-AccuracySec=5min
+# Every 4 hours at :45 past the hour, January only
+OnCalendar=*-01-* 00/4:45:00
+AccuracySec=1min
 Persistent=false
-RandomizedDelaySec=300
 
 [Install]
 WantedBy=timers.target

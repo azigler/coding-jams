@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
-# curator-agent-tmux.sh — Run curator agent in tmux for visibility
+# curator-agent-tmux.sh — Run curator agent in persistent tmux window
 # =============================================================================
+#
+# This script implements a "Ralph Loop" pattern:
+# - Same tmux window reused across runs
+# - Same branch, same worktree, same PR
+# - Each run sends a new prompt to continue the work
+# - Agent stays interactive between runs for human follow-up
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,6 +21,7 @@ REPO_PATH="${GENUARY_REPO_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
 # Configuration
 TMUX_SESSION="agents-genuary"
+WINDOW_NAME="curator"
 WORKTREE_ROOT="/home/ubuntu/coding-jams-museum-wip"
 WORKTREE_PATH="$WORKTREE_ROOT/genuary/$GENUARY_YEAR"
 BRANCH_NAME="feat/genuary-museum"
@@ -47,13 +55,44 @@ setup_worktree() {
   br sync --flush-only 2>/dev/null || true
 }
 
+ensure_session() {
+  if ! /usr/bin/tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    log "Creating tmux session: $TMUX_SESSION"
+    /usr/bin/tmux new-session -d -s "$TMUX_SESSION" -n "$WINDOW_NAME" \
+      "cd '$WORKTREE_PATH' && exec zsh"
+    sleep 1
+  fi
+}
+
+window_exists() {
+  /usr/bin/tmux list-windows -t "$TMUX_SESSION" -F '#{window_name}' 2>/dev/null | grep -q "^${WINDOW_NAME}$"
+}
+
+create_window() {
+  log "Creating new curator window..."
+  /usr/bin/tmux new-window -t "$TMUX_SESSION" -n "$WINDOW_NAME" \
+    "cd '$WORKTREE_PATH' && exec zsh"
+  sleep 1
+}
+
+send_prompt() {
+  log "Sending prompt to curator window..."
+
+  # First, send the claude command with the prompt
+  /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" \
+    "cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 100"
+  /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
+}
+
 # =============================================================================
 # Main
 # =============================================================================
 
 main() {
-  log "Curator Agent (Tmux Mode)"
+  log "Curator Agent (Persistent Tmux Mode)"
+  log "Year: $GENUARY_YEAR"
   log "Worktree: $WORKTREE_PATH"
+  log "Window: $TMUX_SESSION:$WINDOW_NAME"
 
   setup_worktree
 
@@ -63,31 +102,23 @@ main() {
   fi
 
   if [[ "$DRY_RUN" == "true" ]]; then
-    log "DRY RUN - would start curator"
+    log "DRY RUN - would start/resume curator"
     exit 0
   fi
 
-  local window_name="curator-$(date +%m%d-%H%M)"
-  local signal="${window_name}-done"
+  ensure_session
 
-  # Create session if needed, spawn window with signal
-  if ! /usr/bin/tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
-    /usr/bin/tmux new-session -d -s "$TMUX_SESSION" -n "$window_name" \
-      "cd '$WORKTREE_PATH' && cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 75; \
-       /usr/bin/tmux wait-for -S $signal; \
-       /usr/bin/tmux rename-window '[done] $window_name'; \
-       echo ''; echo 'Done. Press Enter to close...'; read"
+  if window_exists; then
+    log "Curator window exists, sending prompt to resume..."
   else
-    /usr/bin/tmux new-window -t "$TMUX_SESSION" -n "$window_name" \
-      "cd '$WORKTREE_PATH' && cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 75; \
-       /usr/bin/tmux wait-for -S $signal; \
-       /usr/bin/tmux rename-window '[done] $window_name'; \
-       echo ''; echo 'Done. Press Enter to close...'; read"
+    log "Curator window not found, creating..."
+    create_window
   fi
 
-  log "Started: $window_name"
-  log "Signal: $signal"
-  log "Watch: tmux attach -t $TMUX_SESSION"
+  send_prompt
+
+  log "Curator agent activated"
+  log "Watch: tmux attach -t $TMUX_SESSION:$WINDOW_NAME"
 }
 
 main "$@"
