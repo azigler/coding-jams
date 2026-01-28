@@ -12,6 +12,12 @@ import {
   disposeEntranceZone,
   type EntranceZone,
 } from './zones/entrance';
+import {
+  createGalleryZone,
+  updateGalleryZone,
+  disposeGalleryZone,
+  type GalleryZone,
+} from './zones/gallery';
 
 // ============================================================================
 // Types
@@ -23,6 +29,7 @@ export interface MuseumScene {
   camera: THREE.PerspectiveCamera;
   time: number;
   entranceZone: EntranceZone | null;
+  galleryZone: GalleryZone | null;
 }
 
 // ============================================================================
@@ -93,12 +100,17 @@ export function createScene(container: HTMLElement): MuseumScene {
   const entranceZone = createEntranceZone();
   scene.add(entranceZone.group);
 
+  // Create main gallery zone (connects to entrance)
+  const galleryZone = createGalleryZone();
+  scene.add(galleryZone.group);
+
   return {
     renderer,
     scene,
     camera,
     time: 0,
     entranceZone,
+    galleryZone,
   };
 }
 
@@ -178,7 +190,10 @@ export function updateScene(museumScene: MuseumScene, deltaTime: number): void {
     updateEntranceZone(museumScene.entranceZone, deltaTime);
   }
 
-  // Future: animate exhibits, update LOD, etc.
+  // Update gallery zone (skylight animation)
+  if (museumScene.galleryZone) {
+    updateGalleryZone(museumScene.galleryZone, deltaTime);
+  }
 }
 
 // ============================================================================
@@ -192,6 +207,11 @@ export function disposeScene(museumScene: MuseumScene): void {
   // Dispose of entrance zone
   if (museumScene.entranceZone) {
     disposeEntranceZone(museumScene.entranceZone);
+  }
+
+  // Dispose of gallery zone
+  if (museumScene.galleryZone) {
+    disposeGalleryZone(museumScene.galleryZone);
   }
 
   // Dispose of all geometries and materials

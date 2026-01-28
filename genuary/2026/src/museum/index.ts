@@ -59,6 +59,13 @@ export function initMuseum(container: HTMLElement): MuseumContext {
         context.scene.camera.position.set(x, y, z);
       }
     };
+    (window as unknown as Record<string, unknown>).museumLookAt = (x: number, y: number, z: number) => {
+      if (context) {
+        context.scene.camera.lookAt(x, y, z);
+        // Update navigation euler to match new camera orientation
+        context.navigation.euler.setFromQuaternion(context.scene.camera.quaternion);
+      }
+    };
     (window as unknown as Record<string, unknown>).museumGetFPS = () => {
       if (context && context.lastTime) {
         return Math.round(1000 / context.lastTime);
