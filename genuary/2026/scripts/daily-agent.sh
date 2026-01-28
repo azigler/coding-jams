@@ -163,15 +163,16 @@ Begin with /start-day $DAY_NUM"
   # Run Claude Code in non-interactive mode
   # The --dangerously-skip-permissions flag allows full autonomy
   # Adjust --max-turns based on expected complexity
+  # NOTE: Multi-line prompts must be piped via stdin, not passed as arguments
   log "Invoking Claude Code..."
 
-  claude --print \
+  echo "$prompt" | claude --print \
     --dangerously-skip-permissions \
     --max-turns 100 \
     --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch" \
-    "$prompt" 2>&1 | tee -a "$LOG_FILE"
+    2>&1 | tee -a "$LOG_FILE"
 
-  local exit_code=${PIPESTATUS[0]}
+  local exit_code=${PIPESTATUS[1]}
 
   if [[ $exit_code -ne 0 ]]; then
     log "WARNING: Claude Code exited with code $exit_code"

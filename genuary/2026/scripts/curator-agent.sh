@@ -251,18 +251,19 @@ run_curator_agent() {
   fi
 
   # Run Claude Code
+  # NOTE: Multi-line prompts must be piped via stdin, not passed as arguments
   log "Invoking Claude Code..."
 
   # Capture output for session summary
   local output_file="${LOG_DIR}/output-${TIMESTAMP}.txt"
 
-  claude --print \
+  echo "$prompt" | claude --print \
     --dangerously-skip-permissions \
     --max-turns 75 \
     --allowedTools "Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch" \
-    "$prompt" 2>&1 | tee "$output_file" | tee -a "$LOG_FILE"
+    2>&1 | tee "$output_file" | tee -a "$LOG_FILE"
 
-  local exit_code=${PIPESTATUS[0]}
+  local exit_code=${PIPESTATUS[1]}
 
   # After agent completes, ensure we push and comment
   log "Agent session completed with exit code $exit_code"
