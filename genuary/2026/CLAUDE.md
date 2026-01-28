@@ -58,15 +58,29 @@ tmux attach -t genuary-agents
 
 ### Spawning Subagents (MANDATORY PATTERN)
 
-When you need to spawn a subagent for any task, use tmux:
+When you need to spawn a subagent for any task, use tmux with this pattern:
 
 ```bash
-PROMPT="Your task prompt here..."
-WINDOW_NAME="taskname-$(date +%H%M)"
+# 1. Write prompt to temp file (avoids quoting issues)
+PROMPT_FILE=$(mktemp /tmp/agent-XXXXXX.txt)
+cat > "$PROMPT_FILE" << 'PROMPT'
+Your task prompt here...
+PROMPT
 
-/usr/bin/tmux new-window -t genuary-agents -n "$WINDOW_NAME" \
-  "echo '$PROMPT' | claude --dangerously-skip-permissions --max-turns 20; echo 'Done.'; read"
+# 2. Create window that cleans up after itself
+WINDOW="taskname-$(date +%H%M)"
+/usr/bin/tmux new-window -t genuary-agents -n "$WINDOW" \
+  "cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 20; \
+   rm -f '$PROMPT_FILE'; \
+   tmux rename-window '[done] $WINDOW' 2>/dev/null; \
+   echo 'Done. Press Enter...'; read"
 ```
+
+This pattern:
+- Writes prompt to temp file (handles special characters)
+- Deletes temp file when done
+- Marks window as `[done]` for easy identification
+- Waits before closing so you can see the result
 
 **Do NOT use the Task tool for subagents.** Always use tmux so:
 - You can watch the agent work in real-time
@@ -88,14 +102,22 @@ WINDOW_NAME="taskname-$(date +%H%M)"
 ```
 
 ### Cleanup
-agent_cleanup 24
+
+```bash
+# Close a specific done window
+/usr/bin/tmux kill-window -t "genuary-agents:[done] taskname-1234"
+
+# Close ALL done windows
+/usr/bin/tmux list-windows -t genuary-agents -F '#{window_name}' | \
+  grep '^\[done\]' | \
+  xargs -I{} /usr/bin/tmux kill-window -t "genuary-agents:{}"
 ```
 
 **Cleanup rules:**
-- Windows marked `[done]` are candidates for cleanup
-- `agent_cleanup 24` removes done windows older than 24 hours
+- Windows auto-rename to `[done] name` when finished
+- Temp prompt files auto-delete when agent finishes
+- Close done windows manually or with the bulk command above
 - Running windows are never touched
-- Users can close any window manually
 
 ---
 
