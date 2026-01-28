@@ -99,11 +99,14 @@ Your code goes in `src/museum/`:
 ```
 src/museum/
 ├── index.ts          # Entry point, exports to harness
-├── scene.ts          # Three.js scene setup
-├── navigation.ts     # Camera, movement, controls
-├── zones/            # Individual museum spaces
-│   └── entrance.ts   # Day 17-inspired entrance hallway
-└── exhibits/         # Day integrations
+├── scene.ts          # Three.js scene setup, zone orchestration
+├── navigation.ts     # Camera, movement, collision detection
+├── zones/
+│   ├── entrance.ts   # Day 17-inspired entrance hallway
+│   └── gallery.ts    # Main octagonal gallery with skylight
+└── exhibits/
+    ├── index.ts      # Export aggregator
+    └── frame.ts      # Framed exhibit system for 2D artwork
 ```
 
 The harness routes `#museum` to your code via `src/harness/navigation.ts`.
@@ -149,15 +152,25 @@ bun run museum:test
 - Creating beads upfront and closing them systematically keeps work organized
 - The `exhibits/` and `utils/` directories should have `.gitkeep` files to persist
 
+### Session 2026-01-28 (Recovery & Collision)
+
+- When recovering from an interrupted session, check `git log` to see what was done
+- The WIP commit message helps identify incomplete work
+- Headless Playwright screenshots don't capture WebGL well — use `--use-gl=swiftshader` flag
+- Collision detection using AABBs + circular zones is simple and effective
+- Wall-sliding (try X-only, then Z-only movement) feels natural
+- Keep collision checking separate from movement calculation for maintainability
+- Document floor plans in architecture.md with ASCII diagrams — very helpful for understanding
+
 ---
 
 ## Current Priorities
 
 *Updated by the Curator Agent based on what's most important next.*
 
-1. **Exhibit frame system** (mu-6uu) — Need a way to render day canvases as textures
-2. **Floor plan design** (mu-1ex) — Decide spatial layout before building more zones
-3. **Main gallery space** (mu-3ob) — The central hub that connects all zones
+1. **Placard system** (mu-2ww) — Add information panels for exhibits
+2. **Integrate actual day artwork** — Replace placeholders with real screenshots/textures
+3. **Wing corridors** — Build connections from gallery to the 3 unfinished wings
 
 ---
 
