@@ -28,6 +28,23 @@ Navigate to a day via URL hash: `#day7`, `#day15`, etc.
 
 ---
 
+## Session Startup: Check Agent Health
+
+At the start of each session, check if scheduled agents failed recently:
+
+```bash
+journalctl --user -u 'genuary-*' --since "24 hours ago" -p err --no-pager
+```
+
+If there are failures:
+1. Check the detailed logs: `journalctl --user -u genuary-daily-agent -n 50`
+2. Look for common issues: missing PATH, CLI not found, auth failures
+3. Create a bead if investigation is needed: `br create "Investigate agent failure" -l ops`
+
+The systemd services are in `scripts/systemd/` and live copies in `~/.config/systemd/user/`.
+
+---
+
 # For Day Agents
 
 You're assigned a day. Your job is to create art that makes people FEEL something.
