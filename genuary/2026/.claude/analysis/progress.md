@@ -152,4 +152,36 @@ Each session entry should include:
 
 ---
 
+### 2026-01-28 — Lighting & Performance Session
+
+**Beads worked**: bd-q1s (closed)
+
+**Accomplished**:
+- Fixed WebGL texture unit overflow (was exceeding 32 unit limit)
+  - Disabled shadow casting on entrance sconce lights (saved 8 shadow maps)
+  - Shared wallpaper texture between walls instead of cloning
+  - Disabled shadows on exhibit spotlights and pedestal light
+- Significantly improved gallery lighting:
+  - Doubled skylight intensity (4 → 8)
+  - Increased ambient fill lights
+  - Added ring of 4 overhead lights for better coverage
+  - Made skylight dome glow brighter with stronger emissive
+  - Improved wall and floor materials for better visibility
+- Added `scripts/museum-explore.ts` for automated Puppeteer navigation and screenshots
+
+**Tested**:
+- Build succeeds with no TypeScript errors
+- No more "Trying to use 33 texture units" warnings
+- Puppeteer screenshots confirm gallery is now visible (was almost pitch black before)
+- Entrance hallway still looks great with warm sconce lighting
+
+**Blockers**: None
+
+**Next session**:
+- Integrate actual day artwork as textures (replace "Day X - Coming Soon" placeholders)
+- Consider making exhibit spotlights even brighter for better art visibility
+- Build wing corridors (North, East, West) to expand navigable space
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*

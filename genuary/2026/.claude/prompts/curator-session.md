@@ -269,6 +269,13 @@ If you encounter any of these, ask in your PR comment:
 - Canvas textures need high resolution (4x scale) for crisp text in 3D
 - Use `window.museumSetCamera()` debug APIs for positioning test shots
 
+### Session 2026-01-28 (Lighting & Performance)
+- WebGL has a 32 texture unit limit - shadow maps count against this
+- Disabling shadows on decorative lights (sconces, spotlights) saves many texture units
+- Share materials/textures between meshes instead of cloning to reduce GPU load
+- The gallery was too dark - use emissive properties on walls/floor for ambient visibility
+- Running `museum-explore.ts` with filtered output shows navigation is working well
+
 ---
 
 ## Current Priorities
