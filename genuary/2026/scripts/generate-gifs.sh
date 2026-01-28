@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# Script to generate GIFs from saved frames
+# Script to generate GIFs from saved frames (Multi-Year Support)
 # This script assumes you have ImageMagick installed for GIF creation
 # Install with: brew install imagemagick (macOS) or apt-get install imagemagick (Linux)
 
-echo "🎬 Generating GIFs for Genuary 2026..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source the year configuration library
+source "${SCRIPT_DIR}/lib/year-config.sh"
+
+echo "🎬 Generating GIFs for Genuary ${GENUARY_YEAR}..."
 echo ""
 
 # Directory for outputs
@@ -19,23 +24,23 @@ if ! command -v convert &> /dev/null; then
     exit 1
 fi
 
-# Find all frame sequences (files matching pattern genuary-2026-day-XX-*.png)
+# Find all frame sequences (files matching pattern genuary-YYYY-day-XX-*.png)
 echo "🔍 Looking for frame sequences..."
 
 for day in {01..31}; do
     # Look for frames matching the pattern
-    FRAME_PATTERN="genuary-2026-day-${day}-*.png"
+    FRAME_PATTERN="${GENUARY_FILE_PREFIX}-day-${day}-*.png"
     FIRST_FRAME=$(ls $FRAME_PATTERN 2>/dev/null | head -1)
-    
+
     if [ -n "$FIRST_FRAME" ]; then
         echo "📹 Found frames for Day ${day}, creating GIF..."
-        convert -delay 3.33 -loop 0 $FRAME_PATTERN "${OUTPUT_DIR}/genuary-2026-day-${day}.gif"
-        echo "✅ Created ${OUTPUT_DIR}/genuary-2026-day-${day}.gif"
+        convert -delay 3.33 -loop 0 $FRAME_PATTERN "${OUTPUT_DIR}/${GENUARY_FILE_PREFIX}-day-${day}.gif"
+        echo "✅ Created ${OUTPUT_DIR}/${GENUARY_FILE_PREFIX}-day-${day}.gif"
     fi
 done
 
 # Also check for any other frame patterns
-OTHER_FRAMES=$(ls genuary-2026-*.png 2>/dev/null | grep -E "genuary-2026-day-[0-9]+-[0-9]+\.png" | head -1)
+OTHER_FRAMES=$(ls ${GENUARY_FILE_PREFIX}-*.png 2>/dev/null | grep -E "${GENUARY_FILE_PREFIX}-day-[0-9]+-[0-9]+\.png" | head -1)
 if [ -z "$OTHER_FRAMES" ] && [ -z "$FIRST_FRAME" ]; then
     echo "⚠️  No frame sequences found."
     echo "💡 Frames are saved to your Downloads folder when you run animations with recording enabled."

@@ -10,6 +10,17 @@ Read the section that matches your assignment.
 
 ---
 
+## Multi-Year Support
+
+This project is designed to work for multiple years (2026, 2027, etc.).
+
+- **Year detection is automatic** — Scripts detect year from the directory path
+- **Each year is a separate directory** — `genuary/2026/`, `genuary/2027/`, etc.
+- **See `docs/MULTI-YEAR.md`** for setup instructions for new years
+- **Bootstrap script** — Run `./scripts/bootstrap-year.sh 2027` to prepare a new year
+
+---
+
 ## Quick Start
 
 ```bash

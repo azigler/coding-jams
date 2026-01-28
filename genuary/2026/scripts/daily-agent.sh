@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Genuary 2026 Daily Agent Automation
+# Genuary Daily Agent Automation (Multi-Year Support)
 #
 # This script is designed to be run by cron or systemd to automatically
 # kick off a Day Agent for the current Genuary day.
@@ -11,12 +11,13 @@
 #   ./scripts/daily-agent.sh --dry-run # Show what would happen
 #
 # Environment variables:
-#   GENUARY_REPO_PATH  - Path to the genuary/2026 directory
+#   GENUARY_YEAR       - Override the detected year (e.g., 2027)
+#   GENUARY_REPO_PATH  - Path to the genuary/YYYY directory
 #   CLAUDE_API_KEY     - Required for Claude Code CLI
 #   GITHUB_TOKEN       - Required for PR creation via gh
 #
 # Cron example (6:30 AM Pacific = 14:30 UTC):
-#   30 14 1-31 1 * /home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent.sh
+#   30 14 1-31 1 * /path/to/genuary/YYYY/scripts/daily-agent.sh
 #
 # systemd timer example in accompanying file: genuary-daily-agent.timer
 #
@@ -28,6 +29,10 @@ set -euo pipefail
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source the year configuration library
+source "${SCRIPT_DIR}/lib/year-config.sh"
+
 REPO_PATH="${GENUARY_REPO_PATH:-$(dirname "$SCRIPT_DIR")}"
 LOG_DIR="${REPO_PATH}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -140,9 +145,31 @@ run_agent() {
 
   # The Claude Code prompt that orchestrates the full day workflow
   # Note: This uses the slash commands defined in .claude/commands/
-  local prompt="You are working on Genuary 2026 Day $DAY_NUM.
+  local prompt="You are the Genuary Daily Agent.
 
-Your task is to complete this day from start to finish:
+## Step 0: Check the Date and Year (ALWAYS DO THIS FIRST)
+
+Run this command to check today's date:
+\`\`\`bash
+date '+%Y-%m-%d (Day %d of %B)'
+\`\`\`
+
+Based on the result:
+- If the year is NOT ${GENUARY_YEAR}, you need to work in a different directory
+- Check if \`genuary/<current-year>/\` exists. If not, create and bootstrap it:
+  \`\`\`bash
+  mkdir -p /home/ubuntu/coding-jams/genuary/<year>
+  cp -r /home/ubuntu/coding-jams/genuary/2026/scripts /home/ubuntu/coding-jams/genuary/<year>/
+  cp -r /home/ubuntu/coding-jams/genuary/2026/src/harness /home/ubuntu/coding-jams/genuary/<year>/src/
+  cp -r /home/ubuntu/coding-jams/genuary/2026/src/utils /home/ubuntu/coding-jams/genuary/<year>/src/
+  cd /home/ubuntu/coding-jams/genuary/<year>
+  ./scripts/bootstrap-year.sh
+  \`\`\`
+- If the year IS ${GENUARY_YEAR}, proceed with Day $DAY_NUM below
+
+## Your Task: Genuary Day $DAY_NUM
+
+Complete this day from start to finish:
 
 1. Run /start-day $DAY_NUM and complete ALL 13 mandatory steps
 2. Implement the artwork following your creative vision
@@ -152,7 +179,7 @@ Your task is to complete this day from start to finish:
 This is an automated run. Work autonomously and make creative decisions yourself.
 If you encounter any blockers, document them in a file called 'agent-notes.md'.
 
-Begin with /start-day $DAY_NUM"
+Begin by checking the date, then proceed with /start-day $DAY_NUM"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     log "DRY RUN: Would execute Claude Code with prompt:"
@@ -189,8 +216,9 @@ main() {
   mkdir -p "$LOG_DIR"
 
   log "=========================================="
-  log "Genuary 2026 Daily Agent"
+  log "Genuary ${GENUARY_YEAR} Daily Agent"
   log "=========================================="
+  log "Year: $GENUARY_YEAR"
   log "Day: $DAY_NUM"
   log "Repo: $REPO_PATH"
   log "Log: $LOG_FILE"
