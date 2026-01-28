@@ -74,7 +74,7 @@ export interface DayConfig {
   prompt: string;
   creditName: string;
   creditUrl: string;
-  mode?: 'p5' | 'glsl' | 'three';  // Rendering mode (p5 default, glsl for WebGL shaders, three for Three.js)
+  mode?: 'p5' | 'glsl' | 'three' | 'html';  // Rendering mode (p5 default, glsl for WebGL shaders, three for Three.js, html for pure DOM)
   recording?: RecordingConfig;
 
   // p5 mode lifecycle methods
@@ -94,6 +94,11 @@ export interface DayConfig {
   threeSetup?: (container: HTMLElement, controls: ControlState) => ThreeContext;
   threeUpdate?: (ctx: ThreeContext, controls: ControlState, deltaTime: number) => void;
   threeCleanup?: (ctx: ThreeContext) => void;
+
+  // HTML mode properties (for pure DOM/CSS artwork)
+  htmlSetup?: (container: HTMLElement, controls: ControlState) => HtmlContext;
+  htmlUpdate?: (ctx: HtmlContext, controls: ControlState) => void;
+  htmlCleanup?: (ctx: HtmlContext) => void;
 }
 
 /**
@@ -105,6 +110,16 @@ export interface ThreeContext {
   scene: import('three').Scene;
   camera: import('three').Camera;
   canvas: HTMLCanvasElement;
+  // Day-specific data can be added here
+  [key: string]: unknown;
+}
+
+/**
+ * Context object for HTML mode days
+ * Holds the container element and any day-specific data
+ */
+export interface HtmlContext {
+  container: HTMLElement;
   // Day-specific data can be added here
   [key: string]: unknown;
 }

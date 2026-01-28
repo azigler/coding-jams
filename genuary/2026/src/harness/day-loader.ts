@@ -14,6 +14,7 @@ import type {
   RecordingConfig,
   ControlChangeHandler,
   ThreeContext,
+  HtmlContext,
 } from '../types';
 import { setControls, setRecording } from './state';
 import { registerCleanup } from './cleanup';
@@ -555,6 +556,90 @@ export function createThreeRenderer(options: ThreeRendererOptions): DayRenderer 
 }
 
 // ============================================================================
+// HTML Mode Renderer Creation
+// ============================================================================
+
+interface HtmlRendererOptions {
+  config: DayConfig;
+  container: HTMLElement;
+  initialControls: ControlState;
+  onControlsChange: ControlChangeHandler;
+}
+
+/**
+ * Create an HTML-only renderer wrapped as a DayRenderer
+ * For days that use pure DOM/CSS instead of canvas
+ */
+export function createHtmlRenderer(options: HtmlRendererOptions): DayRenderer | null {
+  const { config, container, initialControls, onControlsChange } = options;
+
+  if (!config.htmlSetup) {
+    console.error('HTML day missing htmlSetup function');
+    return null;
+  }
+
+  let ctx: HtmlContext | null = null;
+  let controls = { ...initialControls };
+  let running = false;
+  let cleanupFn: (() => void) | null = null;
+
+  return {
+    start: () => {
+      if (running) return;
+
+      // Initialize HTML context
+      ctx = config.htmlSetup!(container, controls);
+      if (!ctx) {
+        console.error('htmlSetup returned null');
+        return;
+      }
+
+      running = true;
+
+      // Register cleanup
+      cleanupFn = registerCleanup(() => {
+        if (ctx) {
+          config.htmlCleanup?.(ctx);
+          // Clear the container
+          ctx.container.innerHTML = '';
+          ctx = null;
+        }
+        running = false;
+      });
+    },
+
+    stop: () => {
+      if (!running) return;
+
+      if (ctx) {
+        config.htmlCleanup?.(ctx);
+        ctx.container.innerHTML = '';
+        ctx = null;
+      }
+
+      running = false;
+      cleanupFn?.();
+      cleanupFn = null;
+    },
+
+    updateControls: (newControls: ControlState) => {
+      controls = { ...newControls };
+      if (ctx) {
+        config.htmlUpdate?.(ctx, controls);
+      }
+      setControls(controls);
+      onControlsChange(controls);
+    },
+
+    getCanvas: () => null, // HTML mode has no canvas
+
+    getSketch: () => null, // HTML mode has no p5 sketch
+
+    isRunning: () => running,
+  };
+}
+
+// ============================================================================
 // Full Day Loader
 // ============================================================================
 
@@ -623,6 +708,20 @@ export async function loadDay(
     }
 
     renderer = threeRenderer;
+  } else if (config.mode === 'html') {
+    // HTML-only mode (pure DOM/CSS)
+    const htmlRenderer = createHtmlRenderer({
+      config,
+      container,
+      initialControls: controls,
+      onControlsChange,
+    });
+
+    if (!htmlRenderer) {
+      throw new Error(`Failed to create HTML renderer for day ${dayNum}.`);
+    }
+
+    renderer = htmlRenderer;
   } else {
     // Default p5.js mode
     renderer = createP5Renderer({
