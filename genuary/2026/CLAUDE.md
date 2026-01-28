@@ -60,11 +60,11 @@ The systemd services are in `scripts/systemd/` and live copies in `~/.config/sys
 
 **IMPORTANT: All subagents MUST run in tmux, not as background tasks.** This gives visibility to both humans and orchestrators.
 
-**Session name:** `genuary-agents` (future: `agents-genuary`)
+**Session name:** `agents-genuary`
 
 **Attach to see all agents:**
 ```bash
-tmux attach -t genuary-agents
+tmux attach -t agents-genuary
 ```
 
 ### Spawning Subagents (MANDATORY PATTERN)
@@ -74,34 +74,58 @@ When you need to spawn a subagent for any task, use tmux with this pattern:
 ```bash
 # 1. Setup
 WINDOW="taskname-$(date +%H%M)"
-SIGNAL="$WINDOW-done"
 PROMPT_FILE=$(mktemp /tmp/agent-XXXXXX.txt)
 cat > "$PROMPT_FILE" << 'PROMPT'
 Your task prompt here...
+
+When you complete your assigned task, output exactly:
+TASK COMPLETE: <brief summary>
+on its own line. This signals the orchestrator while keeping the session open for human follow-up.
 PROMPT
 
-# 2. Spawn agent in tmux (signals when done)
-/usr/bin/tmux new-window -t genuary-agents -n "$WINDOW" \
+# 2. Spawn agent in tmux
+/usr/bin/tmux new-window -t agents-genuary -n "$WINDOW" \
   "trap 'rm -f $PROMPT_FILE' EXIT; \
    cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 20; \
-   /usr/bin/tmux wait-for -S $SIGNAL; \
-   /usr/bin/tmux rename-window '[done] $WINDOW'; \
-   echo 'Done. Press Enter...'; read"
-
-# 3. Background the wait-for to get notified (use Bash tool with run_in_background)
-/usr/bin/tmux wait-for $SIGNAL && echo "AGENT COMPLETED: $WINDOW"
+   echo 'Session complete. Press Enter to close...'; read"
 ```
 
 This pattern:
 - Writes prompt to temp file (handles special characters)
 - Uses `trap EXIT` to delete temp file even if killed/crashed
-- Signals completion with `tmux wait-for -S`
-- **You get notified when done** (like Task tool, but visible)
-- Marks window as `[done]` for easy identification
+- Agent outputs `TASK COMPLETE:` marker when done
+- Session stays open for human follow-up
+
+#### Getting Notified When Done
+
+Agents output a marker when their main task is complete:
+
+```
+TASK COMPLETE: <brief summary>
+```
+
+The orchestrator polls for this (allows agent to stay interactive for follow-up):
+
+```bash
+# Poll for completion marker
+while true; do
+  result=$(/usr/bin/tmux capture-pane -t agents-genuary:$WINDOW -p | grep "^TASK COMPLETE:")
+  if [[ -n "$result" ]]; then
+    echo "$result"
+    break
+  fi
+  sleep 30
+done
+```
+
+**Key insight**: Instead of `tmux wait-for` (which requires process exit), agents output `TASK COMPLETE: <summary>` when done. This lets:
+- Agent stay interactive for human follow-up
+- Orchestrator poll and detect completion
+- Human continue working with the agent after task is done
 
 **To continue an existing subagent** (instead of spawning new):
 ```bash
-/usr/bin/tmux send-keys -t genuary-agents:WINDOW "Your follow-up task..." Enter
+/usr/bin/tmux send-keys -t agents-genuary:WINDOW "Your follow-up task..." Enter
 ```
 
 **Do NOT use the Task tool for subagents.** Always use tmux so:
@@ -114,32 +138,30 @@ This pattern:
 
 ```bash
 # List all windows
-/usr/bin/tmux list-windows -t genuary-agents
+/usr/bin/tmux list-windows -t agents-genuary
 
 # Peek at a window's output
-/usr/bin/tmux capture-pane -t genuary-agents:WINDOW_NAME -p | tail -20
+/usr/bin/tmux capture-pane -t agents-genuary:WINDOW_NAME -p | tail -20
 
 # Send input to a window
-/usr/bin/tmux send-keys -t genuary-agents:WINDOW_NAME "your message" Enter
+/usr/bin/tmux send-keys -t agents-genuary:WINDOW_NAME "your message" Enter
 ```
 
 ### Cleanup
 
 ```bash
-# Close a specific done window
-/usr/bin/tmux kill-window -t "genuary-agents:[done] taskname-1234"
+# Close a specific window
+/usr/bin/tmux kill-window -t "agents-genuary:taskname-1234"
 
-# Close ALL done windows
-/usr/bin/tmux list-windows -t genuary-agents -F '#{window_name}' | \
-  grep '^\[done\]' | \
-  xargs -I{} /usr/bin/tmux kill-window -t "genuary-agents:{}"
+# List all windows to see what's running
+/usr/bin/tmux list-windows -t agents-genuary
 ```
 
 **Cleanup rules:**
-- Windows auto-rename to `[done] name` when finished
-- Temp prompt files auto-delete when agent finishes
-- Close done windows manually or with the bulk command above
-- Running windows are never touched
+- Temp prompt files auto-delete when agent finishes (via `trap EXIT`)
+- Windows stay open after completion for human follow-up
+- Close windows manually when no longer needed
+- Check for `TASK COMPLETE:` in output to know if agent finished its work
 
 ---
 
