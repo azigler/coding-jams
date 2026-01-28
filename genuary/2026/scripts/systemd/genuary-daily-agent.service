@@ -26,7 +26,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-TimeoutStartSec=3600
+TimeoutStartSec=7200
 
 # IMPORTANT: Systemd doesn't inherit user PATH - must set explicitly
 # Include paths for: claude CLI, bun, cargo (for br), standard bins
