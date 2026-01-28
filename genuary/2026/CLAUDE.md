@@ -78,20 +78,25 @@ cat > "$PROMPT_FILE" << 'PROMPT'
 Your task prompt here...
 PROMPT
 
-# 2. Create window that cleans up after itself
+# 2. Create window with trap for cleanup (even on crash/kill)
 WINDOW="taskname-$(date +%H%M)"
 /usr/bin/tmux new-window -t genuary-agents -n "$WINDOW" \
-  "cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 20; \
-   rm -f '$PROMPT_FILE'; \
+  "trap 'rm -f $PROMPT_FILE' EXIT; \
+   cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 20; \
    tmux rename-window '[done] $WINDOW' 2>/dev/null; \
    echo 'Done. Press Enter...'; read"
 ```
 
 This pattern:
 - Writes prompt to temp file (handles special characters)
-- Deletes temp file when done
+- Uses `trap EXIT` to delete temp file even if killed/crashed
 - Marks window as `[done]` for easy identification
 - Waits before closing so you can see the result
+
+**To continue an existing subagent** (instead of spawning new):
+```bash
+/usr/bin/tmux send-keys -t genuary-agents:WINDOW "Your follow-up task..." Enter
+```
 
 **Do NOT use the Task tool for subagents.** Always use tmux so:
 - You can watch the agent work in real-time
