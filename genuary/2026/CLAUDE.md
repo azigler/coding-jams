@@ -123,9 +123,25 @@ done
 - Orchestrator poll and detect completion
 - Human continue working with the agent after task is done
 
-**To continue an existing subagent** (instead of spawning new):
+### Sending Follow-up Commands to Agents
+
+To send commands to a running agent, use `send-keys` with the message and Enter **separately**:
+
 ```bash
-/usr/bin/tmux send-keys -t agents-genuary:WINDOW "Your follow-up task..." Enter
+# CORRECT: Send message, then Enter key separately (unquoted)
+/usr/bin/tmux send-keys -t agents-genuary:$WINDOW "Your follow-up instructions here"
+/usr/bin/tmux send-keys -t agents-genuary:$WINDOW Enter
+
+# WRONG: Enter in quotes sends literal text "Enter"
+/usr/bin/tmux send-keys -t agents-genuary:$WINDOW "message" "Enter"  # BAD
+
+# WRONG: Enter on same line may not work reliably
+/usr/bin/tmux send-keys -t agents-genuary:$WINDOW "message" Enter    # UNRELIABLE
+```
+
+To interrupt a stuck agent:
+```bash
+/usr/bin/tmux send-keys -t agents-genuary:$WINDOW C-c
 ```
 
 **Do NOT use the Task tool for subagents.** Always use tmux so:
@@ -143,8 +159,9 @@ done
 # Peek at a window's output
 /usr/bin/tmux capture-pane -t agents-genuary:WINDOW_NAME -p | tail -20
 
-# Send input to a window
-/usr/bin/tmux send-keys -t agents-genuary:WINDOW_NAME "your message" Enter
+# Send input to a window (Enter must be separate and unquoted!)
+/usr/bin/tmux send-keys -t agents-genuary:WINDOW_NAME "your message"
+/usr/bin/tmux send-keys -t agents-genuary:WINDOW_NAME Enter
 ```
 
 ### Cleanup
