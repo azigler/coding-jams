@@ -13,3 +13,4 @@ temp-frames/
 # Allow PR assets (captured screenshots/GIFs for pull requests)
 !pr-assets/
 !pr-assets/**
+logs/
