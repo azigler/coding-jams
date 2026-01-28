@@ -72,26 +72,32 @@ tmux attach -t genuary-agents
 When you need to spawn a subagent for any task, use tmux with this pattern:
 
 ```bash
-# 1. Write prompt to temp file (avoids quoting issues)
+# 1. Setup
+WINDOW="taskname-$(date +%H%M)"
+SIGNAL="$WINDOW-done"
 PROMPT_FILE=$(mktemp /tmp/agent-XXXXXX.txt)
 cat > "$PROMPT_FILE" << 'PROMPT'
 Your task prompt here...
 PROMPT
 
-# 2. Create window with trap for cleanup (even on crash/kill)
-WINDOW="taskname-$(date +%H%M)"
+# 2. Spawn agent in tmux (signals when done)
 /usr/bin/tmux new-window -t genuary-agents -n "$WINDOW" \
   "trap 'rm -f $PROMPT_FILE' EXIT; \
    cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 20; \
-   tmux rename-window '[done] $WINDOW' 2>/dev/null; \
+   /usr/bin/tmux wait-for -S $SIGNAL; \
+   /usr/bin/tmux rename-window '[done] $WINDOW'; \
    echo 'Done. Press Enter...'; read"
+
+# 3. Background the wait-for to get notified (use Bash tool with run_in_background)
+/usr/bin/tmux wait-for $SIGNAL && echo "AGENT COMPLETED: $WINDOW"
 ```
 
 This pattern:
 - Writes prompt to temp file (handles special characters)
 - Uses `trap EXIT` to delete temp file even if killed/crashed
+- Signals completion with `tmux wait-for -S`
+- **You get notified when done** (like Task tool, but visible)
 - Marks window as `[done]` for easy identification
-- Waits before closing so you can see the result
 
 **To continue an existing subagent** (instead of spawning new):
 ```bash
