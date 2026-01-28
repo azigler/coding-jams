@@ -19,9 +19,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_PATH="${GENUARY_REPO_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
-# Source the tmux agent library
-source "$SCRIPT_DIR/lib/tmux-agents.sh"
-
 # Configuration
 TMUX_SESSION="genuary-agents"
 WORKTREE_ROOT="/home/ubuntu/coding-jams-museum-wip"
@@ -42,6 +39,13 @@ log() {
 # =============================================================================
 # Setup
 # =============================================================================
+
+ensure_session() {
+  if ! tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    tmux new-session -d -s "$TMUX_SESSION" -n "control"
+    tmux send-keys -t "$TMUX_SESSION:control" "echo 'Genuary Agents Session - use tmux attach -t $TMUX_SESSION'" Enter
+  fi
+}
 
 setup_worktree() {
   log "Setting up worktree..."
@@ -86,14 +90,12 @@ main() {
     exit 1
   fi
 
-  local prompt
-  prompt=$(cat "$prompt_file")
-  log "Loaded prompt (${#prompt} chars)"
+  log "Prompt file: $prompt_file ($(wc -c < "$prompt_file") bytes)"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     log "DRY RUN: Would start curator in tmux"
     log "Prompt preview:"
-    echo "$prompt" | head -20
+    head -20 "$prompt_file"
     exit 0
   fi
 
@@ -109,54 +111,65 @@ main() {
   log "Or jump to window: tmux select-window -t $TMUX_SESSION:$window_name"
   log ""
 
-  # Build the command to run in tmux
-  # We cd to the worktree and run claude there
-  local claude_cmd="cd '$WORKTREE_PATH' && echo \"\$PROMPT\" | claude --dangerously-skip-permissions --max-turns 75"
+  # Create a runner script that the tmux window will execute
+  # This avoids quoting issues with embedding the prompt in bash -c
+  local runner_script="/tmp/curator-runner-$$.sh"
+  cat > "$runner_script" << 'RUNNER_EOF'
+#!/usr/bin/env bash
+set -e
 
-  # Create the tmux window with a wrapper that shows status
-  tmux new-window -t "$TMUX_SESSION" -n "$window_name" bash -c "
-    export PROMPT='$prompt'
+PROMPT_FILE="$1"
+WORKTREE="$2"
+WINDOW_NAME="$3"
+TMUX_SESSION="$4"
+BRANCH_NAME="$5"
 
-    echo '═══════════════════════════════════════════════════════════════'
-    echo 'Curator Agent'
-    echo 'Window: $window_name'
-    echo 'Worktree: $WORKTREE_PATH'
-    echo 'Started: \$(date)'
-    echo '═══════════════════════════════════════════════════════════════'
-    echo ''
+echo '═══════════════════════════════════════════════════════════════'
+echo "Curator Agent"
+echo "Window: $WINDOW_NAME"
+echo "Worktree: $WORKTREE"
+echo "Started: $(date)"
+echo '═══════════════════════════════════════════════════════════════'
+echo ''
 
-    cd '$WORKTREE_PATH'
+cd "$WORKTREE"
 
-    # Run claude with the prompt piped in
-    echo \"\$PROMPT\" | claude \\
-      --dangerously-skip-permissions \\
-      --max-turns 75
+# Run claude with the prompt piped from the file
+cat "$PROMPT_FILE" | claude \
+  --dangerously-skip-permissions \
+  --max-turns 75
 
-    EXIT_CODE=\$?
+EXIT_CODE=$?
 
-    echo ''
-    echo '═══════════════════════════════════════════════════════════════'
-    echo \"Curator finished at \$(date) with exit code \$EXIT_CODE\"
-    echo '═══════════════════════════════════════════════════════════════'
+echo ''
+echo '═══════════════════════════════════════════════════════════════'
+echo "Curator finished at $(date) with exit code $EXIT_CODE"
+echo '═══════════════════════════════════════════════════════════════'
 
-    # Mark window as done
-    tmux rename-window -t '$TMUX_SESSION:$window_name' '[done] $window_name' 2>/dev/null || true
+# Mark window as done
+tmux rename-window -t "$TMUX_SESSION:$WINDOW_NAME" "[done] $WINDOW_NAME" 2>/dev/null || true
 
-    # Commit any remaining work
-    echo 'Committing any uncommitted work...'
-    cd '$WORKTREE_PATH'
-    if [[ -n \"\$(git status --porcelain)\" ]]; then
-      git add -A
-      git commit -m 'wip: curator session \$(date +%Y%m%d-%H%M)
+# Commit any remaining work
+echo 'Committing any uncommitted work...'
+cd "$WORKTREE"
+if [[ -n "$(git status --porcelain)" ]]; then
+  git add -A
+  git commit -m "wip: curator session $(date +%Y%m%d-%H%M)
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>' || true
-    fi
-    git push origin '$BRANCH_NAME' || true
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>" || true
+fi
+git push origin "$BRANCH_NAME" || true
 
-    echo ''
-    echo 'Press Enter to close this window...'
-    read -r
-  "
+echo ''
+echo 'Press Enter to close this window...'
+read -r
+RUNNER_EOF
+
+  chmod +x "$runner_script"
+
+  # Create the tmux window running the script
+  tmux new-window -t "$TMUX_SESSION" -n "$window_name" \
+    "$runner_script" "$prompt_file" "$WORKTREE_PATH" "$window_name" "$TMUX_SESSION" "$BRANCH_NAME"
 
   log "Curator started in tmux window: $window_name"
 }
