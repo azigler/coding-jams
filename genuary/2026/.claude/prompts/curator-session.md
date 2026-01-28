@@ -106,7 +106,8 @@ src/museum/
 │   └── gallery.ts    # Main octagonal gallery with skylight
 └── exhibits/
     ├── index.ts      # Export aggregator
-    └── frame.ts      # Framed exhibit system for 2D artwork
+    ├── frame.ts      # Framed exhibit system for 2D artwork
+    └── placard.ts    # Information panels for exhibits
 ```
 
 The harness routes `#museum` to your code via `src/harness/navigation.ts`.
@@ -162,15 +163,23 @@ bun run museum:test
 - Keep collision checking separate from movement calculation for maintainability
 - Document floor plans in architecture.md with ASCII diagrams — very helpful for understanding
 
+### Session 2026-01-28 (Placard System)
+
+- For WebGL Playwright screenshots, use `chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader'] })`
+- Canvas textures need high resolution (4x scale) for crisp text in 3D
+- Store day info/prompt data centrally in the placard module for easy updates
+- Position placards below frames with a small gap for visual separation
+- Use `window.museumSetCamera()` and `window.museumLookAt()` debug APIs for positioning test screenshots
+
 ---
 
 ## Current Priorities
 
 *Updated by the Curator Agent based on what's most important next.*
 
-1. **Placard system** (mu-2ww) — Add information panels for exhibits
-2. **Integrate actual day artwork** — Replace placeholders with real screenshots/textures
-3. **Wing corridors** — Build connections from gallery to the 3 unfinished wings
+1. **Integrate actual day artwork** — Replace placeholders with real screenshots/textures
+2. **Wing corridors** — Build connections from gallery to the 3 unfinished wings
+3. **Improve placard visibility** — Consider adding spotlight or higher contrast
 
 ---
 

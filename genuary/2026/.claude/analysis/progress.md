@@ -120,4 +120,36 @@ Each session entry should include:
 
 ---
 
+### 2026-01-28 — Placard System Implementation
+
+**Beads worked**: mu-2ww (closed)
+
+**Accomplished**:
+- Implemented placard system for exhibit information panels:
+  - Created `src/museum/exhibits/placard.ts` with canvas-texture rendering
+  - Defined `DayInfo` type with day number, title, description, and credit
+  - Added prompt data for all 31 Genuary days
+  - Placards show day number badge, title, and description
+  - Uses high-resolution canvas (4x scale) for crisp text
+- Integrated placards into gallery exhibits:
+  - Updated `GalleryZone` interface to track placards
+  - Position placards below each exhibit frame
+  - Proper dispose of placard resources on cleanup
+- Exported placard functions from exhibits module
+
+**Tested**:
+- TypeScript compilation passes
+- Build succeeds with no errors
+- Playwright screenshots confirm museum renders with exhibits and placards
+- Placards visible below exhibit frames in gallery
+
+**Blockers**: None
+
+**Next session**:
+- Integrate actual day artwork as textures (replace placeholders)
+- Build wing corridors (North, East, West) to expand navigable space
+- Consider improving placard visibility with better lighting or contrast
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
