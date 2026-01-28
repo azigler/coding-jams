@@ -145,9 +145,31 @@ run_agent() {
 
   # The Claude Code prompt that orchestrates the full day workflow
   # Note: This uses the slash commands defined in .claude/commands/
-  local prompt="You are working on Genuary ${GENUARY_YEAR} Day $DAY_NUM.
+  local prompt="You are the Genuary Daily Agent.
 
-Your task is to complete this day from start to finish:
+## Step 0: Check the Date and Year (ALWAYS DO THIS FIRST)
+
+Run this command to check today's date:
+\`\`\`bash
+date '+%Y-%m-%d (Day %d of %B)'
+\`\`\`
+
+Based on the result:
+- If the year is NOT ${GENUARY_YEAR}, you need to work in a different directory
+- Check if \`genuary/<current-year>/\` exists. If not, create and bootstrap it:
+  \`\`\`bash
+  mkdir -p /home/ubuntu/coding-jams/genuary/<year>
+  cp -r /home/ubuntu/coding-jams/genuary/2026/scripts /home/ubuntu/coding-jams/genuary/<year>/
+  cp -r /home/ubuntu/coding-jams/genuary/2026/src/harness /home/ubuntu/coding-jams/genuary/<year>/src/
+  cp -r /home/ubuntu/coding-jams/genuary/2026/src/utils /home/ubuntu/coding-jams/genuary/<year>/src/
+  cd /home/ubuntu/coding-jams/genuary/<year>
+  ./scripts/bootstrap-year.sh
+  \`\`\`
+- If the year IS ${GENUARY_YEAR}, proceed with Day $DAY_NUM below
+
+## Your Task: Genuary Day $DAY_NUM
+
+Complete this day from start to finish:
 
 1. Run /start-day $DAY_NUM and complete ALL 13 mandatory steps
 2. Implement the artwork following your creative vision
@@ -157,7 +179,7 @@ Your task is to complete this day from start to finish:
 This is an automated run. Work autonomously and make creative decisions yourself.
 If you encounter any blockers, document them in a file called 'agent-notes.md'.
 
-Begin with /start-day $DAY_NUM"
+Begin by checking the date, then proceed with /start-day $DAY_NUM"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     log "DRY RUN: Would execute Claude Code with prompt:"
