@@ -139,8 +139,73 @@ Scene
 
 ---
 
+---
+
+## Current Floor Plan (as of 2026-01-28)
+
+```
+                    ┌─────────────────┐
+                    │   North Wing    │
+                    │  (Sculptural)   │
+                    │   [Future]      │
+                    └────────┬────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+    ┌────┴────┐    ┌─────────┴─────────┐    ┌────┴────┐
+    │  West   │    │                   │    │  East   │
+    │  Wing   │────│   Main Gallery    │────│  Wing   │
+    │ [Future]│    │   (Octagonal)     │    │[Future] │
+    └─────────┘    │   radius=12m      │    └─────────┘
+                   │   height=6m       │
+                   │                   │
+                   │ ⭐ Central        │
+                   │   Pedestal        │
+                   │                   │
+                   └─────────┬─────────┘
+                             │
+                    ┌────────┴────────┐
+                    │                 │
+                    │   Entrance      │
+                    │   Hallway       │
+                    │   (Day 17)      │
+                    │                 │
+                    │   4m × 20m      │
+                    │                 │
+                    ├─────────────────┤
+                    │   🚪 Entry      │
+                    │   (Spawn)       │
+                    └─────────────────┘
+```
+
+### Implemented Zones
+
+| Zone | Dimensions | Status | Description |
+|------|------------|--------|-------------|
+| Entrance Hallway | 4m W × 3.5m H × 20m L | ✅ Done | Day 17 p4m wallpaper, sconce lights |
+| Main Gallery | 12m radius, 6m height | ✅ Done | Octagonal, skylight, 4 exhibits, central pedestal |
+| North Wing | TBD | ❌ Planned | Sculptural pieces |
+| East Wing | TBD | ❌ Planned | Framed 2D works |
+| West Wing | TBD | ❌ Planned | Architectural integrations |
+
+### Day Placement Plan
+
+**Main Gallery (4 walls with frames):**
+- Wall 1: Day 1 (placeholder)
+- Wall 3: Day 7 (placeholder)
+- Wall 5: Day 11 (placeholder)
+- Wall 7: Day 13 (placeholder)
+
+**Future Wings:**
+- North Wing: Days 11, 12, 20 (sculptural/3D)
+- East Wing: Days 7, 21, 22, 23, 24 (framed 2D)
+- West Wing: Days 8, 9, 15, 16 (architectural)
+
+---
+
 ## Change Log
 
 | Date | Change |
 |------|--------|
 | 2026-01-27 | Initial document created |
+| 2026-01-28 | Added current floor plan and zone status |

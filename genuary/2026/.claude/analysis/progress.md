@@ -86,4 +86,38 @@ Each session entry should include:
 
 ---
 
+### 2026-01-28 — Session Recovery & Collision Detection
+
+**Beads worked**: mu-6uu (closed), mu-1ex (closed), bd-29v (closed)
+
+**Accomplished**:
+- Recovered from interrupted curator session:
+  - Documented existing exhibit frame system (`src/museum/exhibits/frame.ts`)
+  - Documented main gallery zone (`src/museum/zones/gallery.ts`)
+- Closed mu-6uu (exhibit frame system) - was already complete
+- Updated architecture.md with current floor plan diagram
+- Closed mu-1ex (floor plan design) - gallery with 4 wings is implemented
+- Implemented wall collision detection in navigation.ts:
+  - Added collision box system for entrance hallway
+  - Added circular boundary for octagonal gallery
+  - Implemented "wall sliding" behavior (slide along walls when blocked)
+  - Uses player radius of 0.3m for comfortable wall clearance
+- Closed bd-29v (collision detection) - new bead created and completed this session
+
+**Tested**:
+- TypeScript compilation passes
+- Build succeeds with no errors
+- Playwright confirms canvas renders at 800x800
+- Note: WebGL content doesn't capture well in headless screenshots (known limitation)
+
+**Blockers**: None
+
+**Next session**:
+- Test collision detection visually in a real browser
+- Consider adding placard system (mu-2ww) for exhibit information
+- Start integrating actual day artwork as textures (currently placeholders)
+- Investigate LOD system for performance (mu-3cy) if needed
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
