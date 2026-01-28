@@ -167,9 +167,22 @@ async function captureDay(options: CaptureOptions): Promise<CaptureResult> {
     console.log(`Navigating to ${url}`);
     await page.goto(url, { waitUntil: 'networkidle' });
 
-    // Wait for canvas to be ready
-    console.log('Waiting for canvas...');
-    await page.waitForSelector('canvas', { timeout: 10000 });
+    // Wait for content to be ready - either canvas or HTML panel (Day 28)
+    console.log('Waiting for content...');
+    let isHtmlMode = false;
+    try {
+      await page.waitForSelector('canvas', { timeout: 5000 });
+    } catch {
+      // No canvas found, try HTML mode panel (Day 28)
+      console.log('No canvas found, checking for HTML mode panel...');
+      try {
+        await page.waitForSelector('.day28-panel', { timeout: 5000 });
+        isHtmlMode = true;
+        console.log('HTML mode panel detected');
+      } catch {
+        throw new Error('Neither canvas nor HTML panel found');
+      }
+    }
     await sleep(CANVAS_WAIT_MS);
 
     // Capture PNG
@@ -178,12 +191,14 @@ async function captureDay(options: CaptureOptions): Promise<CaptureResult> {
       await sleep(PNG_DELAY_MS);
 
       try {
-        // Get canvas element and capture screenshot directly
-        const canvas = await page.locator('canvas').first();
+        // Get either canvas or HTML panel element
+        const targetElement = isHtmlMode
+          ? await page.locator('.day28-panel').first()
+          : await page.locator('canvas').first();
         const pngFilename = `genuary-2026-day-${dayStr}-${timestamp}.png`;
         const pngPath = path.join(OUTPUT_DIR, pngFilename);
 
-        await canvas.screenshot({ path: pngPath });
+        await targetElement.screenshot({ path: pngPath });
         result.pngPath = pngPath;
         console.log(`PNG saved: ${pngPath}`);
       } catch (error) {
