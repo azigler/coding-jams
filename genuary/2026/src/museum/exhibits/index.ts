@@ -14,3 +14,14 @@ export {
   type ExhibitFrame,
   type FrameConfig,
 } from './frame';
+
+export {
+  createPlacard,
+  disposePlacard,
+  getDayInfo,
+  dayInfoMap,
+  defaultPlacardConfig,
+  type Placard,
+  type PlacardConfig,
+  type DayInfo,
+} from './placard';

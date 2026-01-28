@@ -16,7 +16,10 @@ import {
   createExhibitFrame,
   setPlaceholderTexture,
   disposeExhibitFrame,
+  createPlacard,
+  disposePlacard,
   type ExhibitFrame,
+  type Placard,
 } from '../exhibits';
 
 // ============================================================================
@@ -27,6 +30,7 @@ export interface GalleryZone {
   group: THREE.Group;
   skylightMesh: THREE.Mesh;
   exhibits: ExhibitFrame[];
+  placards: Placard[];
   time: number;
 }
 
@@ -140,12 +144,13 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   createDoorways(group, cfg);
 
   // Exhibit frames on non-doorway walls (walls 1, 3, 5, 7)
-  const exhibits = createExhibits(group, cfg);
+  const { exhibits, placards } = createExhibits(group, cfg);
 
   return {
     group,
     skylightMesh,
     exhibits,
+    placards,
     time: 0,
   };
 }
@@ -430,8 +435,12 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
  * Create exhibit frames on the non-doorway walls (walls 1, 3, 5, 7)
  * These walls are between the doorways at positions 0, 2, 4, 6
  */
-function createExhibits(group: THREE.Group, cfg: GalleryConfig): ExhibitFrame[] {
+function createExhibits(
+  group: THREE.Group,
+  cfg: GalleryConfig
+): { exhibits: ExhibitFrame[]; placards: Placard[] } {
   const exhibits: ExhibitFrame[] = [];
+  const placards: Placard[] = [];
   const angleStep = (Math.PI * 2) / cfg.numSides;
   const wallDist = cfg.radius * Math.cos(angleStep / 2);
 
@@ -439,6 +448,12 @@ function createExhibits(group: THREE.Group, cfg: GalleryConfig): ExhibitFrame[] 
   // Place one exhibit on each wall
   const exhibitWalls = [1, 3, 5, 7];
   const dayNumbers = [1, 7, 11, 13]; // Featured days to display
+
+  // Frame configuration
+  const frameWidth = 1.8;
+  const frameHeight = 1.2;
+  const frameConfig = { frameWidth: 0.06, matteWidth: 0.03 };
+  const totalFrameHeight = frameHeight + (frameConfig.frameWidth + frameConfig.matteWidth) * 2;
 
   exhibitWalls.forEach((wallIndex, i) => {
     const angle = wallIndex * angleStep - Math.PI / cfg.numSides + angleStep / 2;
@@ -450,8 +465,8 @@ function createExhibits(group: THREE.Group, cfg: GalleryConfig): ExhibitFrame[] 
 
     // Create the frame
     const frame = createExhibitFrame(dayNumbers[i], {
-      width: 1.8,
-      height: 1.2,
+      width: frameWidth,
+      height: frameHeight,
     });
 
     // Position and rotate to face center
@@ -460,6 +475,17 @@ function createExhibits(group: THREE.Group, cfg: GalleryConfig): ExhibitFrame[] 
 
     // Set placeholder for now
     setPlaceholderTexture(frame);
+
+    // Create placard below the frame
+    const placard = createPlacard(dayNumbers[i]);
+    const placardY = y - totalFrameHeight / 2 - 0.12; // Below frame with gap
+    placard.group.position.set(x, placardY, z);
+    placard.group.rotation.y = angle + Math.PI; // Same rotation as frame
+    // Move placard slightly forward to avoid z-fighting
+    placard.group.position.x += Math.sin(angle + Math.PI) * 0.02;
+    placard.group.position.z -= Math.cos(angle + Math.PI) * 0.02;
+    group.add(placard.group);
+    placards.push(placard);
 
     // Add spotlight for this exhibit
     const spotlight = new THREE.SpotLight(0xffffee, 1.5, 8, Math.PI / 8, 0.5, 1);
@@ -479,7 +505,7 @@ function createExhibits(group: THREE.Group, cfg: GalleryConfig): ExhibitFrame[] 
     exhibits.push(frame);
   });
 
-  return exhibits;
+  return { exhibits, placards };
 }
 
 // ============================================================================
@@ -509,6 +535,11 @@ export function disposeGalleryZone(zone: GalleryZone): void {
   // Dispose exhibits
   zone.exhibits.forEach((exhibit) => {
     disposeExhibitFrame(exhibit);
+  });
+
+  // Dispose placards
+  zone.placards.forEach((placard) => {
+    disposePlacard(placard);
   });
 
   // Dispose of all geometries and materials in the group
