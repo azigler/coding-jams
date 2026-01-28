@@ -20,10 +20,15 @@ After=network-online.target
 [Service]
 Type=oneshot
 TimeoutStartSec=7200
+
+# IMPORTANT: Systemd doesn't inherit user PATH - must set explicitly
+# Include paths for: claude CLI, bun, cargo (for br), standard bins
+Environment="PATH=/home/ubuntu/.local/bin:/home/ubuntu/.bun/bin:/home/ubuntu/.cargo/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="HOME=/home/ubuntu"
+Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
+
 ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/curator-agent.sh
 WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
-
-Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
 
 MemoryMax=4G
 CPUQuota=100%

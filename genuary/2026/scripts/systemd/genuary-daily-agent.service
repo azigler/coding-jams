@@ -27,13 +27,16 @@ After=network-online.target
 [Service]
 Type=oneshot
 TimeoutStartSec=3600
+
+# IMPORTANT: Systemd doesn't inherit user PATH - must set explicitly
+# Include paths for: claude CLI, bun, cargo (for br), standard bins
+Environment="PATH=/home/ubuntu/.local/bin:/home/ubuntu/.bun/bin:/home/ubuntu/.cargo/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="HOME=/home/ubuntu"
+Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
+
 # Adjust path to your installation
 ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent.sh
 WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
-
-# Environment - set your API keys here or in a separate EnvironmentFile
-Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
-# EnvironmentFile=/home/ubuntu/.config/genuary/env
 
 # Resource limits
 MemoryMax=4G
