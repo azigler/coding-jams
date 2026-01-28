@@ -1,18 +1,22 @@
-# Genuary 2026 Curator Agent Service
+# Genuary Curator Agent Service (Multi-Year Support)
 #
 # Runs the Curator Agent for incremental museum development.
 # Triggered by the accompanying timer unit.
 #
 # Installation:
-#   cp genuary-curator-agent.service ~/.config/systemd/user/
-#   cp genuary-curator-agent.timer ~/.config/systemd/user/
-#   systemctl --user daemon-reload
-#   systemctl --user enable genuary-curator-agent.timer
-#   systemctl --user start genuary-curator-agent.timer
+#   1. Copy files to ~/.config/systemd/user/
+#   2. Update paths below for current year
+#   3. systemctl --user daemon-reload
+#   4. systemctl --user enable genuary-curator-agent.timer
+#   5. systemctl --user start genuary-curator-agent.timer
+#
+# Multi-Year Notes:
+#   - Update paths each January
+#   - Timer uses *-01-* which works for any year
 #
 
 [Unit]
-Description=Genuary 2026 Curator Agent (Museum Builder)
+Description=Genuary Curator Agent (Museum Builder, January only)
 Documentation=https://github.com/azigler/coding-jams
 Wants=network-online.target
 After=network-online.target
@@ -21,11 +25,17 @@ After=network-online.target
 Type=oneshot
 TimeoutStartSec=7200
 
+# ============================================================================
+# CONFIGURE THESE PATHS FOR YOUR INSTALLATION
+# Update the year (2026, 2027, etc.) as needed each January
+# ============================================================================
+
 # IMPORTANT: Systemd doesn't inherit user PATH - must set explicitly
 # Include paths for: claude CLI, bun, cargo (for br), standard bins
 Environment="PATH=/home/ubuntu/.local/bin:/home/ubuntu/.bun/bin:/home/ubuntu/.cargo/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="HOME=/home/ubuntu"
 Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
+# Environment="GENUARY_YEAR=2026"
 
 ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/curator-agent.sh
 WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026

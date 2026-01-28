@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Genuary 2026 Daily Agent Automation
+# Genuary Daily Agent Automation (Multi-Year Support)
 #
 # This script is designed to be run by cron or systemd to automatically
 # kick off a Day Agent for the current Genuary day.
@@ -11,12 +11,13 @@
 #   ./scripts/daily-agent.sh --dry-run # Show what would happen
 #
 # Environment variables:
-#   GENUARY_REPO_PATH  - Path to the genuary/2026 directory
+#   GENUARY_YEAR       - Override the detected year (e.g., 2027)
+#   GENUARY_REPO_PATH  - Path to the genuary/YYYY directory
 #   CLAUDE_API_KEY     - Required for Claude Code CLI
 #   GITHUB_TOKEN       - Required for PR creation via gh
 #
 # Cron example (6:30 AM Pacific = 14:30 UTC):
-#   30 14 1-31 1 * /home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent.sh
+#   30 14 1-31 1 * /path/to/genuary/YYYY/scripts/daily-agent.sh
 #
 # systemd timer example in accompanying file: genuary-daily-agent.timer
 #
@@ -28,6 +29,10 @@ set -euo pipefail
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source the year configuration library
+source "${SCRIPT_DIR}/lib/year-config.sh"
+
 REPO_PATH="${GENUARY_REPO_PATH:-$(dirname "$SCRIPT_DIR")}"
 LOG_DIR="${REPO_PATH}/logs"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -140,7 +145,7 @@ run_agent() {
 
   # The Claude Code prompt that orchestrates the full day workflow
   # Note: This uses the slash commands defined in .claude/commands/
-  local prompt="You are working on Genuary 2026 Day $DAY_NUM.
+  local prompt="You are working on Genuary ${GENUARY_YEAR} Day $DAY_NUM.
 
 Your task is to complete this day from start to finish:
 
@@ -189,8 +194,9 @@ main() {
   mkdir -p "$LOG_DIR"
 
   log "=========================================="
-  log "Genuary 2026 Daily Agent"
+  log "Genuary ${GENUARY_YEAR} Daily Agent"
   log "=========================================="
+  log "Year: $GENUARY_YEAR"
   log "Day: $DAY_NUM"
   log "Repo: $REPO_PATH"
   log "Log: $LOG_FILE"

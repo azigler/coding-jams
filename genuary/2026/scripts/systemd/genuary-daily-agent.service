@@ -1,14 +1,20 @@
-# Genuary 2026 Daily Agent Service
+# Genuary Daily Agent Service (Multi-Year Support)
 #
 # This is a oneshot service that runs the daily agent script.
 # It's triggered by the accompanying timer unit.
 #
 # Installation:
-#   cp genuary-daily-agent.service ~/.config/systemd/user/
-#   cp genuary-daily-agent.timer ~/.config/systemd/user/
-#   systemctl --user daemon-reload
-#   systemctl --user enable genuary-daily-agent.timer
-#   systemctl --user start genuary-daily-agent.timer
+#   1. Copy this file: cp genuary-daily-agent.service ~/.config/systemd/user/
+#   2. Copy timer: cp genuary-daily-agent.timer ~/.config/systemd/user/
+#   3. Edit the paths below to match your installation and current year
+#   4. Reload: systemctl --user daemon-reload
+#   5. Enable: systemctl --user enable genuary-daily-agent.timer
+#   6. Start: systemctl --user start genuary-daily-agent.timer
+#
+# Multi-Year Notes:
+#   - Update GENUARY_YEAR and paths each January
+#   - The script auto-detects year from directory, but explicit is safer
+#   - Timer uses *-01-* which works for any year
 #
 # Check status:
 #   systemctl --user status genuary-daily-agent.timer
@@ -19,7 +25,7 @@
 #
 
 [Unit]
-Description=Genuary 2026 Daily Agent
+Description=Genuary Daily Agent (runs during January)
 Documentation=https://github.com/azigler/coding-jams
 Wants=network-online.target
 After=network-online.target
@@ -28,13 +34,21 @@ After=network-online.target
 Type=oneshot
 TimeoutStartSec=7200
 
+# ============================================================================
+# CONFIGURE THESE PATHS FOR YOUR INSTALLATION
+# Update the year (2026, 2027, etc.) as needed each January
+# ============================================================================
+
 # IMPORTANT: Systemd doesn't inherit user PATH - must set explicitly
 # Include paths for: claude CLI, bun, cargo (for br), standard bins
 Environment="PATH=/home/ubuntu/.local/bin:/home/ubuntu/.bun/bin:/home/ubuntu/.cargo/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="HOME=/home/ubuntu"
 Environment="GENUARY_REPO_PATH=/home/ubuntu/coding-jams/genuary/2026"
+# Environment="GENUARY_YEAR=2026"
 
-# Adjust path to your installation
+# Optional: Load API keys from a separate file
+# EnvironmentFile=/home/ubuntu/.config/genuary/env
+
 ExecStart=/home/ubuntu/coding-jams/genuary/2026/scripts/daily-agent.sh
 WorkingDirectory=/home/ubuntu/coding-jams/genuary/2026
 

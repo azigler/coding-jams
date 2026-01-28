@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Genuary 2026 Curator Agent Orchestrator
+# Genuary Curator Agent Orchestrator (Multi-Year Support)
 #
 # This script runs the Curator Agent for incremental museum development.
 # It manages the worktree, PR, and session workflow.
@@ -11,7 +11,8 @@
 #   ./scripts/curator-agent.sh --setup   # First-time setup only
 #
 # Environment:
-#   GENUARY_REPO_PATH  - Path to genuary/2026 (default: script's parent)
+#   GENUARY_YEAR       - Override the detected year (e.g., 2027)
+#   GENUARY_REPO_PATH  - Path to genuary/YYYY (default: script's parent)
 #   CLAUDE_API_KEY     - Required for Claude Code CLI
 #   GITHUB_TOKEN       - Required for gh CLI
 #
@@ -23,12 +24,16 @@ set -euo pipefail
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source the year configuration library
+source "${SCRIPT_DIR}/lib/year-config.sh"
+
 REPO_PATH="${GENUARY_REPO_PATH:-$(dirname "$SCRIPT_DIR")}"
 # Worktree is a sibling of coding-jams, not nested inside it
-# coding-jams/genuary/2026 -> coding-jams -> /home/ubuntu -> coding-jams-museum-wip
+# coding-jams/genuary/YYYY -> coding-jams -> /home/ubuntu -> coding-jams-museum-wip
 GIT_ROOT="$(cd "$REPO_PATH/../.." && pwd)"
 WORKTREE_ROOT="$(dirname "$GIT_ROOT")/coding-jams-museum-wip"
-WORKTREE_PATH="${WORKTREE_ROOT}/genuary/2026"
+WORKTREE_PATH="${WORKTREE_ROOT}/genuary/${GENUARY_YEAR}"
 LOG_DIR="${REPO_PATH}/logs/curator"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="${LOG_DIR}/session-${TIMESTAMP}.log"
@@ -168,10 +173,10 @@ find_or_create_pr() {
     --title "$PR_TITLE" \
     --base main \
     --head "$BRANCH_NAME" \
-    --body "$(cat <<'EOF'
-## Virtual Museum for Genuary 2026
+    --body "$(cat <<EOF
+## Virtual Museum for Genuary ${GENUARY_YEAR}
 
-This PR contains the incremental development of the WebXR virtual museum that showcases all 31 days of Genuary 2026.
+This PR contains the incremental development of the WebXR virtual museum that showcases all 31 days of Genuary ${GENUARY_YEAR}.
 
 ### Vision
 A navigable 3D space where visitors walk *through* art that has become architecture.
@@ -301,8 +306,9 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>" || true
 
 main() {
   log "=========================================="
-  log "Genuary 2026 Curator Agent"
+  log "Genuary ${GENUARY_YEAR} Curator Agent"
   log "=========================================="
+  log "Year: $GENUARY_YEAR"
   log "Repo: $REPO_PATH"
   log "Git root: $GIT_ROOT"
   log "Worktree root: $WORKTREE_ROOT"
