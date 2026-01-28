@@ -5,12 +5,17 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source year configuration for multi-year support
+# shellcheck source=lib/year-config.sh
+source "$SCRIPT_DIR/lib/year-config.sh"
+
 REPO_PATH="${GENUARY_REPO_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
 # Configuration
 TMUX_SESSION="genuary-agents"
 WORKTREE_ROOT="/home/ubuntu/coding-jams-museum-wip"
-WORKTREE_PATH="$WORKTREE_ROOT/genuary/2026"
+WORKTREE_PATH="$WORKTREE_ROOT/genuary/$GENUARY_YEAR"
 BRANCH_NAME="feat/genuary-museum"
 GIT_ROOT="/home/ubuntu/coding-jams"
 PROMPT_FILE="$WORKTREE_PATH/.claude/prompts/curator-session.md"
