@@ -209,23 +209,28 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
   ceiling.position.set(0, cfg.hallHeight, -cfg.hallLength / 2);
   group.add(ceiling);
 
-  // Left wall
+  // Create a separate texture for long walls with different repeat
+  const longWallTexture = new THREE.CanvasTexture(wallpaperCanvas);
+  longWallTexture.wrapS = THREE.RepeatWrapping;
+  longWallTexture.wrapT = THREE.RepeatWrapping;
+  longWallTexture.repeat.set(cfg.hallLength / 4, 1);
+
+  // Left wall - uses shared long wall texture
   const leftWallGeom = new THREE.PlaneGeometry(cfg.hallLength, cfg.hallHeight);
-  const leftWallMaterial = wallMaterial.clone();
-  leftWallMaterial.map = wallpaperTexture.clone();
-  (leftWallMaterial.map as THREE.Texture).repeat.set(cfg.hallLength / 4, 1);
+  const leftWallMaterial = new THREE.MeshStandardMaterial({
+    map: longWallTexture,
+    roughness: 0.8,
+    metalness: 0.0,
+  });
   const leftWall = new THREE.Mesh(leftWallGeom, leftWallMaterial);
   leftWall.rotation.y = Math.PI / 2;
   leftWall.position.set(-cfg.hallWidth / 2, cfg.hallHeight / 2, -cfg.hallLength / 2);
   leftWall.receiveShadow = true;
   group.add(leftWall);
 
-  // Right wall
+  // Right wall - shares material with left wall
   const rightWallGeom = new THREE.PlaneGeometry(cfg.hallLength, cfg.hallHeight);
-  const rightWallMaterial = wallMaterial.clone();
-  rightWallMaterial.map = wallpaperTexture.clone();
-  (rightWallMaterial.map as THREE.Texture).repeat.set(cfg.hallLength / 4, 1);
-  const rightWall = new THREE.Mesh(rightWallGeom, rightWallMaterial);
+  const rightWall = new THREE.Mesh(rightWallGeom, leftWallMaterial); // Shared material
   rightWall.rotation.y = -Math.PI / 2;
   rightWall.position.set(cfg.hallWidth / 2, cfg.hallHeight / 2, -cfg.hallLength / 2);
   rightWall.receiveShadow = true;
@@ -251,6 +256,7 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
     const z = -2 - i * 5;
 
     // Left sconce light
+    // Note: Shadows disabled to reduce texture unit usage (8 sconces × 2 shadows = 16 shadow maps)
     const leftLight = new THREE.PointLight(
       new THREE.Color().setHSL(cfg.lightWarmth, 0.8, 0.6),
       1.5,
@@ -258,9 +264,7 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
       2
     );
     leftLight.position.set(-cfg.hallWidth / 2 + 0.3, cfg.hallHeight * 0.7, z);
-    leftLight.castShadow = true;
-    leftLight.shadow.mapSize.width = 256;
-    leftLight.shadow.mapSize.height = 256;
+    leftLight.castShadow = false; // Disabled for performance
     group.add(leftLight);
     sconceLights.push(leftLight);
 
@@ -272,9 +276,7 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
       2
     );
     rightLight.position.set(cfg.hallWidth / 2 - 0.3, cfg.hallHeight * 0.7, z);
-    rightLight.castShadow = true;
-    rightLight.shadow.mapSize.width = 256;
-    rightLight.shadow.mapSize.height = 256;
+    rightLight.castShadow = false; // Disabled for performance
     group.add(rightLight);
     sconceLights.push(rightLight);
 
@@ -323,11 +325,11 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
   topFrame.position.set(0, doorwayHeight + 0.1, -cfg.hallLength);
   group.add(topFrame);
 
-  // Wall sections around doorway
+  // Wall sections around doorway - share wallMaterial (no cloning)
   const sideWallWidth = (cfg.hallWidth - doorwayWidth) / 2 - 0.1;
   const sideWallGeom = new THREE.PlaneGeometry(sideWallWidth, cfg.hallHeight);
 
-  const leftSideWall = new THREE.Mesh(sideWallGeom, wallMaterial.clone());
+  const leftSideWall = new THREE.Mesh(sideWallGeom, wallMaterial);
   leftSideWall.position.set(
     -cfg.hallWidth / 2 + sideWallWidth / 2,
     cfg.hallHeight / 2,
@@ -335,7 +337,7 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
   );
   group.add(leftSideWall);
 
-  const rightSideWall = new THREE.Mesh(sideWallGeom, wallMaterial.clone());
+  const rightSideWall = new THREE.Mesh(sideWallGeom, wallMaterial);
   rightSideWall.position.set(
     cfg.hallWidth / 2 - sideWallWidth / 2,
     cfg.hallHeight / 2,
@@ -345,7 +347,7 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
 
   // Top section above doorway
   const topWallGeom = new THREE.PlaneGeometry(doorwayWidth, cfg.hallHeight - doorwayHeight - 0.2);
-  const topWall = new THREE.Mesh(topWallGeom, wallMaterial.clone());
+  const topWall = new THREE.Mesh(topWallGeom, wallMaterial);
   topWall.position.set(
     0,
     doorwayHeight + (cfg.hallHeight - doorwayHeight) / 2,

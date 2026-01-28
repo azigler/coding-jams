@@ -72,14 +72,14 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   const galleryZ = -20 - cfg.radius;
   group.position.set(0, 0, galleryZ);
 
-  // Floor - octagonal with polished look
+  // Floor - octagonal with polished look (brighter for visibility)
   const floorGeom = createOctagonGeometry(cfg.radius, cfg.numSides);
   const floorMaterial = new THREE.MeshStandardMaterial({
-    color: cfg.floorColor,
-    roughness: 0.2,
-    metalness: 0.3,
-    emissive: 0x0a0a0f,
-    emissiveIntensity: 0.2,
+    color: 0x252530,
+    roughness: 0.15,
+    metalness: 0.4,
+    emissive: 0x151520,
+    emissiveIntensity: 0.3,
   });
   const floor = new THREE.Mesh(floorGeom, floorMaterial);
   floor.rotation.x = -Math.PI / 2;
@@ -99,16 +99,16 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   ceiling.position.y = cfg.height;
   group.add(ceiling);
 
-  // Skylight (glass dome effect)
+  // Skylight (glass dome effect) - brighter glow for better ambience
   const skylightGeom = new THREE.CircleGeometry(cfg.skylightRadius, 32);
   const skylightMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3a4a6a,
+    color: 0x6080b0,
     roughness: 0.1,
-    metalness: 0.3,
-    emissive: 0x1a2a4a,
-    emissiveIntensity: 0.3,
+    metalness: 0.2,
+    emissive: 0x4060a0,
+    emissiveIntensity: 0.6,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.8,
     side: THREE.DoubleSide,
   });
   const skylightMesh = new THREE.Mesh(skylightGeom, skylightMaterial);
@@ -116,23 +116,36 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   skylightMesh.position.y = cfg.height + 0.1;
   group.add(skylightMesh);
 
-  // Skylight light source - main illumination from above
-  const skylightLight = new THREE.PointLight(0x8090b0, 4, 40, 1);
+  // Skylight light source - main illumination from above (brighter for visibility)
+  const skylightLight = new THREE.PointLight(0xa0b0d0, 8, 50, 1);
   skylightLight.position.set(0, cfg.height - 0.5, 0);
   skylightLight.castShadow = true;
   skylightLight.shadow.mapSize.width = 1024;
   skylightLight.shadow.mapSize.height = 1024;
   group.add(skylightLight);
 
-  // Ambient fill light - fills in the shadows
-  const ambientFill = new THREE.PointLight(0x606070, 1.5, 35, 2);
+  // Ambient fill light - fills in the shadows (stronger)
+  const ambientFill = new THREE.PointLight(0x8090a0, 3, 45, 1.5);
   ambientFill.position.set(0, cfg.height / 2, 0);
   group.add(ambientFill);
 
-  // Additional ambient at floor level
-  const floorFill = new THREE.PointLight(0x303040, 0.8, 20, 2);
+  // Additional ambient at floor level (stronger for better floor visibility)
+  const floorFill = new THREE.PointLight(0x505060, 2, 30, 1.5);
   floorFill.position.set(0, 1, 0);
   group.add(floorFill);
+
+  // Secondary overhead lights in a ring pattern for better coverage
+  const ringRadius = cfg.radius * 0.6;
+  for (let i = 0; i < 4; i++) {
+    const angle = (i * Math.PI * 2) / 4 + Math.PI / 4; // Offset to be between walls
+    const ringLight = new THREE.PointLight(0x9090a0, 2, 15, 2);
+    ringLight.position.set(
+      Math.cos(angle) * ringRadius,
+      cfg.height - 1,
+      Math.sin(angle) * ringRadius
+    );
+    group.add(ringLight);
+  }
 
   // Walls
   createWalls(group, cfg);
@@ -232,8 +245,8 @@ function createWalls(group: THREE.Group, cfg: GalleryConfig): void {
     color: cfg.wallColor,
     roughness: 0.85,
     metalness: 0.05,
-    emissive: 0x101015,
-    emissiveIntensity: 0.3,
+    emissive: 0x202030,
+    emissiveIntensity: 0.4,
   });
 
   for (let i = 0; i < cfg.numSides; i++) {
@@ -416,13 +429,11 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
   top.receiveShadow = true;
   group.add(top);
 
-  // Spotlight on pedestal
-  const spotlight = new THREE.SpotLight(0xffffff, 2, 10, Math.PI / 6, 0.5, 1);
+  // Spotlight on pedestal (brighter, no shadow to reduce texture units)
+  const spotlight = new THREE.SpotLight(0xffffff, 5, 12, Math.PI / 5, 0.4, 1);
   spotlight.position.set(0, cfg.height - 0.5, 0);
   spotlight.target.position.set(0, pedestalHeight + 0.15, 0);
-  spotlight.castShadow = true;
-  spotlight.shadow.mapSize.width = 512;
-  spotlight.shadow.mapSize.height = 512;
+  spotlight.castShadow = false; // Disabled to reduce texture unit usage
   group.add(spotlight);
   group.add(spotlight.target);
 }
@@ -487,17 +498,15 @@ function createExhibits(
     group.add(placard.group);
     placards.push(placard);
 
-    // Add spotlight for this exhibit
-    const spotlight = new THREE.SpotLight(0xffffee, 1.5, 8, Math.PI / 8, 0.5, 1);
+    // Add spotlight for this exhibit (brighter, no shadows to reduce texture units)
+    const spotlight = new THREE.SpotLight(0xffffff, 4, 12, Math.PI / 6, 0.3, 1);
     spotlight.position.set(
       Math.sin(angle) * (wallDist - 2),
       cfg.height - 0.5,
       -Math.cos(angle) * (wallDist - 2)
     );
     spotlight.target.position.set(x, y, z);
-    spotlight.castShadow = true;
-    spotlight.shadow.mapSize.width = 256;
-    spotlight.shadow.mapSize.height = 256;
+    spotlight.castShadow = false; // Disabled to reduce texture unit usage
     group.add(spotlight);
     group.add(spotlight.target);
 
