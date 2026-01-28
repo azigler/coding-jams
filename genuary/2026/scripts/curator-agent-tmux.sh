@@ -13,7 +13,7 @@ source "$SCRIPT_DIR/lib/year-config.sh"
 REPO_PATH="${GENUARY_REPO_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
 # Configuration
-TMUX_SESSION="genuary-agents"
+TMUX_SESSION="agents-genuary"
 WORKTREE_ROOT="/home/ubuntu/coding-jams-museum-wip"
 WORKTREE_PATH="$WORKTREE_ROOT/genuary/$GENUARY_YEAR"
 BRANCH_NAME="feat/genuary-museum"

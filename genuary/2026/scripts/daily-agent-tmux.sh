@@ -13,7 +13,7 @@ source "$SCRIPT_DIR/lib/year-config.sh"
 REPO_PATH="${GENUARY_REPO_PATH:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
 # Configuration
-TMUX_SESSION="genuary-agents"
+TMUX_SESSION="agents-genuary"
 GIT_ROOT="/home/ubuntu/coding-jams"
 
 # Determine which day to work on
