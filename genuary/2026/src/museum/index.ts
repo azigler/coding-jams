@@ -371,6 +371,17 @@ import {
   disposeMusicPlayerSystem,
   type MusicPlayerSystem,
 } from './musicplayer';
+import {
+  createGiftShopSystem,
+  showAddItemMenu,
+  disposeGiftShopSystem,
+  type GiftShopSystem,
+} from './giftshop';
+import {
+  createMeditationSystem,
+  disposeMeditationSystem,
+  type MeditationSystem,
+} from './meditation';
 
 // ============================================================================
 // Types
@@ -432,6 +443,8 @@ export interface MuseumContext {
   weather: WeatherSystem;
   exhibitTimer: TimerSystem;
   musicPlayer: MusicPlayerSystem;
+  giftShop: GiftShopSystem;
+  meditation: MeditationSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1461,6 +1474,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create music player system (Shift+M to toggle, Shift+[/] to change tracks)
   const musicPlayer = createMusicPlayerSystem(container);
 
+  // Create gift shop system (Shift+G to view collection)
+  const giftShop = createGiftShopSystem(container);
+
+  // Create meditation system (Shift+Z for zen mode)
+  const meditation = createMeditationSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1842,6 +1861,18 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', ratingHandler);
 
+  // Gift shop add item with * key (when viewing exhibit)
+  const giftShopAddHandler = (event: KeyboardEvent) => {
+    if (!interaction.isZoomed || interaction.currentDayNumber < 1) return;
+
+    if (event.code === 'Digit8' && event.shiftKey) {
+      // Shift+8 = * for gift shop
+      event.preventDefault();
+      showAddItemMenu(giftShop, interaction.currentDayNumber, window.innerWidth / 2, window.innerHeight / 2);
+    }
+  };
+  document.addEventListener('keydown', giftShopAddHandler);
+
   // Auto-walk mode with B key (Browse/wander)
   const autoWalkHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
@@ -2045,6 +2076,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     weather,
     exhibitTimer,
     musicPlayer,
+    giftShop,
+    meditation,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2284,6 +2317,8 @@ export function disposeMuseum(): void {
   disposeWeatherSystem(context.weather);
   disposeTimerSystem(context.exhibitTimer);
   disposeMusicPlayerSystem(context.musicPlayer);
+  disposeGiftShopSystem(context.giftShop);
+  disposeMeditationSystem(context.meditation);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
