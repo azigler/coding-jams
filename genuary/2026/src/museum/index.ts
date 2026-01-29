@@ -199,6 +199,13 @@ import {
   disposeSessionSummary,
   type SessionSummary,
 } from './session-summary';
+import {
+  createCuratorNoteSystem,
+  checkCuratorNotes,
+  disposeCuratorNoteSystem,
+  type CuratorNoteSystem,
+  type NoteContext,
+} from './curator-notes';
 
 // ============================================================================
 // Types
@@ -232,6 +239,7 @@ export interface MuseumContext {
   search: SearchSystem;
   accessibility: AccessibilitySystem;
   sessionSummary: SessionSummary;
+  curatorNotes: CuratorNoteSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -991,6 +999,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create session summary (Shift+Escape to show)
   const sessionSummary = createSessionSummary(container);
 
+  // Create curator notes system (shows contextual notes as you explore)
+  const curatorNotes = createCuratorNoteSystem(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1100,6 +1111,21 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
     // Track in session summary
     recordSessionExhibit(sessionSummary, dayNumber);
+
+    // Check for curator notes
+    const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (exhibitMesh) {
+      const meshPos = new THREE.Vector3();
+      exhibitMesh.getWorldPosition(meshPos);
+      const noteContext: NoteContext = {
+        currentDay: dayNumber,
+        currentWing: getWingFromPosition(meshPos.z, meshPos.x),
+        exhibitsViewed: sessionSummary.exhibitsViewed,
+        isFirstVisit: stats.stats.sessionCount === 1,
+      };
+      // Delay note check to let other UI settle
+      setTimeout(() => checkCuratorNotes(curatorNotes, noteContext), 1500);
+    }
   };
 
   // Override onFavoriteToggle to track favorites in session summary
@@ -1409,6 +1435,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     search,
     accessibility,
     sessionSummary,
+    curatorNotes,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1585,6 +1612,7 @@ export function disposeMuseum(): void {
   disposeSearchSystem(context.search);
   disposeAccessibilitySystem(context.accessibility);
   disposeSessionSummary(context.sessionSummary);
+  disposeCuratorNoteSystem(context.curatorNotes);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
