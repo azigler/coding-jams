@@ -616,6 +616,38 @@ import {
   disposePlaylistSystem,
   type PlaylistSystem,
 } from './playlist';
+import {
+  createCuratorSystem,
+  toggleCuratorComment,
+  openTourPanel as openCuratorTourPanel,
+  curatorNext,
+  curatorPrev,
+  disposeCuratorSystem,
+  type CuratorSystem,
+} from './curator';
+import {
+  createAtmosphericsSystem,
+  cycleAtmosphericPreset,
+  disposeAtmosphericsSystem,
+  type AtmosphericsSystem,
+} from './atmospherics';
+import {
+  createComparisonSystem,
+  addToComparison,
+  toggleComparisonPanel,
+  disposeComparisonSystem,
+  type ComparisonSystem,
+} from './comparisons';
+import {
+  createTimelineSystem,
+  recordTimelineVisit,
+  recordTimelineFavorite,
+  recordTimelineScreenshot,
+  recordTimelineAchievement,
+  toggleTimelinePanel,
+  disposeTimelineSystem,
+  type TimelineSystem,
+} from './timeline';
 
 // ============================================================================
 // Types
@@ -713,6 +745,10 @@ export interface MuseumContext {
   waypoints: WaypointsSystem;
   cameraZoom: ZoomSystem;
   exhibitPlaylist: PlaylistSystem;
+  virtualCurator: CuratorSystem;
+  atmospherics: AtmosphericsSystem;
+  comparisons: ComparisonSystem;
+  visitTimeline: TimelineSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -2012,6 +2048,18 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create playlist system (Shift+P to open)
   const exhibitPlaylist = createPlaylistSystem(container);
 
+  // Create curator system (G key for commentary)
+  const virtualCurator = createCuratorSystem(container);
+
+  // Create atmospherics system (particle effects)
+  const atmospherics = createAtmosphericsSystem(container);
+
+  // Create comparisons system (side-by-side view)
+  const comparisons = createComparisonSystem(container);
+
+  // Create timeline system (visit history visualization)
+  const visitTimeline = createTimelineSystem(container);
+
   // Wire up playlist navigation
   exhibitPlaylist.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2088,6 +2136,105 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Wire up history navigation
   history.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
+  // Wire up curator tour navigation
+  virtualCurator.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
+  // Wire up comparisons navigation
+  comparisons.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
+  // Wire up timeline navigation
+  visitTimeline.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
     if (mesh) {
       const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
@@ -2930,6 +3077,79 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', playlistNavHandler);
 
+  // Curator with G key (show commentary when viewing)
+  const curatorHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyG' && !event.ctrlKey && !event.metaKey) {
+      if (event.shiftKey) {
+        // Shift+G opens tour selection
+        event.preventDefault();
+        openCuratorTourPanel(virtualCurator);
+      } else if (interaction.isZoomed && interaction.currentDayNumber) {
+        // G shows curator comment when viewing
+        event.preventDefault();
+        toggleCuratorComment(virtualCurator, interaction.currentDayNumber);
+      }
+    }
+  };
+  document.addEventListener('keydown', curatorHandler);
+
+  // Atmospherics with Shift+F key (cycle particle effects)
+  const atmosphericsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyF' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      const preset = cycleAtmosphericPreset(atmospherics);
+      showNotification(`Atmosphere: ${preset === 'none' ? 'Off' : preset}`);
+    }
+  };
+  document.addEventListener('keydown', atmosphericsHandler);
+
+  // Comparison with = key (add to comparison when viewing)
+  const comparisonHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Equal' && !event.ctrlKey && !event.shiftKey) {
+      if (interaction.isZoomed && interaction.currentDayNumber) {
+        event.preventDefault();
+        const result = addToComparison(comparisons, interaction.currentDayNumber);
+        if (result === 'left') {
+          showNotification(`Added Day ${interaction.currentDayNumber} to comparison (left)`);
+        } else if (result === 'right') {
+          showNotification(`Added Day ${interaction.currentDayNumber} to comparison (right)`);
+        } else {
+          showNotification(`Replaced right with Day ${interaction.currentDayNumber}`);
+        }
+      }
+    } else if (event.code === 'Equal' && event.shiftKey && !event.ctrlKey) {
+      // Shift+= opens comparison panel
+      event.preventDefault();
+      toggleComparisonPanel(comparisons);
+    }
+  };
+  document.addEventListener('keydown', comparisonHandler);
+
+  // Timeline with Shift+T key (when not already used by timewarp)
+  const timelineHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyY' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      event.preventDefault();
+      toggleTimelinePanel(visitTimeline);
+    }
+  };
+  document.addEventListener('keydown', timelineHandler);
+
+  // Wire up timeline tracking for visits and favorites
+  const timelineViewHandler = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    timelineViewHandler?.(dayNumber);
+    recordTimelineVisit(visitTimeline, dayNumber);
+  };
+
+  const timelineFavoriteHandler = interaction.onFavoriteToggle;
+  interaction.onFavoriteToggle = (dayNumber: number) => {
+    const wasFavorite = isFavorite(favorites, dayNumber);
+    timelineFavoriteHandler?.(dayNumber);
+    if (!wasFavorite) {
+      recordTimelineFavorite(visitTimeline, dayNumber);
+    }
+  };
+
   // Wire up memory lane to track discoveries
   const memoryViewHandler = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -3146,6 +3366,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     waypoints,
     cameraZoom,
     exhibitPlaylist,
+    virtualCurator,
+    atmospherics,
+    comparisons,
+    visitTimeline,
     container,
     isRunning: false,
     lastTime: 0,
@@ -3433,6 +3657,10 @@ export function disposeMuseum(): void {
   disposeWaypointsSystem(context.waypoints);
   disposeZoomSystem(context.cameraZoom);
   disposePlaylistSystem(context.exhibitPlaylist);
+  disposeCuratorSystem(context.virtualCurator);
+  disposeAtmosphericsSystem(context.atmospherics);
+  disposeComparisonSystem(context.comparisons);
+  disposeTimelineSystem(context.visitTimeline);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
