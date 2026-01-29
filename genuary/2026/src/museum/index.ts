@@ -393,6 +393,28 @@ import {
   disposeProfileSystem,
   type ProfileSystem,
 } from './profile';
+import {
+  createTimeCapsuleSystem,
+  openCreateCapsule,
+  disposeTimeCapsuleSystem,
+  type TimeCapsuleSystem,
+  type Capsule,
+} from './timecapsule';
+import {
+  createArtStylesSystem,
+  showStyleGuide,
+  closeStyleGuide,
+  disposeArtStylesSystem,
+  type ArtStylesSystem,
+} from './artstyles';
+import {
+  createAnnotationsSystem,
+  showAnnotations,
+  hideAnnotations,
+  enterAddMode,
+  disposeAnnotationsSystem,
+  type AnnotationsSystem,
+} from './annotations';
 
 // ============================================================================
 // Types
@@ -458,6 +480,9 @@ export interface MuseumContext {
   meditation: MeditationSystem;
   hotSpots: HotSpotsSystem;
   visitorProfile: ProfileSystem;
+  timeCapsule: TimeCapsuleSystem;
+  artStyles: ArtStylesSystem;
+  annotations: AnnotationsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1499,6 +1524,23 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create visitor profile system (Ctrl+Shift+P to open)
   const visitorProfile = createProfileSystem(container);
 
+  // Create time capsule system (Shift+K to view, Ctrl+K to create)
+  const timeCapsule = createTimeCapsuleSystem(container);
+
+  // Wire up time capsule navigation
+  timeCapsule.onNavigate = (capsule: Capsule) => {
+    scene.camera.position.set(capsule.position.x, capsule.position.y, capsule.position.z);
+    navigation.euler.set(capsule.rotation.x, capsule.rotation.y, capsule.rotation.z, 'YXZ');
+    scene.camera.quaternion.setFromEuler(navigation.euler);
+    showNotification(`Returned to Day ${capsule.dayNumber} memory`);
+  };
+
+  // Create art styles guide system (E key when viewing)
+  const artStyles = createArtStylesSystem(container);
+
+  // Create annotations system (Shift+N to add annotations)
+  const annotations = createAnnotationsSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1625,6 +1667,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     playZoomIn();
     recordHistoryView(history, dayNumber);
     startViewing(exhibitTimer, dayNumber);
+    showAnnotations(annotations, dayNumber);
 
     // Show related exhibits after a short delay
     setTimeout(() => showRelated(related, dayNumber), 1500);
@@ -1645,6 +1688,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     recordHistoryExit(history);
     hideRelated(related);
     endViewing(exhibitTimer);
+    hideAnnotations(annotations);
+    closeStyleGuide(artStyles);
   };
 
   // Override onExhibitViewed to also check speed run and track session
@@ -1893,6 +1938,48 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', giftShopAddHandler);
 
+  // Time capsule create with Ctrl+K (when viewing exhibit)
+  const timeCapsuleCreateHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyK' && event.ctrlKey && interaction.currentDayNumber > 0) {
+      event.preventDefault();
+      const pos = scene.camera.position;
+      const euler = navigation.euler;
+      openCreateCapsule(
+        timeCapsule,
+        interaction.currentDayNumber,
+        { x: pos.x, y: pos.y, z: pos.z },
+        { x: euler.x, y: euler.y, z: euler.z }
+      );
+    }
+  };
+  document.addEventListener('keydown', timeCapsuleCreateHandler);
+
+  // Art style guide with E key (when viewing exhibit)
+  const artStylesHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyE' && !event.shiftKey && !event.ctrlKey) {
+      if (interaction.currentDayNumber > 0) {
+        event.preventDefault();
+        if (artStyles.isOpen) {
+          closeStyleGuide(artStyles);
+        } else {
+          showStyleGuide(artStyles, interaction.currentDayNumber);
+        }
+      }
+    }
+  };
+  document.addEventListener('keydown', artStylesHandler);
+
+  // Annotations with Shift+N (when viewing exhibit)
+  const annotationsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyN' && event.shiftKey && !event.ctrlKey) {
+      if (interaction.currentDayNumber > 0) {
+        event.preventDefault();
+        enterAddMode(annotations, interaction.currentDayNumber);
+      }
+    }
+  };
+  document.addEventListener('keydown', annotationsHandler);
+
   // Auto-walk mode with B key (Browse/wander)
   const autoWalkHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
@@ -2100,6 +2187,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     meditation,
     hotSpots,
     visitorProfile,
+    timeCapsule,
+    artStyles,
+    annotations,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2343,6 +2433,9 @@ export function disposeMuseum(): void {
   disposeMeditationSystem(context.meditation);
   disposeHotSpotsSystem(context.hotSpots);
   disposeProfileSystem(context.visitorProfile);
+  disposeTimeCapsuleSystem(context.timeCapsule);
+  disposeArtStylesSystem(context.artStyles);
+  disposeAnnotationsSystem(context.annotations);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
