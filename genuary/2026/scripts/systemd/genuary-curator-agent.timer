@@ -1,19 +1,16 @@
 # Genuary Curator Agent Timer (Year-Agnostic)
 #
-# Triggers the curator agent every hour for continuous museum building.
-# Runs at :50 past every hour during January.
-#
-# If a session is still running, the new prompt just gets sent to the
-# active window - slightly interruptive but not disruptive.
+# Nudges the curator agent every 30 minutes to keep it going.
+# Simple "keep going" message if already running.
 #
 
 [Unit]
-Description=Run Genuary Curator Agent hourly (January only)
+Description=Nudge Genuary Curator Agent every 30 min (January only)
 Documentation=https://github.com/azigler/coding-jams
 
 [Timer]
-# Every hour at :50, January only
-OnCalendar=*-01-* *:50:00
+# Every 30 minutes, January only
+OnCalendar=*-01-* *:20,50:00
 AccuracySec=1min
 Persistent=false
 
