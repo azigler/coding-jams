@@ -28,6 +28,12 @@ import {
   type TourSystem,
 } from './tour';
 import { updateArtworkVisibility } from './exhibits/artwork';
+import {
+  createTouchControls,
+  disposeTouchControls,
+  isTouchDevice,
+  type TouchControls,
+} from './touch';
 
 // ============================================================================
 // Types
@@ -38,6 +44,7 @@ export interface MuseumContext {
   navigation: Navigation;
   interaction: InteractionSystem;
   tour: TourSystem;
+  touch: TouchControls | null;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -298,10 +305,15 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Create guided tour system
   const tour = createTourSystem(navigation, interaction);
+
+  // Create touch controls for mobile devices
+  const touch = isTouchDevice() ? createTouchControls(container, navigation) : null;
   updateLoadingProgress(80, 'Preparing gallery...');
 
-  // Show help overlay and location indicator
-  createHelpOverlay(container);
+  // Show help overlay and location indicator (skip on touch devices - they get their own help)
+  if (!isTouchDevice()) {
+    createHelpOverlay(container);
+  }
   createLocationIndicator(container);
   updateLoadingProgress(100, 'Welcome!');
 
@@ -337,6 +349,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     navigation,
     interaction,
     tour,
+    touch,
     container,
     isRunning: false,
     lastTime: 0,
@@ -441,6 +454,9 @@ export function disposeMuseum(): void {
 
   stopMuseum();
   disposeAudio();
+  if (context.touch) {
+    disposeTouchControls(context.touch);
+  }
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
