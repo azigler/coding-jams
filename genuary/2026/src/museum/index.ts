@@ -9,6 +9,7 @@
 
 import { createScene, updateScene, disposeScene, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
+import { initAudio, startAmbient, disposeAudio } from './audio';
 
 // ============================================================================
 // Types
@@ -89,6 +90,17 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Show help overlay
   createHelpOverlay(container);
+
+  // Initialize audio on first user interaction (browser autoplay policy)
+  const startAudioOnInteraction = () => {
+    initAudio();
+    startAmbient();
+    // Remove listeners after first interaction
+    document.removeEventListener('click', startAudioOnInteraction);
+    document.removeEventListener('keydown', startAudioOnInteraction);
+  };
+  document.addEventListener('click', startAudioOnInteraction, { once: true });
+  document.addEventListener('keydown', startAudioOnInteraction, { once: true });
 
   context = {
     scene,
@@ -175,6 +187,7 @@ export function disposeMuseum(): void {
   if (!context) return;
 
   stopMuseum();
+  disposeAudio();
   disposeNavigation(context.navigation);
   disposeScene(context.scene);
 
