@@ -94,7 +94,7 @@ send_prompt() {
   if claude_is_running; then
     log "Claude is running, sending continuation prompt..."
     # Send a continuation message to the active Claude session
-    local msg="[$(date +%H:%M)] Keep going! Do NOT post to PR - you post too often. Only post every 4+ hours with major milestones."
+    local msg="[$(date +%H:%M)] Reminder: If 2+ hours since last PR update, take fresh screenshots, LOOK at them critically, then post with images. Ask: does this make visitors FEEL something? Is it artful or just gamified? Make it evoke emotion, not feel like a thin video game."
 
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" "$msg"
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
