@@ -109,6 +109,9 @@ export interface InteractionSystem {
   // Callback to check if a day is favorited
   isFavorite: ((dayNumber: number) => boolean) | null;
 
+  // Callback to get all favorite day numbers
+  getFavorites: (() => number[]) | null;
+
   // Currently viewed day number (when zoomed)
   currentDayNumber: number;
 
@@ -155,6 +158,7 @@ export function createInteraction(
     onExhibitViewed: null,
     onFavoriteToggle: null,
     isFavorite: null,
+    getFavorites: null,
     currentDayNumber: -1,
     cleanup: () => {},
   };
@@ -285,6 +289,12 @@ function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): vo
     interaction.onFavoriteToggle?.(interaction.currentDayNumber);
     event.preventDefault();
   }
+
+  // Jump to next favorite with J key
+  if (event.code === 'KeyJ') {
+    navigateToNextFavorite(interaction);
+    event.preventDefault();
+  }
 }
 
 /**
@@ -349,6 +359,50 @@ function navigateExhibit(interaction: InteractionSystem, direction: number): voi
 
     // Play navigation sound
     playNavigateSound();
+  }
+}
+
+/**
+ * Navigate to the next favorited exhibit
+ */
+function navigateToNextFavorite(interaction: InteractionSystem): void {
+  // Get all favorites
+  const favorites = interaction.getFavorites?.() ?? [];
+  if (favorites.length === 0) {
+    console.log('No favorites to navigate to');
+    return;
+  }
+
+  // Store original position if not already zoomed
+  if (!interaction.isZoomed) {
+    interaction.originalPosition.copy(interaction.camera.position);
+    interaction.originalQuaternion.copy(interaction.camera.quaternion);
+  }
+
+  // Find the current day in the favorites list
+  const currentDay = interaction.currentDayNumber;
+  const currentFavIndex = favorites.indexOf(currentDay);
+
+  // Calculate next favorite index (wrap around)
+  let nextFavIndex: number;
+  if (currentFavIndex === -1 || currentFavIndex === favorites.length - 1) {
+    nextFavIndex = 0; // Start from first favorite
+  } else {
+    nextFavIndex = currentFavIndex + 1;
+  }
+
+  const nextDay = favorites[nextFavIndex];
+
+  // Find the exhibit mesh for this day
+  const meshIndex = interaction.exhibitMeshes.findIndex(
+    m => m.userData.dayNumber === nextDay
+  );
+
+  if (meshIndex !== -1) {
+    interaction.currentExhibitIndex = meshIndex;
+    zoomToExhibitMesh(interaction, interaction.exhibitMeshes[meshIndex], nextDay);
+    playNavigateSound();
+    console.log(`Jumped to favorite: Day ${nextDay} (${nextFavIndex + 1} of ${favorites.length})`);
   }
 }
 

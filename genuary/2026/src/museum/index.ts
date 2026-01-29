@@ -56,6 +56,7 @@ import {
   createFavoritesSystem,
   toggleFavorite,
   isFavorite,
+  getFavorites,
   disposeFavoritesSystem,
   type FavoritesSystem,
 } from './favorites';
@@ -335,7 +336,8 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
         <div><b>T</b> Tour</div>
-        <div><b>F</b> Favorite</div>
+        <div><b>F</b> Fav</div>
+        <div><b>J</b> Jump Fav</div>
         <div><b>P</b> Photo</div>
         <div><b>H</b> Help</div>
       </div>
@@ -454,6 +456,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Wire up interaction to check favorite status
   interaction.isFavorite = (dayNumber: number) => {
     return isFavorite(favorites, dayNumber);
+  };
+
+  // Wire up interaction to get all favorites
+  interaction.getFavorites = () => {
+    return getFavorites(favorites);
   };
 
   updateLoadingProgress(80, 'Preparing gallery...');
