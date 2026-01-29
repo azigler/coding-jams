@@ -564,6 +564,27 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
     );
     group.add(baseLight);
   }
+
+  // Glowing orb on top - focal point of the gallery
+  const orbRadius = 0.3;
+  const orbGeom = new THREE.SphereGeometry(orbRadius, 32, 32);
+  const orbMaterial = new THREE.MeshStandardMaterial({
+    color: 0x6080c0,
+    roughness: 0.1,
+    metalness: 0.2,
+    emissive: 0x4060a0,
+    emissiveIntensity: 1.5,
+    transparent: true,
+    opacity: 0.9,
+  });
+  const orb = new THREE.Mesh(orbGeom, orbMaterial);
+  orb.position.y = 0.15 + pedestalHeight + 0.1 + orbRadius;
+  group.add(orb);
+
+  // Inner glow light from the orb
+  const orbLight = new THREE.PointLight(0x6090c0, 3, 8, 1.5);
+  orbLight.position.copy(orb.position);
+  group.add(orbLight);
 }
 
 // ============================================================================
