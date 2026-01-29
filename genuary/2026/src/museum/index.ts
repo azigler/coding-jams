@@ -648,6 +648,20 @@ import {
   disposeTimelineSystem,
   type TimelineSystem,
 } from './timeline';
+import {
+  createThemesSystem,
+  cycleTheme,
+  toggleThemesPanel,
+  disposeThemesSystem,
+  type ThemesSystem,
+} from './themes';
+import {
+  createBadgesSystem,
+  unlockBadge,
+  toggleBadgesPanel,
+  disposeBadgesSystem,
+  type BadgesSystem,
+} from './badges';
 
 // ============================================================================
 // Types
@@ -749,6 +763,8 @@ export interface MuseumContext {
   atmospherics: AtmosphericsSystem;
   comparisons: ComparisonSystem;
   visitTimeline: TimelineSystem;
+  uiThemes: ThemesSystem;
+  visitorBadges: BadgesSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -2060,6 +2076,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create timeline system (visit history visualization)
   const visitTimeline = createTimelineSystem(container);
 
+  // Create themes system (UI customization)
+  const uiThemes = createThemesSystem(container);
+
+  // Create badges system (collectible badges)
+  const visitorBadges = createBadgesSystem(container);
+
   // Wire up playlist navigation
   exhibitPlaylist.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -3150,6 +3172,60 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
 
+  // Themes with Ctrl+Shift+T
+  const themesHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyT' && event.ctrlKey && event.shiftKey) {
+      event.preventDefault();
+      const theme = cycleTheme(uiThemes);
+      showNotification(`Theme: ${theme.name}`);
+    }
+  };
+  document.addEventListener('keydown', themesHandler);
+
+  // Badges with B key
+  const badgesHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyB' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+      event.preventDefault();
+      toggleBadgesPanel(visitorBadges);
+    }
+  };
+  document.addEventListener('keydown', badgesHandler);
+
+  // Unlock first visit badge
+  unlockBadge(visitorBadges, 'first_visit');
+
+  // Wire up badges to track first exhibit view
+  const badgeViewHandler = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    badgeViewHandler?.(dayNumber);
+    unlockBadge(visitorBadges, 'first_exhibit');
+    // Check for explorer badges
+    if (sessionSummary.exhibitsViewed.size >= 10) {
+      unlockBadge(visitorBadges, 'explorer_10');
+    }
+    if (sessionSummary.exhibitsViewed.size >= 20) {
+      unlockBadge(visitorBadges, 'explorer_20');
+    }
+    if (sessionSummary.exhibitsViewed.size >= 31) {
+      unlockBadge(visitorBadges, 'completionist');
+    }
+  };
+
+  // Wire up badges to track first favorite
+  const badgeFavoriteHandler = interaction.onFavoriteToggle;
+  interaction.onFavoriteToggle = (dayNumber: number) => {
+    const wasFavorite = isFavorite(favorites, dayNumber);
+    badgeFavoriteHandler?.(dayNumber);
+    if (!wasFavorite) {
+      unlockBadge(visitorBadges, 'first_favorite');
+      const favCount = getFavorites(favorites).length;
+      if (favCount >= 5) unlockBadge(visitorBadges, 'collector_5');
+      if (favCount >= 15) unlockBadge(visitorBadges, 'collector_15');
+      if (favCount >= 25) unlockBadge(visitorBadges, 'super_fan');
+      if (favCount >= 31) unlockBadge(visitorBadges, 'true_believer');
+    }
+  };
+
   // Wire up memory lane to track discoveries
   const memoryViewHandler = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -3370,6 +3446,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     atmospherics,
     comparisons,
     visitTimeline,
+    uiThemes,
+    visitorBadges,
     container,
     isRunning: false,
     lastTime: 0,
@@ -3661,6 +3739,8 @@ export function disposeMuseum(): void {
   disposeAtmosphericsSystem(context.atmospherics);
   disposeComparisonSystem(context.comparisons);
   disposeTimelineSystem(context.visitTimeline);
+  disposeThemesSystem(context.uiThemes);
+  disposeBadgesSystem(context.visitorBadges);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
