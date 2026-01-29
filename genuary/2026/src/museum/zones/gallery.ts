@@ -15,9 +15,12 @@ import * as THREE from 'three';
 import {
   createExhibitFrame,
   setPlaceholderTexture,
+  setFrameTexture,
   disposeExhibitFrame,
   createPlacard,
   disposePlacard,
+  getDayTexture,
+  disposeAllArtwork,
   type ExhibitFrame,
   type Placard,
 } from '../exhibits';
@@ -473,6 +476,27 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
 }
 
 // ============================================================================
+// Artwork Loading
+// ============================================================================
+
+/**
+ * Asynchronously load live artwork into an exhibit frame
+ */
+async function loadLiveArtwork(frame: ExhibitFrame, dayNumber: number): Promise<void> {
+  try {
+    const texture = await getDayTexture(dayNumber);
+    if (texture) {
+      setFrameTexture(frame, texture);
+      console.log(`Loaded live artwork for Day ${dayNumber}`);
+    } else {
+      console.warn(`Could not load artwork for Day ${dayNumber}, keeping placeholder`);
+    }
+  } catch (error) {
+    console.error(`Error loading artwork for Day ${dayNumber}:`, error);
+  }
+}
+
+// ============================================================================
 // Exhibits
 // ============================================================================
 
@@ -518,7 +542,9 @@ function createExhibits(
     frame.group.position.set(x, y, z);
     frame.group.rotation.y = angle + Math.PI; // Face inward
 
-    // Set placeholder for now
+    // Set colorful placeholder texture
+    // Note: Live artwork (loadLiveArtwork) disabled for now as p5 doesn't render in headless mode
+    // To enable, uncomment: loadLiveArtwork(frame, dayNumbers[i]);
     setPlaceholderTexture(frame);
 
     // Create placard below the frame
@@ -585,6 +611,9 @@ export function updateGalleryZone(zone: GalleryZone, deltaTime: number): void {
  * Dispose of gallery zone resources
  */
 export function disposeGalleryZone(zone: GalleryZone): void {
+  // Dispose all live artwork first
+  disposeAllArtwork();
+
   // Dispose exhibits
   zone.exhibits.forEach((exhibit) => {
     disposeExhibitFrame(exhibit);

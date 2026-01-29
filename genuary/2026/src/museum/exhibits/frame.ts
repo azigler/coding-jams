@@ -64,14 +64,11 @@ export function createExhibitFrame(
   const cfg = { ...defaultFrameConfig, ...config };
   const group = new THREE.Group();
 
-  // Canvas material (the artwork surface)
-  const material = new THREE.MeshStandardMaterial({
-    color: 0x111111, // Dark placeholder
-    roughness: 0.1,
-    metalness: 0.0,
-    emissive: 0x080808,
-    emissiveIntensity: 0.2,
-  });
+  // Canvas material (the artwork surface) - use BasicMaterial for reliable texture display
+  // Note: We use 'as any' to avoid type conflicts with MeshStandardMaterial interface
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+  }) as unknown as THREE.MeshStandardMaterial;
 
   // Canvas mesh (where the art displays)
   const canvasGeom = new THREE.PlaneGeometry(cfg.width, cfg.height);
@@ -254,15 +251,15 @@ function createLabel(dayNumber: number, cfg: FrameConfig): THREE.Mesh | null {
  */
 export function setFrameTexture(frame: ExhibitFrame, texture: THREE.Texture): void {
   frame.texture = texture;
-  frame.material.map = texture;
-  frame.material.color.setHex(0xffffff);
-  frame.material.emissive.setHex(0x000000);
-  frame.material.emissiveIntensity = 0;
-  frame.material.needsUpdate = true;
+  // Works with both BasicMaterial and StandardMaterial
+  const mat = frame.material as unknown as THREE.MeshBasicMaterial;
+  mat.map = texture;
+  mat.color.setHex(0xffffff);
+  mat.needsUpdate = true;
 }
 
 /**
- * Set a placeholder "Coming Soon" texture
+ * Set a colorful placeholder texture with generative pattern unique to each day
  */
 export function setPlaceholderTexture(frame: ExhibitFrame): void {
   const canvas = document.createElement('canvas');
@@ -271,24 +268,96 @@ export function setPlaceholderTexture(frame: ExhibitFrame): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  // Gradient background
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  gradient.addColorStop(0, '#1a1a2e');
-  gradient.addColorStop(1, '#16213e');
+  const day = frame.dayNumber;
+
+  // Color palette based on day number - BRIGHT colors for visibility
+  const hue1 = (day * 37) % 360;
+  const hue2 = (hue1 + 60) % 360;
+  const hue3 = (hue1 + 180) % 360;
+
+  // Solid bright background first (for debugging)
+  ctx.fillStyle = `hsl(${hue1}, 70%, 40%)`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Gradient overlay
+  const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, `hsla(${hue1}, 60%, 50%, 0.8)`);
+  gradient.addColorStop(0.5, `hsla(${hue2}, 50%, 45%, 0.6)`);
+  gradient.addColorStop(1, `hsla(${hue3}, 40%, 35%, 0.8)`);
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Day number
-  ctx.fillStyle = '#eee';
-  ctx.font = 'bold 48px monospace';
+  // Generate unique pattern based on day
+  const patternType = day % 4;
+
+  if (patternType === 0) {
+    // Circles pattern
+    for (let i = 0; i < 20; i++) {
+      const x = ((day * 17 + i * 73) % 100) / 100 * canvas.width;
+      const y = ((day * 31 + i * 47) % 100) / 100 * canvas.height;
+      const r = 10 + ((day * i) % 40);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${(hue1 + i * 20) % 360}, 80%, 60%, 0.5)`;
+      ctx.fill();
+    }
+  } else if (patternType === 1) {
+    // Lines pattern
+    ctx.strokeStyle = `hsla(${hue2}, 70%, 70%, 0.6)`;
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 15; i++) {
+      const offset = ((day + i) * 23) % 50;
+      ctx.beginPath();
+      ctx.moveTo(0, i * 25 + offset);
+      ctx.lineTo(canvas.width, i * 25 + offset + ((day * 7) % 50));
+      ctx.stroke();
+    }
+  } else if (patternType === 2) {
+    // Grid pattern
+    const gridSize = 30 + (day % 20);
+    ctx.strokeStyle = `hsla(${hue3}, 60%, 70%, 0.5)`;
+    ctx.lineWidth = 2;
+    for (let x = 0; x < canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
+  } else {
+    // Wave pattern
+    ctx.strokeStyle = `hsla(${hue1}, 80%, 70%, 0.6)`;
+    ctx.lineWidth = 4;
+    for (let w = 0; w < 5; w++) {
+      ctx.beginPath();
+      for (let x = 0; x < canvas.width; x += 5) {
+        const y = canvas.height / 2 + Math.sin((x + day * 10) * 0.02 + w) * (30 + w * 15);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // Day number with glow effect - LARGE and WHITE
+  ctx.shadowColor = '#ffffff';
+  ctx.shadowBlur = 15;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 64px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(`Day ${frame.dayNumber}`, canvas.width / 2, canvas.height / 2 - 20);
+  ctx.fillText(`Day ${day}`, canvas.width / 2, canvas.height / 2 - 10);
 
-  // Subtitle
-  ctx.fillStyle = '#888';
-  ctx.font = '20px monospace';
-  ctx.fillText('Coming Soon', canvas.width / 2, canvas.height / 2 + 30);
+  // Reset shadow for subtitle
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText('Genuary 2026', canvas.width / 2, canvas.height / 2 + 40);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;

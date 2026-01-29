@@ -69,7 +69,7 @@ async function main() {
     // Wait for canvas to appear inside museum container
     console.log('Waiting for canvas...');
     await page.waitForSelector('#museum-container canvas', { timeout: 10000 });
-    await sleep(4000); // Let scene fully load
+    await sleep(6000); // Let scene and live artwork fully load
 
     const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '');
 
