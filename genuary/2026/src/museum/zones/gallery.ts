@@ -542,9 +542,11 @@ function createExhibits(
     frame.group.position.set(x, y, z);
     frame.group.rotation.y = angle + Math.PI; // Face inward
 
-    // Set colorful placeholder texture
-    // Note: Live artwork (loadLiveArtwork) disabled for now as p5 doesn't render in headless mode
-    // To enable, uncomment: loadLiveArtwork(frame, dayNumbers[i]);
+    // Try loading live p5 artwork - fall back to placeholder if it fails
+    loadLiveArtwork(frame, dayNumbers[i]).catch(() => {
+      console.log(`Day ${dayNumbers[i]} artwork failed to load, using placeholder`);
+    });
+    // Also set placeholder immediately as fallback while artwork loads
     setPlaceholderTexture(frame);
 
     // Create placard below the frame
