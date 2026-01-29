@@ -35,6 +35,63 @@ let context: MuseumContext | null = null;
 // ============================================================================
 
 /**
+ * Create the location indicator showing current area
+ */
+function createLocationIndicator(container: HTMLElement): HTMLElement {
+  const indicator = document.createElement('div');
+  indicator.id = 'museum-location';
+  indicator.innerHTML = `
+    <div style="
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: #a0a0b0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 100;
+    ">
+      <span id="location-text">Entrance</span>
+    </div>
+  `;
+  container.appendChild(indicator);
+  return indicator;
+}
+
+/**
+ * Update the location indicator based on camera position
+ */
+function updateLocationIndicator(z: number, x: number): void {
+  const textEl = document.getElementById('location-text');
+  if (!textEl) return;
+
+  let location = 'Entrance';
+
+  // Determine location based on camera position
+  // Gallery center is at z = -32
+  if (z < -20 && z > -45) {
+    if (Math.abs(x) < 8) {
+      location = 'Main Gallery';
+    } else if (x < -8) {
+      location = 'West Wing';
+    } else if (x > 8) {
+      location = 'East Wing';
+    }
+  } else if (z <= -45) {
+    location = 'North Wing';
+  } else if (z >= -5) {
+    location = 'Entrance';
+  } else {
+    location = 'Entrance Hallway';
+  }
+
+  textEl.textContent = location;
+}
+
+/**
  * Create the help overlay showing controls
  */
 function createHelpOverlay(container: HTMLElement): HTMLElement {
@@ -88,8 +145,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create navigation system
   const navigation = createNavigation(scene.camera, scene.renderer.domElement);
 
-  // Show help overlay
+  // Show help overlay and location indicator
   createHelpOverlay(container);
+  createLocationIndicator(container);
 
   // Initialize audio on first user interaction (browser autoplay policy)
   const startAudioOnInteraction = () => {
@@ -156,6 +214,10 @@ export function startMuseum(): void {
 
     // Update scene (animations, etc.)
     updateScene(context.scene, deltaTime);
+
+    // Update location indicator
+    const pos = context.scene.camera.position;
+    updateLocationIndicator(pos.z, pos.x);
 
     // Render
     context.scene.renderer.render(context.scene.scene, context.scene.camera);
