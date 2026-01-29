@@ -440,6 +440,20 @@ import {
   disposeFloorPlanSystem,
   type FloorPlanSystem,
 } from './floorplan';
+import {
+  createNightModeSystem,
+  toggleNightMode,
+  disposeNightModeSystem,
+  type NightModeSystem,
+} from './nightmode';
+import {
+  createLabelsSystem,
+  registerExhibitsForLabels,
+  toggleLabels,
+  updateLabels,
+  disposeLabelsSystem,
+  type LabelsSystem,
+} from './labels';
 
 // ============================================================================
 // Types
@@ -512,6 +526,8 @@ export interface MuseumContext {
   reactions: ReactionsSystem;
   palette: PaletteSystem;
   floorPlan: FloorPlanSystem;
+  nightMode: NightModeSystem;
+  exhibitLabels: LabelsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1582,6 +1598,13 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create floor plan system (O key to toggle)
   const floorPlan = createFloorPlanSystem(container);
 
+  // Create night mode system (Shift+D to toggle)
+  const nightMode = createNightModeSystem(container);
+
+  // Create exhibit labels system (Shift+L to toggle)
+  const exhibitLabels = createLabelsSystem(container);
+  registerExhibitsForLabels(exhibitLabels, interaction.exhibitMeshes);
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2101,6 +2124,24 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', floorPlanHandler);
 
+  // Night mode with Shift+D (Day/Night toggle)
+  const nightModeHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyD' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      toggleNightMode(nightMode);
+    }
+  };
+  document.addEventListener('keydown', nightModeHandler);
+
+  // Exhibit labels with V key (View labels)
+  const labelsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyV' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      toggleLabels(exhibitLabels);
+    }
+  };
+  document.addEventListener('keydown', labelsHandler);
+
   // Auto-walk mode with B key (Browse/wander)
   const autoWalkHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
@@ -2315,6 +2356,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     reactions,
     palette,
     floorPlan,
+    nightMode,
+    exhibitLabels,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2427,6 +2470,14 @@ export function startMuseum(): void {
     // Update landmark markers
     updateLandmarks(
       context.landmarks,
+      context.scene.camera,
+      context.container.clientWidth,
+      context.container.clientHeight
+    );
+
+    // Update exhibit labels
+    updateLabels(
+      context.exhibitLabels,
       context.scene.camera,
       context.container.clientWidth,
       context.container.clientHeight
@@ -2565,6 +2616,8 @@ export function disposeMuseum(): void {
   disposeReactionsSystem(context.reactions);
   disposePaletteSystem(context.palette);
   disposeFloorPlanSystem(context.floorPlan);
+  disposeNightModeSystem(context.nightMode);
+  disposeLabelsSystem(context.exhibitLabels);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
