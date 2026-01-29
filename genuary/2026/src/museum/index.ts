@@ -382,6 +382,12 @@ import {
   disposeMeditationSystem,
   type MeditationSystem,
 } from './meditation';
+import {
+  createHotSpotsSystem,
+  recordHotSpotView,
+  disposeHotSpotsSystem,
+  type HotSpotsSystem,
+} from './hotspots';
 
 // ============================================================================
 // Types
@@ -445,6 +451,7 @@ export interface MuseumContext {
   musicPlayer: MusicPlayerSystem;
   giftShop: GiftShopSystem;
   meditation: MeditationSystem;
+  hotSpots: HotSpotsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1480,6 +1487,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create meditation system (Shift+Z for zen mode)
   const meditation = createMeditationSystem(container);
 
+  // Create hot spots indicator (shows trending exhibits)
+  const hotSpots = createHotSpotsSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1644,6 +1654,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     checkScavengerProgress(scavenger, dayNumber);
     // Record simulated view
     recordDayView(visitors, dayNumber);
+    recordHotSpotView(hotSpots, dayNumber);
 
     // Check for curator notes
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2078,6 +2089,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     musicPlayer,
     giftShop,
     meditation,
+    hotSpots,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2319,6 +2331,7 @@ export function disposeMuseum(): void {
   disposeMusicPlayerSystem(context.musicPlayer);
   disposeGiftShopSystem(context.giftShop);
   disposeMeditationSystem(context.meditation);
+  disposeHotSpotsSystem(context.hotSpots);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
