@@ -33,6 +33,8 @@ export interface GalleryZone {
   group: THREE.Group;
   skylightMesh: THREE.Mesh;
   dustParticles: THREE.Points | null;
+  orbMesh: THREE.Mesh | null;
+  orbBaseY: number;
   exhibits: ExhibitFrame[];
   placards: Placard[];
   time: number;
@@ -159,8 +161,8 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   // Walls
   createWalls(group, cfg);
 
-  // Central pedestal
-  createPedestal(group, cfg);
+  // Central pedestal with glowing orb
+  const { orb: orbMesh, baseY: orbBaseY } = createPedestal(group, cfg);
 
   // Doorways to exhibit wings (4 cardinal directions)
   createDoorways(group, cfg);
@@ -176,6 +178,8 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
     group,
     skylightMesh,
     dustParticles,
+    orbMesh,
+    orbBaseY,
     exhibits,
     placards,
     time: 0,
@@ -504,8 +508,9 @@ function createDoorwaySign(text: string): THREE.Mesh {
 
 /**
  * Create central pedestal for featured artwork
+ * Returns the orb mesh for animation
  */
-function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
+function createPedestal(group: THREE.Group, cfg: GalleryConfig): { orb: THREE.Mesh; baseY: number } {
   const pedestalRadius = 1;
   const pedestalHeight = 1.2;
 
@@ -567,6 +572,7 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
 
   // Glowing orb on top - focal point of the gallery
   const orbRadius = 0.3;
+  const orbBaseY = 0.15 + pedestalHeight + 0.1 + orbRadius;
   const orbGeom = new THREE.SphereGeometry(orbRadius, 32, 32);
   const orbMaterial = new THREE.MeshStandardMaterial({
     color: 0x6080c0,
@@ -578,13 +584,15 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
     opacity: 0.9,
   });
   const orb = new THREE.Mesh(orbGeom, orbMaterial);
-  orb.position.y = 0.15 + pedestalHeight + 0.1 + orbRadius;
+  orb.position.y = orbBaseY;
   group.add(orb);
 
   // Inner glow light from the orb
   const orbLight = new THREE.PointLight(0x6090c0, 3, 8, 1.5);
   orbLight.position.copy(orb.position);
   group.add(orbLight);
+
+  return { orb, baseY: orbBaseY };
 }
 
 // ============================================================================
@@ -749,6 +757,16 @@ export function updateGalleryZone(zone: GalleryZone, deltaTime: number): void {
     }
 
     positions.needsUpdate = true;
+  }
+
+  // Animate the glowing orb - gentle bobbing motion
+  if (zone.orbMesh) {
+    const bobAmount = Math.sin(zone.time * 1.5) * 0.05;
+    zone.orbMesh.position.y = zone.orbBaseY + bobAmount;
+
+    // Subtle pulsing glow
+    const orbMat = zone.orbMesh.material as THREE.MeshStandardMaterial;
+    orbMat.emissiveIntensity = 1.3 + Math.sin(zone.time * 2) * 0.3;
   }
 }
 
