@@ -206,6 +206,12 @@ import {
   type CuratorNoteSystem,
   type NoteContext,
 } from './curator-notes';
+import {
+  createTimeLighting,
+  disposeTimeLighting,
+  getTimePeriodDescription,
+  type TimeLighting,
+} from './time-lighting';
 
 // ============================================================================
 // Types
@@ -240,6 +246,7 @@ export interface MuseumContext {
   accessibility: AccessibilitySystem;
   sessionSummary: SessionSummary;
   curatorNotes: CuratorNoteSystem;
+  timeLighting: TimeLighting;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1002,6 +1009,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create curator notes system (shows contextual notes as you explore)
   const curatorNotes = createCuratorNoteSystem(container);
 
+  // Create time-of-day lighting system
+  const timeLighting = createTimeLighting(scene.scene);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1436,6 +1446,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     accessibility,
     sessionSummary,
     curatorNotes,
+    timeLighting,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1613,6 +1624,7 @@ export function disposeMuseum(): void {
   disposeAccessibilitySystem(context.accessibility);
   disposeSessionSummary(context.sessionSummary);
   disposeCuratorNoteSystem(context.curatorNotes);
+  disposeTimeLighting(context.timeLighting);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
