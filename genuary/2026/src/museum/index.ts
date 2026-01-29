@@ -168,6 +168,14 @@ import {
   disposeRatingsSystem,
   type RatingsSystem,
 } from './ratings';
+import {
+  createAutoWalk,
+  toggleAutoWalk,
+  updateAutoWalk,
+  stopAutoWalk,
+  disposeAutoWalk,
+  type AutoWalk,
+} from './autowalk';
 
 // ============================================================================
 // Types
@@ -196,6 +204,7 @@ export interface MuseumContext {
   particles: ParticleSystem;
   spotlight: Spotlight;
   ratings: RatingsSystem;
+  autoWalk: AutoWalk;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -935,6 +944,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create ratings system
   const ratings = createRatingsSystem();
 
+  // Create auto-walk system
+  const autoWalk = createAutoWalk();
+
+  // Wire up auto-walk to mark exhibits as viewed
+  autoWalk.onExhibitReached = (dayNumber: number) => {
+    interaction.onExhibitViewed?.(dayNumber);
+  };
+
   // Wire up breadcrumb navigation to zoom to exhibits
   breadcrumbs.onNavigate = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1125,6 +1142,21 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', ratingHandler);
 
+  // Auto-walk mode with B key (Browse/wander)
+  const autoWalkHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
+      const active = toggleAutoWalk(autoWalk, scene.camera, interaction.exhibitMeshes);
+      if (active) {
+        showNotification('🚶 Auto-walk started. Press B to stop.');
+        // Stop tour if running
+        stopTour(tour);
+      } else {
+        showNotification('Auto-walk stopped.');
+      }
+    }
+  };
+  document.addEventListener('keydown', autoWalkHandler);
+
   // Mute toggle with M key
   const muteHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyM') {
@@ -1280,6 +1312,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     particles,
     spotlight,
     ratings,
+    autoWalk,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1338,8 +1371,11 @@ export function startMuseum(): void {
     // Update guided tour if active
     const tourActive = updateTour(context.tour, deltaTime);
 
-    // Update navigation only if not in zoom mode or tour mode
-    if (!interactionActive && !context.interaction.isZoomed && !tourActive) {
+    // Update auto-walk if active
+    const autoWalkActive = updateAutoWalk(context.autoWalk, deltaTime);
+
+    // Update navigation only if not in zoom mode, tour mode, or auto-walk mode
+    if (!interactionActive && !context.interaction.isZoomed && !tourActive && !autoWalkActive) {
       updateNavigation(context.navigation, deltaTime);
     }
 
@@ -1448,6 +1484,7 @@ export function disposeMuseum(): void {
   disposeParticleSystem(context.particles);
   disposeSpotlight(context.spotlight);
   disposeRatingsSystem(context.ratings);
+  disposeAutoWalk(context.autoWalk);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
