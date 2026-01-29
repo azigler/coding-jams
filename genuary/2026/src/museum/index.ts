@@ -82,6 +82,13 @@ import {
   disposeDaySelector,
   type DaySelector,
 } from './dayselect';
+import {
+  createAchievementsSystem,
+  checkAchievements,
+  showAchievementNotification,
+  disposeAchievementsSystem,
+  type AchievementsSystem,
+} from './achievements';
 
 // ============================================================================
 // Types
@@ -100,6 +107,7 @@ export interface MuseumContext {
   tips: TipsSystem;
   stats: StatsTracker;
   daySelector: DaySelector;
+  achievements: AchievementsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -616,6 +624,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
 
+  // Create achievements system
+  const achievements = createAchievementsSystem();
+
+  // Show notification when achievement unlocks
+  achievements.onAchievementUnlocked = (achievement) => {
+    showAchievementNotification(achievement);
+  };
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -690,6 +706,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     tips,
     stats,
     daySelector,
+    achievements,
     container,
     isRunning: false,
     lastTime: 0,
@@ -776,6 +793,23 @@ export function startMuseum(): void {
   };
 
   context.animationId = requestAnimationFrame(animate);
+
+  // Periodically check achievements
+  const achievementCheckInterval = setInterval(() => {
+    if (!context) return;
+    checkAchievements(context.achievements, {
+      exhibitsViewed: context.discovery.viewedDays.size,
+      favoritesCount: getFavorites(context.favorites).length,
+      screenshotsTaken: context.stats.stats.screenshotsTaken,
+      toursTaken: context.stats.stats.toursTaken,
+      totalTimeSpent: context.stats.stats.totalTimeSpent,
+      distanceWalked: context.stats.stats.distanceWalked,
+      sharedViews: 0, // Would need to track this
+    });
+  }, 10000); // Check every 10 seconds
+
+  // Store interval for cleanup
+  (context as unknown as Record<string, unknown>).achievementCheckInterval = achievementCheckInterval;
 }
 
 /**
@@ -789,6 +823,12 @@ export function stopMuseum(): void {
   if (context.animationId !== null) {
     cancelAnimationFrame(context.animationId);
     context.animationId = null;
+  }
+
+  // Clear achievement check interval
+  const interval = (context as unknown as Record<string, unknown>).achievementCheckInterval as number | undefined;
+  if (interval) {
+    clearInterval(interval);
   }
 }
 
@@ -810,6 +850,7 @@ export function disposeMuseum(): void {
   disposeTipsSystem(context.tips);
   disposeStatsTracker(context.stats);
   disposeDaySelector(context.daySelector);
+  disposeAchievementsSystem(context.achievements);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
