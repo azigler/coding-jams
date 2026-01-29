@@ -301,4 +301,39 @@ Each session entry should include:
 
 ---
 
+### 2026-01-29 — Audio & Location Session (continued)
+
+**Beads worked**: None (autonomous improvements)
+
+**Accomplished**:
+- **Added footstep sounds when walking**:
+  - Subtle footstep audio triggers every ~0.5 meters of movement
+  - Sound scales with movement speed (faster = more frequent)
+  - Uses Web Audio API with triangle wave oscillator
+- **Audio system was added in previous session**:
+  - Ambient drone/hum creates gallery atmosphere
+  - Low frequency tones (A1, E2, A2) with slight detune
+  - Filtered noise for room tone/air sound
+  - Initializes on first user interaction (browser autoplay policy)
+- **Location indicator shows current area**:
+  - HUD element shows "Entrance", "Main Gallery", "North Wing", etc.
+  - Updates based on camera position in real-time
+  - Subtle styling that doesn't distract from the art
+
+**Tested**:
+- Build succeeds with no TypeScript errors
+- Footstep timer initializes and triggers correctly
+- Screenshots captured (limited by WebGL headless timeout issues)
+
+**Commits**:
+- `ebe43ef` - feat: add footstep sounds when walking
+- Previous session commits for audio system, location indicator, help overlay
+
+**Next session**:
+- Add click-to-zoom for exhibits
+- Consider VR/WebXR integration
+- Performance profiling and optimization
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
