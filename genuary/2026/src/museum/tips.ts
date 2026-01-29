@@ -45,6 +45,8 @@ const TIPS: Tip[] = [
   { id: 'minimap', text: 'Check the minimap in the corner to see your location' },
   { id: 'settings', text: 'Click the gear icon to adjust quality and sound settings' },
   { id: 'discovery', text: 'Click the progress badge to see which exhibits you\'ve visited' },
+  { id: 'fullscreen', text: 'Press F when walking around to toggle fullscreen mode' },
+  { id: 'mute', text: 'Press M to quickly mute or unmute all sounds' },
 ];
 
 // ============================================================================
