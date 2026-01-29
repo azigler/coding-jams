@@ -463,13 +463,77 @@ function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): voi
     if (interaction.hoveredExhibit !== hit) {
       interaction.hoveredExhibit = hit;
       interaction.element.style.cursor = 'zoom-in';
+      // Show tooltip
+      const dayNumber = hit.userData.dayNumber;
+      if (dayNumber !== undefined) {
+        showHoverTooltip(dayNumber, event.clientX, event.clientY);
+      }
+    } else {
+      // Update tooltip position
+      updateTooltipPosition(event.clientX, event.clientY);
     }
   } else {
     if (interaction.hoveredExhibit !== null) {
       interaction.hoveredExhibit = null;
       interaction.element.style.cursor = 'grab';
+      hideHoverTooltip();
     }
   }
+}
+
+// ============================================================================
+// Hover Tooltip
+// ============================================================================
+
+/**
+ * Show hover tooltip with exhibit info
+ */
+function showHoverTooltip(dayNumber: number, x: number, y: number): void {
+  hideHoverTooltip();
+
+  const info = dayInfoMap[dayNumber];
+  const title = info?.title || `Coming Soon`;
+
+  const tooltip = document.createElement('div');
+  tooltip.id = 'hover-tooltip';
+  tooltip.style.cssText = `
+    position: fixed;
+    left: ${x + 15}px;
+    top: ${y - 10}px;
+    background: rgba(20, 20, 30, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    z-index: 250;
+    pointer-events: none;
+    white-space: nowrap;
+    border: 1px solid rgba(100, 150, 255, 0.3);
+  `;
+  tooltip.innerHTML = `
+    <span style="color: #4a9eff;">Day ${dayNumber}</span> • ${title}
+  `;
+  document.body.appendChild(tooltip);
+}
+
+/**
+ * Update tooltip position
+ */
+function updateTooltipPosition(x: number, y: number): void {
+  const tooltip = document.getElementById('hover-tooltip');
+  if (tooltip) {
+    tooltip.style.left = `${x + 15}px`;
+    tooltip.style.top = `${y - 10}px`;
+  }
+}
+
+/**
+ * Hide hover tooltip
+ */
+function hideHoverTooltip(): void {
+  const existing = document.getElementById('hover-tooltip');
+  if (existing) existing.remove();
 }
 
 // ============================================================================
@@ -480,6 +544,9 @@ function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): voi
  * Zoom to an exhibit (initial zoom from click)
  */
 function zoomToExhibit(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumber: number): void {
+  // Hide hover tooltip when zooming
+  hideHoverTooltip();
+
   // Store original camera state (only on initial zoom, not navigation)
   interaction.originalPosition.copy(interaction.camera.position);
   interaction.originalQuaternion.copy(interaction.camera.quaternion);
