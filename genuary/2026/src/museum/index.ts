@@ -9,7 +9,7 @@
 
 import { createScene, updateScene, disposeScene, setQuality, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
-import { initAudio, startAmbient, disposeAudio, setAudioMuted } from './audio';
+import { initAudio, startAmbient, disposeAudio, setAudioMuted, playDiscoveryChime } from './audio';
 import {
   createInteraction,
   updateInteraction,
@@ -449,7 +449,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Wire up interaction to track discoveries
   interaction.onExhibitViewed = (dayNumber: number) => {
+    const wasNew = !discovery.viewedDays.has(dayNumber);
     markDayDiscovered(discovery, dayNumber);
+    // Play discovery chime for new exhibits
+    if (wasNew) {
+      playDiscoveryChime();
+    }
   };
 
   // Wire up interaction to toggle favorites

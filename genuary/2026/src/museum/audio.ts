@@ -189,6 +189,37 @@ export function playFootstep(): void {
 }
 
 /**
+ * Play a discovery chime (when first viewing an exhibit)
+ */
+export function playDiscoveryChime(): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+  const now = ctx.currentTime;
+
+  // Create a pleasant ascending chime
+  const notes = [523.25, 659.26, 783.99]; // C5, E5, G5 - major chord
+
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    const gain = ctx.createGain();
+    const startTime = now + i * 0.08;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.06, startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+
+    osc.connect(gain);
+    gain.connect(audioSystem!.masterGain!);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.5);
+  });
+}
+
+/**
  * Play a whoosh/teleport sound
  */
 export function playTeleport(): void {
