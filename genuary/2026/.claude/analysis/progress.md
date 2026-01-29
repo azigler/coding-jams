@@ -679,10 +679,77 @@ All three issues addressed in this session.
 27. **NEW: Mobile Touch Controls**
 28. **NEW: Navigation Minimap**
 
+---
+
+### 2026-01-29 — User Experience Features
+
+**Beads worked**: None (feature development)
+
+**Accomplished**:
+
+**Screenshot Feature** (`d4c10af`):
+- Press P to capture current view
+- Downloads as PNG with timestamp
+- Animated confirmation notification
+
+**Settings Panel** (`3585df7`, `859e047`):
+- Gear icon button in top-right
+- Toggle sound effects on/off
+- Toggle minimap visibility
+- Quality level selector
+- Fullscreen mode button
+- Settings persist in localStorage
+
+**Discovery Tracker** (`cd2f0a4`):
+- Progress badge showing X/31 exhibits
+- Click to see grid of discovered days
+- Progress persists in localStorage
+- Celebration popup on 100% completion
+- Icons change based on progress level
+
+**Commits**:
+- `d4c10af` - feat(museum): add screenshot feature with P key
+- `3585df7` - feat(museum): add settings panel with customization options
+- `859e047` - feat(museum): wire up sound toggle in settings
+- `cd2f0a4` - feat(museum): add exhibit discovery tracker
+
+**Full Feature List** (31 features):
+1. Live Artwork (27+ days, visibility-animated)
+2. Dust Particles (optimized to 40)
+3. Teleport Navigation (0-5, Home)
+4. Help Overlay (H toggle)
+5. Glowing Orb Animation
+6. Welcome Sign
+7. Ambient Audio
+8. Location Indicator
+9. Footstep Sounds
+10. Click-to-Zoom
+11. Hover Cursor (throttled)
+12. Info Panel with Prompt Details
+13. View Day Link
+14. Zoom Sound Effects
+15. Vignette Focus Effect
+16. Keyboard Exhibit Navigation ([ ])
+17. Progress Indicator (X of Y)
+18. Random Exhibit (R key)
+19. Exhibit Day Sorting
+20. Return Home (0/Home)
+21. Teleport Whoosh Sound
+22. Interactive help overlay
+23. Proximity-based orb glow
+24. Loading screen with progress bar
+25. Guided Tour (T key)
+26. Visibility-based animation
+27. Mobile Touch Controls
+28. Navigation Minimap
+29. **NEW: Screenshot (P key)**
+30. **NEW: Settings Panel**
+31. **NEW: Discovery Tracker**
+
 **Next session**:
 - VR/WebXR integration
-- Consider screenshot/share feature
 - More ambient sound variety
+- Exhibit favorites system
 
 ---
 
