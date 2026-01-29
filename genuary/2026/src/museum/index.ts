@@ -18,6 +18,15 @@ import {
   sortExhibitsByDay,
   type InteractionSystem,
 } from './interaction';
+import {
+  createTourSystem,
+  startTour,
+  stopTour,
+  toggleTour,
+  updateTour,
+  disposeTour,
+  type TourSystem,
+} from './tour';
 
 // ============================================================================
 // Types
@@ -27,6 +36,7 @@ export interface MuseumContext {
   scene: MuseumScene;
   navigation: Navigation;
   interaction: InteractionSystem;
+  tour: TourSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -223,6 +233,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>Click</b> Zoom</div>
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
+        <div><b>T</b> Tour</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -283,6 +294,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Sort exhibits by day number for logical browsing
   sortExhibitsByDay(interaction);
+
+  // Create guided tour system
+  const tour = createTourSystem(navigation, interaction);
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator
@@ -309,10 +323,19 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', helpToggleHandler);
 
+  // Tour toggle with T key
+  const tourToggleHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyT' && !interaction.isZoomed) {
+      toggleTour(tour);
+    }
+  };
+  document.addEventListener('keydown', tourToggleHandler);
+
   context = {
     scene,
     navigation,
     interaction,
+    tour,
     container,
     isRunning: false,
     lastTime: 0,
@@ -368,8 +391,11 @@ export function startMuseum(): void {
     // Update interaction (click-to-zoom)
     const interactionActive = updateInteraction(context.interaction, deltaTime);
 
-    // Update navigation only if not in zoom mode
-    if (!interactionActive && !context.interaction.isZoomed) {
+    // Update guided tour if active
+    const tourActive = updateTour(context.tour, deltaTime);
+
+    // Update navigation only if not in zoom mode or tour mode
+    if (!interactionActive && !context.interaction.isZoomed && !tourActive) {
       updateNavigation(context.navigation, deltaTime);
     }
 
@@ -411,6 +437,7 @@ export function disposeMuseum(): void {
 
   stopMuseum();
   disposeAudio();
+  disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
   disposeScene(context.scene);
