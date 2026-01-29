@@ -191,12 +191,14 @@ function createWingExhibits(
   let dayNumber = startDay;
 
   // Left wall exhibits (facing right, toward +X)
+  // The frame canvas faces -Z internally, so we need rotation that transforms -Z to +X
+  // That's -PI/2 (or equivalently 3*PI/2)
   for (let i = 0; i < cfg.exhibitsPerSide && dayNumber <= 31; i++) {
     const z = -(i + 1) * spacing;
 
     const frame = createExhibitFrame(dayNumber, frameConfig);
     frame.group.position.set(-cfg.width / 2 + wallOffset, exhibitY, z);
-    frame.group.rotation.y = Math.PI / 2; // Face right (+X)
+    frame.group.rotation.y = -Math.PI / 2; // Canvas faces -Z, rotate to face +X
 
     setPlaceholderTexture(frame);
     group.add(frame.group);
@@ -206,7 +208,7 @@ function createWingExhibits(
     const placard = createPlacard(dayNumber);
     const placardY = exhibitY - totalFrameHeight / 2 - 0.1;
     placard.group.position.set(-cfg.width / 2 + wallOffset + 0.02, placardY, z);
-    placard.group.rotation.y = Math.PI / 2;
+    placard.group.rotation.y = -Math.PI / 2; // Match exhibit rotation
     group.add(placard.group);
     placards.push(placard);
 
@@ -222,12 +224,14 @@ function createWingExhibits(
   }
 
   // Right wall exhibits (facing left, toward -X)
+  // The frame canvas faces -Z internally, so we need rotation that transforms -Z to -X
+  // That's +PI/2
   for (let i = 0; i < cfg.exhibitsPerSide && dayNumber <= 31; i++) {
     const z = -(i + 1) * spacing;
 
     const frame = createExhibitFrame(dayNumber, frameConfig);
     frame.group.position.set(cfg.width / 2 - wallOffset, exhibitY, z);
-    frame.group.rotation.y = -Math.PI / 2; // Face left (-X)
+    frame.group.rotation.y = Math.PI / 2; // Canvas faces -Z, rotate to face -X
 
     setPlaceholderTexture(frame);
     group.add(frame.group);
@@ -237,7 +241,7 @@ function createWingExhibits(
     const placard = createPlacard(dayNumber);
     const placardY = exhibitY - totalFrameHeight / 2 - 0.1;
     placard.group.position.set(cfg.width / 2 - wallOffset - 0.02, placardY, z);
-    placard.group.rotation.y = -Math.PI / 2;
+    placard.group.rotation.y = Math.PI / 2; // Match exhibit rotation
     group.add(placard.group);
     placards.push(placard);
 
