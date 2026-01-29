@@ -376,6 +376,41 @@ function parseSharedView(): { x: number; y: number; z: number; rx: number; ry: n
 }
 
 /**
+ * Toggle photo mode (hides UI for clean screenshots)
+ */
+let photoModeActive = false;
+
+function togglePhotoMode(container: HTMLElement): void {
+  photoModeActive = !photoModeActive;
+
+  // List of UI element IDs to hide/show
+  const uiElements = [
+    'museum-location',
+    'minimap-canvas',
+    'museum-help',
+    'discovery-badge',
+    'settings-button',
+    'museum-tip',
+    'tour-progress',
+  ];
+
+  uiElements.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = photoModeActive ? 'none' : '';
+    }
+  });
+
+  // Also hide any div with settings-panel class
+  const settingsPanel = container.querySelector('[id^="settings-panel"]');
+  if (settingsPanel) {
+    (settingsPanel as HTMLElement).style.display = photoModeActive ? 'none' : '';
+  }
+
+  showNotification(photoModeActive ? 'Photo mode ON - UI hidden' : 'Photo mode OFF');
+}
+
+/**
  * Toggle fullscreen mode
  */
 function toggleFullscreen(container: HTMLElement): void {
@@ -798,12 +833,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', tourToggleHandler);
 
-  // Screenshot with P key
+  // Screenshot with P key, Photo mode with Shift+P
   const screenshotHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyP') {
-      playCameraShutter();
-      takeScreenshot(scene.renderer.domElement);
-      recordScreenshot(stats);
+      if (event.shiftKey) {
+        togglePhotoMode(container);
+      } else {
+        playCameraShutter();
+        takeScreenshot(scene.renderer.domElement);
+        recordScreenshot(stats);
+      }
     }
   };
   document.addEventListener('keydown', screenshotHandler);
