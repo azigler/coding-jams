@@ -22,14 +22,16 @@ async function main() {
   // Ensure output directory exists
   await mkdir(OUTPUT_DIR, { recursive: true });
 
-  // Launch browser with SwiftShader for WebGL
+  // Launch browser with better WebGL support
+  // Try EGL first (hardware-accelerated), fall back to ANGLE
   const browser = await chromium.launch({
     headless: true,
     args: [
-      '--use-gl=swiftshader',
-      '--disable-gpu',
       '--no-sandbox',
       '--disable-setuid-sandbox',
+      '--use-gl=egl',  // Better than swiftshader for canvas textures
+      '--enable-webgl',
+      '--ignore-gpu-blocklist',
     ],
   });
 

@@ -64,19 +64,25 @@ export function createExhibitFrame(
   const cfg = { ...defaultFrameConfig, ...config };
   const group = new THREE.Group();
 
-  // Canvas material (the artwork surface) - use BasicMaterial for reliable texture display
-  // Note: We use 'as any' to avoid type conflicts with MeshStandardMaterial interface
-  const material = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-  }) as unknown as THREE.MeshStandardMaterial;
+  // Canvas material (the artwork surface)
+  const material = new THREE.MeshStandardMaterial({
+    color: 0xffffff,  // White base for texture
+    roughness: 0.3,
+    metalness: 0.0,
+    emissive: 0x333333,  // Slight self-glow for visibility
+    emissiveIntensity: 0.5,
+  });
 
   // Canvas mesh (where the art displays)
+  // PlaneGeometry faces +Z by default. After the frame group rotates by PI,
+  // +Z points toward the wall. So we rotate the canvas by PI to face viewers.
   const canvasGeom = new THREE.PlaneGeometry(cfg.width, cfg.height);
   const mesh = new THREE.Mesh(canvasGeom, material);
-  mesh.position.z = cfg.frameDepth / 2;
+  mesh.rotation.y = Math.PI;  // Flip to face outward
+  mesh.position.z = -(cfg.frameDepth / 2 + 0.01);  // In front of frame (negative after group rotation)
   group.add(mesh);
 
-  // Matte border (off-white inner frame)
+  // Matte border (white inner frame)
   const matteGeom = createMatteGeometry(cfg);
   const matteMaterial = new THREE.MeshStandardMaterial({
     color: cfg.matteColor,
@@ -84,7 +90,8 @@ export function createExhibitFrame(
     metalness: 0.0,
   });
   const matte = new THREE.Mesh(matteGeom, matteMaterial);
-  matte.position.z = cfg.frameDepth / 2 - 0.001;
+  matte.rotation.y = Math.PI;  // Face outward like the canvas
+  matte.position.z = -(cfg.frameDepth / 2 - 0.001);
   group.add(matte);
 
   // Frame (outer wooden border)
@@ -251,11 +258,11 @@ function createLabel(dayNumber: number, cfg: FrameConfig): THREE.Mesh | null {
  */
 export function setFrameTexture(frame: ExhibitFrame, texture: THREE.Texture): void {
   frame.texture = texture;
-  // Works with both BasicMaterial and StandardMaterial
-  const mat = frame.material as unknown as THREE.MeshBasicMaterial;
-  mat.map = texture;
-  mat.color.setHex(0xffffff);
-  mat.needsUpdate = true;
+  frame.material.map = texture;
+  frame.material.color.setHex(0xffffff);  // White to show texture colors
+  frame.material.emissive.setHex(0x222222);  // Slight self-glow
+  frame.material.emissiveIntensity = 0.3;
+  frame.material.needsUpdate = true;
 }
 
 /**
