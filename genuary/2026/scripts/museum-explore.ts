@@ -103,62 +103,133 @@ async function main() {
       path: path.join(OUTPUT_DIR, `museum-gallery-center-${timestamp}.png`)
     });
 
-    // Full 360° rotation to see all exhibit walls
-    console.log('Looking around gallery - full rotation...');
+    // Helper to turn and walk toward an exhibit
+    async function visitExhibit(name: string, turnTime: number) {
+      // Turn to face the exhibit
+      console.log(`Turning to ${name}...`);
+      await page.keyboard.down('ArrowLeft');
+      await sleep(turnTime);
+      await page.keyboard.up('ArrowLeft');
+      await sleep(400);
 
-    // There are 4 exhibit walls (walls 1, 3, 5, 7) between the 4 doorways
-    // Each wall segment is 45° (360° / 8 walls)
-    // Exhibits are on walls 1, 3, 5, 7 which are at roughly 45°, 135°, 225°, 315°
+      // Take a screenshot from distance
+      await canvas.screenshot({
+        path: path.join(OUTPUT_DIR, `museum-${name}-far-${timestamp}.png`)
+      });
 
-    // Turn ~45° to face first exhibit (wall 1 - Day 1)
-    await page.keyboard.down('ArrowLeft');
-    await sleep(500);
-    await page.keyboard.up('ArrowLeft');
-    await sleep(300);
+      // Walk toward the exhibit
+      await page.keyboard.down('KeyW');
+      await sleep(1200);
+      await page.keyboard.up('KeyW');
+      await sleep(400);
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-day1-${timestamp}.png`)
-    });
+      // Take close-up screenshot
+      await canvas.screenshot({
+        path: path.join(OUTPUT_DIR, `museum-${name}-close-${timestamp}.png`)
+      });
 
-    // Turn ~90° more to face exhibit wall 3 (Day 7)
-    await page.keyboard.down('ArrowLeft');
-    await sleep(1000);
-    await page.keyboard.up('ArrowLeft');
-    await sleep(300);
+      // Back up to center
+      await page.keyboard.down('KeyS');
+      await sleep(1200);
+      await page.keyboard.up('KeyS');
+      await sleep(300);
+    }
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-day7-${timestamp}.png`)
-    });
+    // Gallery is octagonal - exhibits are on walls 1, 3, 5, 7
+    // We enter facing north (toward wall 4/doorway)
+    // Turn right to see wall 1 (first exhibit - Day 1) - need ~67.5° turn
+    console.log('Visiting all 4 exhibits...');
 
-    // Turn ~90° more to face exhibit wall 5 (Day 11)
-    await page.keyboard.down('ArrowLeft');
-    await sleep(1000);
-    await page.keyboard.up('ArrowLeft');
-    await sleep(300);
-
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-day11-${timestamp}.png`)
-    });
-
-    // Turn ~90° more to face exhibit wall 7 (Day 13)
-    await page.keyboard.down('ArrowLeft');
-    await sleep(1000);
-    await page.keyboard.up('ArrowLeft');
-    await sleep(300);
-
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-day13-${timestamp}.png`)
-    });
-
-    // Walk toward an exhibit
-    console.log('Approaching an exhibit...');
-    await page.keyboard.down('KeyW');
+    // First exhibit - turn right ~67° (wall 1 has Day 1)
+    await page.keyboard.down('ArrowRight');
     await sleep(1500);
-    await page.keyboard.up('KeyW');
-    await sleep(300);
+    await page.keyboard.up('ArrowRight');
+    await sleep(400);
 
     await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-closeup-${timestamp}.png`)
+      path: path.join(OUTPUT_DIR, `museum-exhibit1-day1-${timestamp}.png`)
+    });
+
+    // Walk closer
+    await page.keyboard.down('KeyW');
+    await sleep(1000);
+    await page.keyboard.up('KeyW');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit1-close-${timestamp}.png`)
+    });
+
+    // Back up and turn to next exhibit (~90° left)
+    await page.keyboard.down('KeyS');
+    await sleep(1000);
+    await page.keyboard.up('KeyS');
+
+    await page.keyboard.down('ArrowLeft');
+    await sleep(2000);  // ~90° turn
+    await page.keyboard.up('ArrowLeft');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit2-day7-${timestamp}.png`)
+    });
+
+    // Walk closer to exhibit 2
+    await page.keyboard.down('KeyW');
+    await sleep(1000);
+    await page.keyboard.up('KeyW');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit2-close-${timestamp}.png`)
+    });
+
+    // Back up and turn to exhibit 3 (~90° left)
+    await page.keyboard.down('KeyS');
+    await sleep(1000);
+    await page.keyboard.up('KeyS');
+
+    await page.keyboard.down('ArrowLeft');
+    await sleep(2000);
+    await page.keyboard.up('ArrowLeft');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit3-day11-${timestamp}.png`)
+    });
+
+    // Walk closer to exhibit 3
+    await page.keyboard.down('KeyW');
+    await sleep(1000);
+    await page.keyboard.up('KeyW');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit3-close-${timestamp}.png`)
+    });
+
+    // Back up and turn to exhibit 4 (~90° left)
+    await page.keyboard.down('KeyS');
+    await sleep(1000);
+    await page.keyboard.up('KeyS');
+
+    await page.keyboard.down('ArrowLeft');
+    await sleep(2000);
+    await page.keyboard.up('ArrowLeft');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit4-day13-${timestamp}.png`)
+    });
+
+    // Walk closer to exhibit 4
+    await page.keyboard.down('KeyW');
+    await sleep(1000);
+    await page.keyboard.up('KeyW');
+    await sleep(400);
+
+    await canvas.screenshot({
+      path: path.join(OUTPUT_DIR, `museum-exhibit4-close-${timestamp}.png`)
     });
 
     console.log('\n=== Screenshots saved to outputs/ ===');
@@ -166,11 +237,14 @@ async function main() {
     console.log(`  museum-entrance-${timestamp}.png`);
     console.log(`  museum-gallery-approach-${timestamp}.png`);
     console.log(`  museum-gallery-center-${timestamp}.png`);
-    console.log(`  museum-exhibit-day1-${timestamp}.png`);
-    console.log(`  museum-exhibit-day7-${timestamp}.png`);
-    console.log(`  museum-exhibit-day11-${timestamp}.png`);
-    console.log(`  museum-exhibit-day13-${timestamp}.png`);
-    console.log(`  museum-exhibit-closeup-${timestamp}.png`);
+    console.log(`  museum-exhibit1-day1-${timestamp}.png (far)`);
+    console.log(`  museum-exhibit1-close-${timestamp}.png`);
+    console.log(`  museum-exhibit2-day7-${timestamp}.png (far)`);
+    console.log(`  museum-exhibit2-close-${timestamp}.png`);
+    console.log(`  museum-exhibit3-day11-${timestamp}.png (far)`);
+    console.log(`  museum-exhibit3-close-${timestamp}.png`);
+    console.log(`  museum-exhibit4-day13-${timestamp}.png (far)`);
+    console.log(`  museum-exhibit4-close-${timestamp}.png`);
 
     await context.close();
   } finally {
