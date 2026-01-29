@@ -133,6 +133,13 @@ import {
   disposeExhibitInfoPanel,
   type ExhibitInfoPanel,
 } from './exhibit-info';
+import {
+  createPhotoGallery,
+  addPhotoToGallery,
+  toggleGallery,
+  disposePhotoGallery,
+  type PhotoGallery,
+} from './gallery';
 
 // ============================================================================
 // Types
@@ -156,6 +163,7 @@ export interface MuseumContext {
   help: HelpSystem;
   compass: Compass;
   exhibitInfo: ExhibitInfoPanel;
+  photoGallery: PhotoGallery;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -336,16 +344,27 @@ function updateLocationIndicator(z: number, x: number): void {
 /**
  * Take a screenshot of the current view
  */
-function takeScreenshot(canvas: HTMLCanvasElement): void {
+function takeScreenshot(
+  canvas: HTMLCanvasElement,
+  gallery: PhotoGallery | null,
+  dayNumber: number
+): void {
   try {
-    // Create a link element
+    const dataUrl = canvas.toDataURL('image/png');
+
+    // Create a link element for download
     const link = document.createElement('a');
-    link.download = `genuary-museum-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.download = `genuary-museum-day-${dayNumber > 0 ? dayNumber : 'view'}-${Date.now()}.png`;
+    link.href = dataUrl;
     link.click();
 
-    // Show confirmation
-    showNotification('Screenshot saved!');
+    // Save to gallery if available
+    if (gallery && dayNumber > 0) {
+      addPhotoToGallery(gallery, dataUrl, dayNumber);
+      showNotification('Screenshot saved to gallery! (Shift+G to view)');
+    } else {
+      showNotification('Screenshot saved!');
+    }
   } catch (e) {
     console.error('Screenshot failed:', e);
     showNotification('Screenshot failed');
@@ -841,6 +860,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create exhibit info panel (shows when zoomed)
   const exhibitInfo = createExhibitInfoPanel(container);
 
+  // Create photo gallery (Shift+G to open)
+  const photoGallery = createPhotoGallery(container);
+
   // Wire up zoom callbacks for exhibit info panel
   interaction.onZoomIn = (dayNumber: number) => {
     showExhibitInfo(exhibitInfo, dayNumber);
@@ -923,7 +945,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
         togglePhotoMode(container);
       } else {
         playCameraShutter();
-        takeScreenshot(scene.renderer.domElement);
+        takeScreenshot(scene.renderer.domElement, photoGallery, interaction.currentDayNumber);
         recordScreenshot(stats);
       }
     }
@@ -1105,6 +1127,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     help,
     compass,
     exhibitInfo,
+    photoGallery,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1261,6 +1284,7 @@ export function disposeMuseum(): void {
   disposeHelpSystem(context.help);
   disposeCompass(context.compass);
   disposeExhibitInfoPanel(context.exhibitInfo);
+  disposePhotoGallery(context.photoGallery);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
