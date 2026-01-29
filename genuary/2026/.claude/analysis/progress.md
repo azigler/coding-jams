@@ -624,8 +624,65 @@ All three issues addressed in this session.
 **Next session**:
 - Await human feedback on latest performance improvements
 - VR/WebXR integration
-- Mobile touch controls
-- Consider minimap for navigation
+
+---
+
+### 2026-01-29 — Mobile & Navigation Features
+
+**Beads worked**: None (feature development)
+
+**Accomplished**:
+
+**Mobile Touch Controls** (`a77b0d3`):
+- Virtual joystick for movement (bottom-left corner)
+- Touch-drag for looking around
+- Auto-detected on touch devices
+- Mobile-specific help text overlay
+
+**Navigation Minimap** (`11e220c`):
+- Shows museum floor plan in top-right corner
+- Displays player position and direction
+- Labels for each wing (N, E, W, S)
+- Updates in real-time as you move
+
+**Commits**:
+- `a77b0d3` - feat(museum): add mobile touch controls
+- `11e220c` - feat(museum): add minimap for navigation
+
+**Full Feature List** (28 features):
+1. Live Artwork (27+ days, visibility-animated)
+2. Dust Particles (optimized to 40)
+3. Teleport Navigation (0-5, Home)
+4. Help Overlay (H toggle)
+5. Glowing Orb Animation
+6. Welcome Sign
+7. Ambient Audio
+8. Location Indicator
+9. Footstep Sounds
+10. Click-to-Zoom
+11. Hover Cursor (throttled)
+12. Info Panel with Prompt Details
+13. View Day Link
+14. Zoom Sound Effects
+15. Vignette Focus Effect
+16. Keyboard Exhibit Navigation ([ ])
+17. Progress Indicator (X of Y)
+18. Random Exhibit (R key)
+19. Exhibit Day Sorting
+20. Return Home (0/Home)
+21. Teleport Whoosh Sound
+22. Interactive help overlay
+23. Proximity-based orb glow
+24. Loading screen with progress bar
+25. Guided Tour (T key)
+26. Visibility-based animation
+27. **NEW: Mobile Touch Controls**
+28. **NEW: Navigation Minimap**
+
+**Next session**:
+- VR/WebXR integration
+- Consider screenshot/share feature
+- More ambient sound variety
 
 ---
 
