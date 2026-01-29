@@ -186,6 +186,11 @@ import {
   disposeSearchSystem,
   type SearchSystem,
 } from './search';
+import {
+  createAccessibilitySystem,
+  disposeAccessibilitySystem,
+  type AccessibilitySystem,
+} from './accessibility';
 
 // ============================================================================
 // Types
@@ -217,6 +222,7 @@ export interface MuseumContext {
   autoWalk: AutoWalk;
   guestbook: Guestbook;
   search: SearchSystem;
+  accessibility: AccessibilitySystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -970,6 +976,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create search system (/ key to open)
   const search = createSearchSystem(container);
 
+  // Create accessibility system (Alt+H/T/R for high contrast, large text, reduced motion)
+  const accessibility = createAccessibilitySystem(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1372,6 +1381,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     autoWalk,
     guestbook,
     search,
+    accessibility,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1546,6 +1556,7 @@ export function disposeMuseum(): void {
   disposeAutoWalk(context.autoWalk);
   disposeGuestbook(context.guestbook);
   disposeSearchSystem(context.search);
+  disposeAccessibilitySystem(context.accessibility);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
