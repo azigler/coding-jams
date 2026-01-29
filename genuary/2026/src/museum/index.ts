@@ -114,6 +114,12 @@ import {
   disposeCreditsSystem,
   type CreditsSystem,
 } from './credits';
+import {
+  createHelpSystem,
+  toggleHelp,
+  disposeHelpSystem,
+  type HelpSystem,
+} from './help';
 
 // ============================================================================
 // Types
@@ -134,6 +140,7 @@ export interface MuseumContext {
   daySelector: DaySelector;
   achievements: AchievementsSystem;
   credits: CreditsSystem;
+  help: HelpSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -810,6 +817,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create credits system (C key to open)
   const credits = createCreditsSystem(container);
 
+  // Create help system (H/? key to open)
+  const help = createHelpSystem(container);
+
   // Override onExhibitViewed to also check speed run (now that achievements exists)
   const originalOnExhibitViewed = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -1060,6 +1070,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     daySelector,
     achievements,
     credits,
+    help,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1210,6 +1221,7 @@ export function disposeMuseum(): void {
   disposeDaySelector(context.daySelector);
   disposeAchievementsSystem(context.achievements);
   disposeCreditsSystem(context.credits);
+  disposeHelpSystem(context.help);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
