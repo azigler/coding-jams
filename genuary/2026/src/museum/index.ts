@@ -239,6 +239,12 @@ import {
   disposeSuggestedNext,
   type SuggestedNext,
 } from './suggested-next';
+import {
+  createCompletionSystem,
+  checkCompletion,
+  disposeCompletionSystem,
+  type CompletionSystem,
+} from './completion';
 
 // ============================================================================
 // Types
@@ -278,6 +284,7 @@ export interface MuseumContext {
   quickFacts: QuickFactsSystem;
   photoBooth: PhotoBooth;
   suggestedNext: SuggestedNext;
+  completion: CompletionSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1142,6 +1149,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     };
   }
 
+  // Create completion system (celebration for viewing all 31)
+  const completion = createCompletionSystem(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1266,6 +1276,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
       // Delay note check to let other UI settle
       setTimeout(() => checkCuratorNotes(curatorNotes, noteContext), 1500);
     }
+
+    // Check for completion
+    checkCompletion(completion, sessionSummary.exhibitsViewed);
   };
 
   // Override onFavoriteToggle to track favorites in session summary
@@ -1601,6 +1614,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     quickFacts,
     photoBooth,
     suggestedNext,
+    completion,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1794,6 +1808,7 @@ export function disposeMuseum(): void {
   disposeQuickFactsSystem(context.quickFacts);
   disposePhotoBooth(context.photoBooth);
   disposeSuggestedNext(context.suggestedNext);
+  disposeCompletionSystem(context.completion);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
