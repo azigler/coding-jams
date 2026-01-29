@@ -427,6 +427,19 @@ import {
   disposeReactionsSystem,
   type ReactionsSystem,
 } from './reactions';
+import {
+  createPaletteSystem,
+  showPalette,
+  closePalette,
+  disposePaletteSystem,
+  type PaletteSystem,
+} from './palette';
+import {
+  createFloorPlanSystem,
+  toggleFloorPlan,
+  disposeFloorPlanSystem,
+  type FloorPlanSystem,
+} from './floorplan';
 
 // ============================================================================
 // Types
@@ -497,6 +510,8 @@ export interface MuseumContext {
   annotations: AnnotationsSystem;
   dailyQuote: DailyQuoteSystem;
   reactions: ReactionsSystem;
+  palette: PaletteSystem;
+  floorPlan: FloorPlanSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1561,6 +1576,45 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create reactions system (R key when viewing)
   const reactions = createReactionsSystem(container);
 
+  // Create color palette system (K key when viewing)
+  const palette = createPaletteSystem(container);
+
+  // Create floor plan system (O key to toggle)
+  const floorPlan = createFloorPlanSystem(container);
+
+  // Wire up floor plan navigation
+  floorPlan.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1711,6 +1765,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     hideAnnotations(annotations);
     closeStyleGuide(artStyles);
     hideReactionsPanel(reactions);
+    closePalette(palette);
   };
 
   // Override onExhibitViewed to also check speed run and track session
@@ -2016,6 +2071,36 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', reactionsHandler);
 
+  // Color palette with K key (when viewing exhibit)
+  const paletteHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyK' && !event.shiftKey && !event.ctrlKey) {
+      if (interaction.currentDayNumber > 0) {
+        event.preventDefault();
+        if (palette.isOpen) {
+          closePalette(palette);
+        } else {
+          showPalette(palette, interaction.currentDayNumber);
+        }
+      }
+    }
+  };
+  document.addEventListener('keydown', paletteHandler);
+
+  // Floor plan with O key (museum overview)
+  const floorPlanHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyO' && !event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      toggleFloorPlan(
+        floorPlan,
+        sessionSummary.exhibitsViewed,
+        interaction.currentDayNumber,
+        scene.camera.position.x,
+        scene.camera.position.z
+      );
+    }
+  };
+  document.addEventListener('keydown', floorPlanHandler);
+
   // Auto-walk mode with B key (Browse/wander)
   const autoWalkHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
@@ -2228,6 +2313,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     annotations,
     dailyQuote,
     reactions,
+    palette,
+    floorPlan,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2476,6 +2563,8 @@ export function disposeMuseum(): void {
   disposeAnnotationsSystem(context.annotations);
   disposeDailyQuoteSystem(context.dailyQuote);
   disposeReactionsSystem(context.reactions);
+  disposePaletteSystem(context.palette);
+  disposeFloorPlanSystem(context.floorPlan);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
