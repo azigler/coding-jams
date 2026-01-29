@@ -317,6 +317,24 @@ import {
   disposeSocialSystem,
   type SocialSystem,
 } from './social';
+import {
+  createBookmarksSystem,
+  addBookmark,
+  disposeBookmarksSystem,
+  type BookmarksSystem,
+  type Bookmark,
+} from './bookmarks';
+import {
+  createFocusSystem,
+  disposeFocusSystem,
+  type FocusSystem,
+} from './focus';
+import {
+  createVisitorSystem,
+  recordDayView,
+  disposeVisitorSystem,
+  type VisitorSystem,
+} from './visitors';
 
 // ============================================================================
 // Types
@@ -369,6 +387,9 @@ export interface MuseumContext {
   dailyChallenge: ChallengeSystem;
   comparator: ComparatorSystem;
   social: SocialSystem;
+  bookmarks: BookmarksSystem;
+  focus: FocusSystem;
+  visitors: VisitorSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1279,6 +1300,23 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create social share system (Shift+S when viewing exhibit)
   const social = createSocialSystem(container);
 
+  // Create bookmarks system (Shift+B to view, Ctrl+B to save)
+  const bookmarks = createBookmarksSystem(container);
+
+  // Create focus mode system (Shift+F to toggle)
+  const focus = createFocusSystem(container);
+
+  // Create visitor counter system (simulated visitors)
+  const visitors = createVisitorSystem(container);
+
+  // Wire up bookmark navigation
+  bookmarks.onNavigate = (bookmark: Bookmark) => {
+    scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
+    navigation.euler.set(bookmark.rotation.x, bookmark.rotation.y, bookmark.rotation.z, 'YXZ');
+    scene.camera.quaternion.setFromEuler(navigation.euler);
+    showNotification(`Jumped to "${bookmark.name}"`);
+  };
+
   // Wire up history navigation
   history.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1427,6 +1465,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     recordSpeedRunExhibit(speedrun, dayNumber);
     // Check scavenger hunt progress
     checkScavengerProgress(scavenger, dayNumber);
+    // Record simulated view
+    recordDayView(visitors, dayNumber);
 
     // Check for curator notes
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1605,6 +1645,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', socialShareHandler);
+
+  // Save bookmark with Ctrl+B
+  const bookmarkSaveHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyB' && event.ctrlKey) {
+      event.preventDefault();
+      addBookmark(bookmarks, scene.camera, interaction.currentDayNumber || null);
+      showNotification('Bookmark saved!');
+    }
+  };
+  document.addEventListener('keydown', bookmarkSaveHandler);
 
   // Rate exhibits with +/- keys (only when zoomed)
   const ratingHandler = (event: KeyboardEvent) => {
@@ -1827,6 +1877,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     dailyChallenge,
     comparator,
     social,
+    bookmarks,
+    focus,
+    visitors,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2057,6 +2110,9 @@ export function disposeMuseum(): void {
   disposeChallengeSystem(context.dailyChallenge);
   disposeComparatorSystem(context.comparator);
   disposeSocialSystem(context.social);
+  disposeBookmarksSystem(context.bookmarks);
+  disposeFocusSystem(context.focus);
+  disposeVisitorSystem(context.visitors);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
