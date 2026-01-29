@@ -715,8 +715,9 @@ function createExhibits(
 
 /**
  * Update the gallery zone each frame
+ * @param cameraPos Optional camera position for proximity effects
  */
-export function updateGalleryZone(zone: GalleryZone, deltaTime: number): void {
+export function updateGalleryZone(zone: GalleryZone, deltaTime: number, cameraPos?: THREE.Vector3): void {
   zone.time += deltaTime;
 
   // Subtle skylight color shift (simulating clouds passing)
@@ -764,9 +765,23 @@ export function updateGalleryZone(zone: GalleryZone, deltaTime: number): void {
     const bobAmount = Math.sin(zone.time * 1.5) * 0.05;
     zone.orbMesh.position.y = zone.orbBaseY + bobAmount;
 
-    // Subtle pulsing glow
+    // Base pulsing glow
+    let baseGlow = 1.3 + Math.sin(zone.time * 2) * 0.3;
+
+    // Proximity boost - orb glows brighter when player is near
+    if (cameraPos) {
+      const orbPos = zone.orbMesh.position;
+      const dx = cameraPos.x - orbPos.x;
+      const dz = cameraPos.z - orbPos.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+
+      // Start boosting at 6m, max boost at 2m
+      const proximityBoost = Math.max(0, Math.min(1, (6 - dist) / 4));
+      baseGlow += proximityBoost * 0.8; // Up to 0.8 extra intensity
+    }
+
     const orbMat = zone.orbMesh.material as THREE.MeshStandardMaterial;
-    orbMat.emissiveIntensity = 1.3 + Math.sin(zone.time * 2) * 0.3;
+    orbMat.emissiveIntensity = baseGlow;
   }
 }
 

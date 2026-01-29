@@ -235,9 +235,9 @@ export function updateScene(museumScene: MuseumScene, deltaTime: number): void {
     updateEntranceZone(museumScene.entranceZone, deltaTime);
   }
 
-  // Update gallery zone (skylight animation)
+  // Update gallery zone (skylight animation, orb proximity)
   if (museumScene.galleryZone) {
-    updateGalleryZone(museumScene.galleryZone, deltaTime);
+    updateGalleryZone(museumScene.galleryZone, deltaTime, museumScene.camera.position);
   }
 
   // Update wing zones
