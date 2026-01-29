@@ -388,6 +388,11 @@ import {
   disposeHotSpotsSystem,
   type HotSpotsSystem,
 } from './hotspots';
+import {
+  createProfileSystem,
+  disposeProfileSystem,
+  type ProfileSystem,
+} from './profile';
 
 // ============================================================================
 // Types
@@ -452,6 +457,7 @@ export interface MuseumContext {
   giftShop: GiftShopSystem;
   meditation: MeditationSystem;
   hotSpots: HotSpotsSystem;
+  visitorProfile: ProfileSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1490,6 +1496,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create hot spots indicator (shows trending exhibits)
   const hotSpots = createHotSpotsSystem(container);
 
+  // Create visitor profile system (Ctrl+Shift+P to open)
+  const visitorProfile = createProfileSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -2090,6 +2099,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     giftShop,
     meditation,
     hotSpots,
+    visitorProfile,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2332,6 +2342,7 @@ export function disposeMuseum(): void {
   disposeGiftShopSystem(context.giftShop);
   disposeMeditationSystem(context.meditation);
   disposeHotSpotsSystem(context.hotSpots);
+  disposeProfileSystem(context.visitorProfile);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
