@@ -961,6 +961,40 @@ All three issues addressed in this session.
 
 **Secret Achievements Count**: 3 (Night Owl, Speed Runner, Old School)
 
+**Additional Features (Continued Session)**:
+
+**Fullscreen Toggle** (`46d7fc2`):
+- Press F when walking (not zoomed) to toggle fullscreen
+- F key contextual: Fullscreen when walking, Favorite when zoomed
+
+**New Tips** (`d4e3dc7`):
+- Added tips for fullscreen toggle (F key)
+- Added tips for mute toggle (M key)
+- Total 16 tips now
+
+**Auto-Tour URL Parameter** (`79efbb7`):
+- Add ?tour=1 or ?autoTour=true to URL
+- Tour starts automatically after scene loads
+- Great for sharing the full museum experience
+
+**Session Timer** (`315f224`):
+- Real-time session timer next to location indicator
+- Shows elapsed time in m:ss format
+- Updates every second
+
+**Photo Mode** (`52c50b6`):
+- Press Shift+P to toggle photo mode
+- Hides all UI elements for clean screenshots
+- Perfect for capturing pristine exhibit views
+
+**Full Feature List** (58 features):
+1-53. (previous features)
+54. **NEW: Fullscreen Toggle (F key)**
+55. **NEW: Additional Tips**
+56. **NEW: Auto-Tour URL Parameter**
+57. **NEW: Session Timer Display**
+58. **NEW: Photo Mode (Shift+P)**
+
 **Next session**:
 - VR/WebXR integration
 - Photo gallery of taken screenshots
