@@ -225,6 +225,12 @@ import {
   disposeQuickFactsSystem,
   type QuickFactsSystem,
 } from './quick-facts';
+import {
+  createPhotoBooth,
+  openPhotoBooth,
+  disposePhotoBooth,
+  type PhotoBooth,
+} from './photo-booth';
 
 // ============================================================================
 // Types
@@ -262,6 +268,7 @@ export interface MuseumContext {
   timeLighting: TimeLighting;
   collections: CollectionsSystem;
   quickFacts: QuickFactsSystem;
+  photoBooth: PhotoBooth;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1069,6 +1076,17 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create quick facts system (shows facts when hovering near exhibits)
   const quickFacts = createQuickFactsSystem(container);
 
+  // Create photo booth (Shift+P when not in photo mode)
+  const photoBooth = createPhotoBooth(container);
+  photoBooth.onCapture = (dataUrl: string, dayNumber: number) => {
+    // Download the styled photo
+    const link = document.createElement('a');
+    link.download = `genuary-2026-day${dayNumber.toString().padStart(2, '0')}-styled.png`;
+    link.href = dataUrl;
+    link.click();
+    showNotification('Styled photo saved!');
+  };
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1260,10 +1278,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', galleryReturnHandler);
 
-  // Screenshot with P key, Photo mode with Shift+P
+  // Screenshot with P key, Photo mode with Shift+P, Photo booth with Ctrl+P when viewing exhibit
   const screenshotHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyP') {
-      if (event.shiftKey) {
+      if (event.ctrlKey && interaction.currentDayNumber > 0) {
+        // Open photo booth when viewing an exhibit
+        event.preventDefault();
+        openPhotoBooth(photoBooth, scene.renderer.domElement, interaction.currentDayNumber);
+      } else if (event.shiftKey) {
         togglePhotoMode(container);
       } else {
         playCameraShutter();
@@ -1522,6 +1544,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     timeLighting,
     collections,
     quickFacts,
+    photoBooth,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1702,6 +1725,7 @@ export function disposeMuseum(): void {
   disposeTimeLighting(context.timeLighting);
   disposeCollectionsSystem(context.collections);
   disposeQuickFactsSystem(context.quickFacts);
+  disposePhotoBooth(context.photoBooth);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
