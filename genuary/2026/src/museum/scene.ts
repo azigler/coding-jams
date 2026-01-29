@@ -246,6 +246,7 @@ function addGround(scene: THREE.Scene): void {
   // Large floor plane
   const floorGeometry = new THREE.PlaneGeometry(100, 100);
   const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  floor.name = 'museum-floor';
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = 0;
   floor.receiveShadow = true;

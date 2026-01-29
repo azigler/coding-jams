@@ -112,6 +112,9 @@ export interface InteractionSystem {
   // Callback to get all favorite day numbers
   getFavorites: (() => number[]) | null;
 
+  // Callback when teleporting via double-click
+  onTeleport: ((x: number, z: number) => void) | null;
+
   // Currently viewed day number (when zoomed)
   currentDayNumber: number;
 
@@ -159,16 +162,19 @@ export function createInteraction(
     onFavoriteToggle: null,
     isFavorite: null,
     getFavorites: null,
+    onTeleport: null,
     currentDayNumber: -1,
     cleanup: () => {},
   };
 
   // Event handlers
   const onClick = (event: MouseEvent) => handleClick(interaction, event);
+  const onDblClick = (event: MouseEvent) => handleDoubleClick(interaction, event);
   const onKeyDown = (event: KeyboardEvent) => handleKeyDown(interaction, event);
   const onMouseMove = (event: MouseEvent) => handleMouseMove(interaction, event);
 
   element.addEventListener('click', onClick);
+  element.addEventListener('dblclick', onDblClick);
   element.addEventListener('mousemove', onMouseMove);
   document.addEventListener('keydown', onKeyDown);
 
@@ -177,6 +183,7 @@ export function createInteraction(
 
   interaction.cleanup = () => {
     element.removeEventListener('click', onClick);
+    element.removeEventListener('dblclick', onDblClick);
     element.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('keydown', onKeyDown);
   };
@@ -254,6 +261,41 @@ function handleClick(interaction: InteractionSystem, event: MouseEvent): void {
     if (dayNumber !== undefined) {
       zoomToExhibit(interaction, hit.object as THREE.Mesh, dayNumber);
     }
+  }
+}
+
+/**
+ * Handle double-click - teleport to floor position
+ */
+function handleDoubleClick(interaction: InteractionSystem, event: MouseEvent): void {
+  // Don't teleport if zoomed
+  if (interaction.isZoomed) return;
+
+  // Calculate mouse position in normalized device coordinates
+  const rect = interaction.element.getBoundingClientRect();
+  interaction.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  interaction.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // Raycast to find floor intersection
+  interaction.raycaster.setFromCamera(interaction.mouse, interaction.camera);
+
+  // Find the floor mesh
+  const floor = interaction.scene.getObjectByName('museum-floor');
+  if (!floor) return;
+
+  const intersects = interaction.raycaster.intersectObject(floor, false);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0];
+    const targetX = hit.point.x;
+    const targetZ = hit.point.z;
+
+    // Move camera to target (keeping current height)
+    interaction.camera.position.x = targetX;
+    interaction.camera.position.z = targetZ;
+
+    // Notify about teleport
+    interaction.onTeleport?.(targetX, targetZ);
   }
 }
 

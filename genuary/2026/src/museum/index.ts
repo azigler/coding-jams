@@ -21,6 +21,7 @@ import {
   playZoomIn,
   playZoomOut,
   playFavoriteToggle,
+  playTeleport,
 } from './audio';
 import {
   createInteraction,
@@ -717,6 +718,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Wire up interaction to get all favorites
   interaction.getFavorites = () => {
     return getFavorites(favorites);
+  };
+
+  // Wire up double-click teleport
+  interaction.onTeleport = (_x: number, _z: number) => {
+    playTeleport();
+    showNotification('Teleported!');
   };
 
   // Create tips system for contextual help
