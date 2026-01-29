@@ -94,7 +94,7 @@ send_prompt() {
   if claude_is_running; then
     log "Claude is running, sending continuation prompt..."
     # Send a continuation message to the active Claude session
-    local msg="[$(date +%H:%M)] Keep going! Don't post to PR unless you have significant progress (1 update per hour max)."
+    local msg="[$(date +%H:%M)] Keep going! Post a status update to PR #32 if it's been more than 2 hours since your last one."
 
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" "$msg"
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
