@@ -812,6 +812,31 @@ All three issues addressed in this session.
 34. **NEW: Jump to favorite (J key)**
 35. **NEW: Favorites in discovery popup**
 
+**Additional Features This Session:**
+
+**Discovery Chime** (`24a8f93`):
+- Pleasant ascending chord plays when discovering new exhibit
+- Uses C5-E5-G5 major chord with staggered timing
+- Adds positive audio feedback to exploration
+
+**Tips System** (`f882dab`, `7762bbc`):
+- Created `src/museum/tips.ts` for contextual help
+- 12 tips covering all major features
+- Tips appear starting 10 seconds after load
+- Shown tips remembered in localStorage
+- Non-intrusive design with fade in/out
+- Tips marked as used when user performs action
+
+**Full Feature List** (37 features):
+1-35. (previous features)
+36. **NEW: Discovery Chime**
+37. **NEW: Contextual Tips System**
+
+**Commits**:
+- `24a8f93` - feat(museum): add discovery chime for new exhibits
+- `f882dab` - feat(museum): add contextual tips system for feature discovery
+- `7762bbc` - feat(museum): mark favorite tip as used when favoriting
+
 **Next session**:
 - VR/WebXR integration
 - More ambient sound variety
