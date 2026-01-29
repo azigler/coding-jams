@@ -94,16 +94,18 @@ send_prompt() {
   if claude_is_running; then
     log "Claude is running, sending continuation prompt..."
     # Send a continuation message to the active Claude session
-    local msg="[SCHEDULED TRIGGER - $(date +%Y-%m-%d\ %H:%M)]
+    local msg="[SCHEDULED NUDGE - $(date +%Y-%m-%d\ %H:%M)]
 
-Time for your next iteration! Check PR #32 for any new feedback, then continue building the museum.
+If you're in the middle of something, FINISH IT FIRST. Complete your current task, post any screenshots you were working on, and wrap up cleanly. Don't abandon work in progress.
 
-Quick checklist:
-1. Check PR comments for human feedback
+Once you've finished your current work, use this as your nudge for the next iteration:
+1. Check PR #32 for any new human feedback
 2. Review your last screenshots - what needs fixing?
-3. Make improvements
-4. Take new screenshots and post to PR
-5. Output TASK COMPLETE: <summary> when done with this cycle"
+3. Make improvements based on what you see
+4. Take new screenshots and post update to PR
+5. Output TASK COMPLETE: <summary> when done
+
+Take your time. Quality over speed."
 
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" "$msg"
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
