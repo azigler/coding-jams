@@ -753,4 +753,70 @@ All three issues addressed in this session.
 
 ---
 
+### 2026-01-29 — Favorites System & Polish
+
+**Beads worked**: None (feature development)
+
+**Accomplished**:
+
+**Favorites System** (`8bad210`, `a68a8df`, `d72ed2c`, `7f2e6a2`):
+- Created `src/museum/favorites.ts` with localStorage persistence
+- Press F while zoomed to mark/unmark exhibits as favorites
+- Heart icon (❤️/🤍) in zoom info panel shows favorite status
+- Click heart or press F to toggle
+- Press J to jump to next favorited exhibit
+- Favorites count shown in discovery badge
+- Discovery popup shows colored grid (blue=viewed, pink=favorited)
+- Legend explains color coding
+
+**Commits**:
+- `8bad210` - feat(museum): add favorites system for exhibits
+- `a68a8df` - feat(museum): add favorite button to zoom info panel
+- `d72ed2c` - feat(museum): add jump to next favorite with J key
+- `7f2e6a2` - feat(museum): integrate favorites into discovery tracker
+
+**Full Feature List** (35 features):
+1. Live Artwork (27+ days, visibility-animated)
+2. Dust Particles (optimized to 40)
+3. Teleport Navigation (0-5, Home)
+4. Help Overlay (H toggle)
+5. Glowing Orb Animation
+6. Welcome Sign
+7. Ambient Audio
+8. Location Indicator
+9. Footstep Sounds
+10. Click-to-Zoom
+11. Hover Cursor (throttled)
+12. Info Panel with Prompt Details
+13. View Day Link
+14. Zoom Sound Effects
+15. Vignette Focus Effect
+16. Keyboard Exhibit Navigation ([ ])
+17. Progress Indicator (X of Y)
+18. Random Exhibit (R key)
+19. Exhibit Day Sorting
+20. Return Home (0/Home)
+21. Teleport Whoosh Sound
+22. Interactive help overlay
+23. Proximity-based orb glow
+24. Loading screen with progress bar
+25. Guided Tour (T key)
+26. Visibility-based animation
+27. Mobile Touch Controls
+28. Navigation Minimap
+29. Screenshot (P key)
+30. Settings Panel
+31. Discovery Tracker
+32. **NEW: Favorites System (F key)**
+33. **NEW: Favorite button in zoom panel**
+34. **NEW: Jump to favorite (J key)**
+35. **NEW: Favorites in discovery popup**
+
+**Next session**:
+- VR/WebXR integration
+- More ambient sound variety
+- Consider guided tour for favorites only
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
