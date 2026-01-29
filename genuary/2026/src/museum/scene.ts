@@ -169,17 +169,67 @@ export function createScene(container: HTMLElement): MuseumScene {
 function addLighting(scene: THREE.Scene): void {
   // Ambient light - very dim for atmosphere
   const ambient = new THREE.AmbientLight(0x404060, 0.3);
+  ambient.name = 'ambient';
   scene.add(ambient);
 
   // Directional light - simulates moonlight (shadows disabled for performance)
   const directional = new THREE.DirectionalLight(0x8090a0, 0.8);
   directional.position.set(10, 20, 10);
+  directional.name = 'directional';
   scene.add(directional);
 
   // Warm point light at entrance - welcoming
   const entranceLight = new THREE.PointLight(0xffaa77, 3, 20, 2);
   entranceLight.position.set(0, 3, 2);
   scene.add(entranceLight);
+
+  // Apply time-based lighting adjustments
+  applyTimeBasedLighting(scene);
+}
+
+/**
+ * Apply time-based lighting adjustments based on local hour
+ * Morning: warm golden tones
+ * Day: bright natural light
+ * Evening: warm sunset colors
+ * Night: cool blue moonlight
+ */
+function applyTimeBasedLighting(scene: THREE.Scene): void {
+  const hour = new Date().getHours();
+
+  const ambient = scene.getObjectByName('ambient') as THREE.AmbientLight | undefined;
+  const directional = scene.getObjectByName('directional') as THREE.DirectionalLight | undefined;
+
+  if (!ambient || !directional) return;
+
+  // Define time periods and their lighting
+  if (hour >= 6 && hour < 10) {
+    // Morning: warm golden tones
+    ambient.color.setHex(0x706050);
+    ambient.intensity = 0.35;
+    directional.color.setHex(0xffd090);
+    directional.intensity = 1.0;
+  } else if (hour >= 10 && hour < 17) {
+    // Day: bright natural light
+    ambient.color.setHex(0x606070);
+    ambient.intensity = 0.4;
+    directional.color.setHex(0xffffff);
+    directional.intensity = 1.0;
+  } else if (hour >= 17 && hour < 20) {
+    // Evening: warm sunset colors
+    ambient.color.setHex(0x604030);
+    ambient.intensity = 0.3;
+    directional.color.setHex(0xff8050);
+    directional.intensity = 0.9;
+  } else {
+    // Night: cool blue moonlight (default)
+    ambient.color.setHex(0x404060);
+    ambient.intensity = 0.3;
+    directional.color.setHex(0x8090a0);
+    directional.intensity = 0.8;
+  }
+
+  console.log(`Museum lighting set for hour ${hour}`);
 }
 
 /**
