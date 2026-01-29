@@ -335,6 +335,12 @@ import {
   disposeVisitorSystem,
   type VisitorSystem,
 } from './visitors';
+import {
+  createSoundMixerSystem,
+  initMixerAudio,
+  disposeSoundMixerSystem,
+  type SoundMixerSystem,
+} from './soundmixer';
 
 // ============================================================================
 // Types
@@ -390,6 +396,7 @@ export interface MuseumContext {
   bookmarks: BookmarksSystem;
   focus: FocusSystem;
   visitors: VisitorSystem;
+  soundMixer: SoundMixerSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1309,6 +1316,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create visitor counter system (simulated visitors)
   const visitors = createVisitorSystem(container);
 
+  // Create sound mixer system (Shift+A to open)
+  const soundMixer = createSoundMixerSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1512,6 +1522,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     initAudio();
     startAmbient();
     initFootstepAudio(footsteps);
+    initMixerAudio(soundMixer);
     // Remove listeners after first interaction
     document.removeEventListener('click', startAudioOnInteraction);
     document.removeEventListener('keydown', startAudioOnInteraction);
@@ -1880,6 +1891,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     bookmarks,
     focus,
     visitors,
+    soundMixer,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2113,6 +2125,7 @@ export function disposeMuseum(): void {
   disposeBookmarksSystem(context.bookmarks);
   disposeFocusSystem(context.focus);
   disposeVisitorSystem(context.visitors);
+  disposeSoundMixerSystem(context.soundMixer);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
