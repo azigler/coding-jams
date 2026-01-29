@@ -264,12 +264,13 @@ import {
   disposeFootstepSystem,
   type FootstepSystem,
 } from './footsteps';
-import {
-  createSpeedRunSystem,
-  recordSpeedRunExhibit,
-  disposeSpeedRunSystem,
-  type SpeedRunSystem,
-} from './speedrun';
+// REMOVED: Gamification feature - speedrun
+// import {
+//   createSpeedRunSystem,
+//   recordSpeedRunExhibit,
+//   disposeSpeedRunSystem,
+//   type SpeedRunSystem,
+// } from './speedrun';
 import {
   createJournalSystem,
   openJournalEntry,
@@ -282,17 +283,19 @@ import {
   disposeMoodSystem,
   type MoodSystem,
 } from './mood';
-import {
-  createQuizSystem,
-  disposeQuizSystem,
-  type QuizSystem,
-} from './quiz';
-import {
-  createScavengerSystem,
-  checkScavengerProgress,
-  disposeScavengerSystem,
-  type ScavengerSystem,
-} from './scavenger';
+// REMOVED: Gamification feature - quiz
+// import {
+//   createQuizSystem,
+//   disposeQuizSystem,
+//   type QuizSystem,
+// } from './quiz';
+// REMOVED: Gamification feature - scavenger hunt
+// import {
+//   createScavengerSystem,
+//   checkScavengerProgress,
+//   disposeScavengerSystem,
+//   type ScavengerSystem,
+// } from './scavenger';
 import {
   createHistorySystem,
   recordHistoryView,
@@ -300,12 +303,13 @@ import {
   disposeHistorySystem,
   type HistorySystem,
 } from './history';
-import {
-  createChallengeSystem,
-  updateChallengeProgress,
-  disposeChallengeSystem,
-  type ChallengeSystem,
-} from './challenge';
+// REMOVED: Gamification feature - daily challenges
+// import {
+//   createChallengeSystem,
+//   updateChallengeProgress,
+//   disposeChallengeSystem,
+//   type ChallengeSystem,
+// } from './challenge';
 import {
   createComparatorSystem,
   disposeComparatorSystem,
@@ -501,11 +505,12 @@ import {
   disposeShareCardSystem,
   type ShareCardSystem,
 } from './sharecard';
-import {
-  createStreaksSystem,
-  disposeStreaksSystem,
-  type StreaksSystem,
-} from './streaks';
+// REMOVED: Gamification feature - streaks
+// import {
+//   createStreaksSystem,
+//   disposeStreaksSystem,
+//   type StreaksSystem,
+// } from './streaks';
 import {
   createAmbientPresetsSystem,
   togglePresetsPanel,
@@ -655,20 +660,22 @@ import {
   disposeThemesSystem,
   type ThemesSystem,
 } from './themes';
-import {
-  createBadgesSystem,
-  unlockBadge,
-  toggleBadgesPanel,
-  disposeBadgesSystem,
-  type BadgesSystem,
-} from './badges';
-import {
-  createLeaderboardSystem,
-  updateLeaderboardStats,
-  toggleLeaderboardPanel,
-  disposeLeaderboardSystem,
-  type LeaderboardSystem,
-} from './leaderboard';
+// REMOVED: Gamification feature - collectible badges
+// import {
+//   createBadgesSystem,
+//   unlockBadge,
+//   toggleBadgesPanel,
+//   disposeBadgesSystem,
+//   type BadgesSystem,
+// } from './badges';
+// REMOVED: Gamification feature - visitor leaderboard
+// import {
+//   createLeaderboardSystem,
+//   updateLeaderboardStats,
+//   toggleLeaderboardPanel,
+//   disposeLeaderboardSystem,
+//   type LeaderboardSystem,
+// } from './leaderboard';
 import {
   createTutorialsSystem,
   shouldShowFirstTimeTutorial,
@@ -677,6 +684,20 @@ import {
   disposeTutorialsSystem,
   type TutorialsSystem,
 } from './tutorials';
+import {
+  createExhibitionsSystem,
+  toggleExhibitionsPanel,
+  disposeExhibitionsSystem,
+  type ExhibitionsSystem,
+} from './exhibitions';
+import {
+  createRecommendationsSystem,
+  recordView as recordRecView,
+  recordFavoriteForRec,
+  toggleRecommendationsPanel,
+  disposeRecommendationsSystem,
+  type RecommendationsSystem,
+} from './recommendations';
 
 // ============================================================================
 // Types
@@ -720,13 +741,13 @@ export interface MuseumContext {
   postcards: PostcardSystem;
   landmarks: LandmarkSystem;
   footsteps: FootstepSystem;
-  speedrun: SpeedRunSystem;
+  // REMOVED: speedrun: SpeedRunSystem;
   journal: JournalSystem;
   mood: MoodSystem;
-  quiz: QuizSystem;
-  scavenger: ScavengerSystem;
+  // REMOVED: quiz: QuizSystem;
+  // REMOVED: scavenger: ScavengerSystem;
   history: HistorySystem;
-  dailyChallenge: ChallengeSystem;
+  // REMOVED: dailyChallenge: ChallengeSystem;
   comparator: ComparatorSystem;
   social: SocialSystem;
   bookmarks: BookmarksSystem;
@@ -758,7 +779,7 @@ export interface MuseumContext {
   visitLog: VisitLogSystem;
   randomWalk: RandomWalkSystem;
   shareCard: ShareCardSystem;
-  streaks: StreaksSystem;
+  // REMOVED: streaks: StreaksSystem;
   ambientPresets: AmbientPresetsSystem;
   wishList: WishListSystem;
   heatmap: HeatmapSystem;
@@ -779,9 +800,11 @@ export interface MuseumContext {
   comparisons: ComparisonSystem;
   visitTimeline: TimelineSystem;
   uiThemes: ThemesSystem;
-  visitorBadges: BadgesSystem;
-  leaderboard: LeaderboardSystem;
+  // REMOVED: visitorBadges: BadgesSystem;
+  // REMOVED: leaderboard: LeaderboardSystem;
   tutorials: TutorialsSystem;
+  exhibitions: ExhibitionsSystem;
+  personalRecs: RecommendationsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1665,8 +1688,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create footsteps sound system
   const footsteps = createFootstepSystem();
 
-  // Create speed run challenge system (Shift+R to start)
-  const speedrun = createSpeedRunSystem(container);
+  // REMOVED: Speed run challenge (gamification)
+  // const speedrun = createSpeedRunSystem(container);
 
   // Create visitor journal system (Ctrl+J to write, Shift+J to browse)
   const journal = createJournalSystem(container);
@@ -1674,17 +1697,17 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create mood filter system (Shift+M to change atmosphere)
   const mood = createMoodSystem(container, scene.scene);
 
-  // Create quiz system (Shift+Q to start quiz)
-  const quiz = createQuizSystem(container);
+  // REMOVED: Quiz system (gamification)
+  // const quiz = createQuizSystem(container);
 
-  // Create scavenger hunt system (Shift+H to start hunt)
-  const scavenger = createScavengerSystem(container);
+  // REMOVED: Scavenger hunt (gamification)
+  // const scavenger = createScavengerSystem(container);
 
   // Create viewing history system (Shift+Y to view history)
   const history = createHistorySystem(container);
 
-  // Create daily challenge system (Shift+D to view)
-  const dailyChallenge = createChallengeSystem(container);
+  // REMOVED: Daily challenge (gamification)
+  // const dailyChallenge = createChallengeSystem(container);
 
   // Create exhibit comparator (Shift+X to compare)
   const comparator = createComparatorSystem(container);
@@ -1915,8 +1938,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create share card system (generates social share cards)
   const shareCard = createShareCardSystem(container);
 
-  // Create streaks system (tracks consecutive daily visits)
-  const streaks = createStreaksSystem(container);
+  // REMOVED: Streaks system (gamification)
+  // const streaks = createStreaksSystem(container);
 
   // Create ambient presets system (A key to change ambient lighting)
   const ambientPresets = createAmbientPresetsSystem(container);
@@ -2096,14 +2119,20 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create themes system (UI customization)
   const uiThemes = createThemesSystem(container);
 
-  // Create badges system (collectible badges)
-  const visitorBadges = createBadgesSystem(container);
+  // REMOVED: Badges system (gamification)
+  // const visitorBadges = createBadgesSystem(container);
 
-  // Create leaderboard system (rankings)
-  const leaderboard = createLeaderboardSystem(container);
+  // REMOVED: Leaderboard system (gamification)
+  // const leaderboard = createLeaderboardSystem(container);
 
   // Create tutorials system (guided tours for new users)
   const tutorials = createTutorialsSystem(container);
+
+  // Create exhibitions system (themed collections)
+  const exhibitions = createExhibitionsSystem(container);
+
+  // Create recommendations system (personalized suggestions)
+  const personalRecs = createRecommendationsSystem(container);
 
   // Wire up playlist navigation
   exhibitPlaylist.onNavigate = (dayNumber: number) => {
@@ -2437,10 +2466,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
     // Track in session summary
     recordSessionExhibit(sessionSummary, dayNumber);
-    // Track in speed run challenge if active
-    recordSpeedRunExhibit(speedrun, dayNumber);
-    // Check scavenger hunt progress
-    checkScavengerProgress(scavenger, dayNumber);
+    // REMOVED: Speed run tracking (gamification)
+    // recordSpeedRunExhibit(speedrun, dayNumber);
+    // REMOVED: Scavenger hunt tracking (gamification)
+    // checkScavengerProgress(scavenger, dayNumber);
     // Record simulated view
     recordDayView(visitors, dayNumber);
     recordHotSpotView(hotSpots, dayNumber);
@@ -3205,69 +3234,26 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', themesHandler);
 
-  // Badges with B key
-  const badgesHandler = (event: KeyboardEvent) => {
-    if (event.code === 'KeyB' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
-      event.preventDefault();
-      toggleBadgesPanel(visitorBadges);
-    }
-  };
-  document.addEventListener('keydown', badgesHandler);
+  // REMOVED: Badges system (gamification)
+  // const badgesHandler = (event: KeyboardEvent) => {
+  //   if (event.code === 'KeyB' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+  //     event.preventDefault();
+  //     toggleBadgesPanel(visitorBadges);
+  //   }
+  // };
+  // document.addEventListener('keydown', badgesHandler);
+  // unlockBadge(visitorBadges, 'first_visit');
+  // ... badge tracking removed ...
 
-  // Unlock first visit badge
-  unlockBadge(visitorBadges, 'first_visit');
-
-  // Wire up badges to track first exhibit view
-  const badgeViewHandler = interaction.onExhibitViewed;
-  interaction.onExhibitViewed = (dayNumber: number) => {
-    badgeViewHandler?.(dayNumber);
-    unlockBadge(visitorBadges, 'first_exhibit');
-    // Check for explorer badges
-    if (sessionSummary.exhibitsViewed.size >= 10) {
-      unlockBadge(visitorBadges, 'explorer_10');
-    }
-    if (sessionSummary.exhibitsViewed.size >= 20) {
-      unlockBadge(visitorBadges, 'explorer_20');
-    }
-    if (sessionSummary.exhibitsViewed.size >= 31) {
-      unlockBadge(visitorBadges, 'completionist');
-    }
-  };
-
-  // Wire up badges to track first favorite
-  const badgeFavoriteHandler = interaction.onFavoriteToggle;
-  interaction.onFavoriteToggle = (dayNumber: number) => {
-    const wasFavorite = isFavorite(favorites, dayNumber);
-    badgeFavoriteHandler?.(dayNumber);
-    if (!wasFavorite) {
-      unlockBadge(visitorBadges, 'first_favorite');
-      const favCount = getFavorites(favorites).length;
-      if (favCount >= 5) unlockBadge(visitorBadges, 'collector_5');
-      if (favCount >= 15) unlockBadge(visitorBadges, 'collector_15');
-      if (favCount >= 25) unlockBadge(visitorBadges, 'super_fan');
-      if (favCount >= 31) unlockBadge(visitorBadges, 'true_believer');
-    }
-  };
-
-  // Leaderboard with Shift+L key
-  const leaderboardHandler = (event: KeyboardEvent) => {
-    if (event.code === 'KeyL' && event.shiftKey && !event.ctrlKey) {
-      event.preventDefault();
-      toggleLeaderboardPanel(leaderboard);
-    }
-  };
-  document.addEventListener('keydown', leaderboardHandler);
-
-  // Wire up leaderboard to track stats
-  const leaderboardViewHandler = interaction.onExhibitViewed;
-  interaction.onExhibitViewed = (dayNumber: number) => {
-    leaderboardViewHandler?.(dayNumber);
-    updateLeaderboardStats(leaderboard, {
-      exhibitsViewed: sessionSummary.exhibitsViewed.size,
-      favoritesCount: getFavorites(favorites).length,
-      timeSpentMinutes: Math.floor((Date.now() - sessionSummary.sessionStart) / 60000),
-    });
-  };
+  // REMOVED: Leaderboard system (gamification)
+  // const leaderboardHandler = (event: KeyboardEvent) => {
+  //   if (event.code === 'KeyL' && event.shiftKey && !event.ctrlKey) {
+  //     event.preventDefault();
+  //     toggleLeaderboardPanel(leaderboard);
+  //   }
+  // };
+  // document.addEventListener('keydown', leaderboardHandler);
+  // ... leaderboard tracking removed ...
 
   // Tutorials with Shift+? (Shift+/)
   const tutorialHandler = (event: KeyboardEvent) => {
@@ -3447,13 +3433,13 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     postcards,
     landmarks,
     footsteps,
-    speedrun,
+    // REMOVED: speedrun,
     journal,
     mood,
-    quiz,
-    scavenger,
+    // REMOVED: quiz,
+    // REMOVED: scavenger,
     history,
-    dailyChallenge,
+    // REMOVED: dailyChallenge,
     comparator,
     social,
     bookmarks,
@@ -3485,7 +3471,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     visitLog,
     randomWalk,
     shareCard,
-    streaks,
+    // REMOVED: streaks,
     ambientPresets,
     wishList,
     heatmap,
@@ -3506,9 +3492,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     comparisons,
     visitTimeline,
     uiThemes,
-    visitorBadges,
-    leaderboard,
+    // REMOVED: visitorBadges,
+    // REMOVED: leaderboard,
     tutorials,
+    exhibitions,
+    personalRecs,
     container,
     isRunning: false,
     lastTime: 0,
@@ -3664,15 +3652,15 @@ export function startMuseum(): void {
       unlockAchievement(context.achievements, 'speed-run');
     }
 
-    // Update daily challenge progress
-    updateChallengeProgress(context.dailyChallenge, {
-      exhibitsViewed: context.sessionSummary.exhibitsViewed,
-      favoritesCount: getFavorites(context.favorites).length,
-      screenshotsTaken: context.stats.stats.screenshotsTaken,
-      journalEntriesCount: getJournalCount(context.journal),
-      timeSpent: context.stats.stats.totalTimeSpent,
-      distanceWalked: context.stats.stats.distanceWalked,
-    });
+    // REMOVED: Daily challenge progress (gamification)
+    // updateChallengeProgress(context.dailyChallenge, {
+    //   exhibitsViewed: context.sessionSummary.exhibitsViewed,
+    //   favoritesCount: getFavorites(context.favorites).length,
+    //   screenshotsTaken: context.stats.stats.screenshotsTaken,
+    //   journalEntriesCount: getJournalCount(context.journal),
+    //   timeSpent: context.stats.stats.totalTimeSpent,
+    //   distanceWalked: context.stats.stats.distanceWalked,
+    // });
   }, 10000); // Check every 10 seconds
 
   // Store interval for cleanup
@@ -3742,13 +3730,13 @@ export function disposeMuseum(): void {
   disposePostcardSystem(context.postcards);
   disposeLandmarkSystem(context.landmarks);
   disposeFootstepSystem(context.footsteps);
-  disposeSpeedRunSystem(context.speedrun);
+  // REMOVED: disposeSpeedRunSystem(context.speedrun);
   disposeJournalSystem(context.journal);
   disposeMoodSystem(context.mood);
-  disposeQuizSystem(context.quiz);
-  disposeScavengerSystem(context.scavenger);
+  // REMOVED: disposeQuizSystem(context.quiz);
+  // REMOVED: disposeScavengerSystem(context.scavenger);
   disposeHistorySystem(context.history);
-  disposeChallengeSystem(context.dailyChallenge);
+  // REMOVED: disposeChallengeSystem(context.dailyChallenge);
   disposeComparatorSystem(context.comparator);
   disposeSocialSystem(context.social);
   disposeBookmarksSystem(context.bookmarks);
@@ -3780,7 +3768,7 @@ export function disposeMuseum(): void {
   disposeVisitLogSystem(context.visitLog);
   disposeRandomWalkSystem(context.randomWalk);
   disposeShareCardSystem(context.shareCard);
-  disposeStreaksSystem(context.streaks);
+  // REMOVED: disposeStreaksSystem(context.streaks);
   disposeAmbientPresetsSystem(context.ambientPresets);
   disposeWishListSystem(context.wishList);
   disposeHeatmapSystem(context.heatmap);
@@ -3801,9 +3789,11 @@ export function disposeMuseum(): void {
   disposeComparisonSystem(context.comparisons);
   disposeTimelineSystem(context.visitTimeline);
   disposeThemesSystem(context.uiThemes);
-  disposeBadgesSystem(context.visitorBadges);
-  disposeLeaderboardSystem(context.leaderboard);
+  // REMOVED: disposeBadgesSystem(context.visitorBadges);
+  // REMOVED: disposeLeaderboardSystem(context.leaderboard);
   disposeTutorialsSystem(context.tutorials);
+  disposeExhibitionsSystem(context.exhibitions);
+  disposeRecommendationsSystem(context.personalRecs);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
