@@ -213,6 +213,70 @@ function updateLocationIndicator(z: number, x: number): void {
 }
 
 /**
+ * Take a screenshot of the current view
+ */
+function takeScreenshot(canvas: HTMLCanvasElement): void {
+  try {
+    // Create a link element
+    const link = document.createElement('a');
+    link.download = `genuary-museum-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    // Show confirmation
+    showNotification('Screenshot saved!');
+  } catch (e) {
+    console.error('Screenshot failed:', e);
+    showNotification('Screenshot failed');
+  }
+}
+
+/**
+ * Show a temporary notification
+ */
+function showNotification(message: string): void {
+  const existing = document.getElementById('museum-notification');
+  if (existing) existing.remove();
+
+  const notification = document.createElement('div');
+  notification.id = 'museum-notification';
+  notification.style.cssText = `
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(74, 158, 255, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    z-index: 1000;
+    animation: fadeInOut 2s ease-in-out;
+  `;
+  notification.textContent = message;
+
+  // Add animation style
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(notification);
+
+  // Remove after animation
+  setTimeout(() => {
+    notification.remove();
+    style.remove();
+  }, 2000);
+}
+
+/**
  * Create the help overlay showing controls
  */
 function createHelpOverlay(container: HTMLElement, permanent: boolean = false): HTMLElement {
@@ -249,6 +313,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
         <div><b>T</b> Tour</div>
+        <div><b>P</b> Photo</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -353,6 +418,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', tourToggleHandler);
+
+  // Screenshot with P key
+  const screenshotHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyP') {
+      takeScreenshot(scene.renderer.domElement);
+    }
+  };
+  document.addEventListener('keydown', screenshotHandler);
 
   context = {
     scene,
