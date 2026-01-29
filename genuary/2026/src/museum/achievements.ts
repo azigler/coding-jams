@@ -134,6 +134,13 @@ const ACHIEVEMENTS: Achievement[] = [
     icon: '⚡',
     secret: true,
   },
+  {
+    id: 'konami',
+    name: 'Old School',
+    description: 'Enter the classic code',
+    icon: '🎮',
+    secret: true,
+  },
 ];
 
 // ============================================================================

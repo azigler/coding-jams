@@ -358,6 +358,55 @@ function parseSharedView(): { x: number; y: number; z: number; rx: number; ry: n
 }
 
 /**
+ * Trigger confetti celebration for Easter egg
+ */
+function triggerConfetti(container: HTMLElement): void {
+  const confettiCount = 100;
+  const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#f0932b', '#eb4d4b', '#686de0', '#7bed9f'];
+
+  for (let i = 0; i < confettiCount; i++) {
+    const confetti = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const left = Math.random() * 100;
+    const delay = Math.random() * 2;
+    const duration = 2 + Math.random() * 2;
+    const size = 6 + Math.random() * 8;
+
+    confetti.style.cssText = `
+      position: fixed;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      left: ${left}%;
+      top: -20px;
+      z-index: 10000;
+      pointer-events: none;
+      animation: confetti-fall ${duration}s ease-out ${delay}s forwards;
+      transform: rotate(${Math.random() * 360}deg);
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+    `;
+
+    container.appendChild(confetti);
+
+    // Remove after animation
+    setTimeout(() => confetti.remove(), (duration + delay) * 1000 + 100);
+  }
+
+  // Add keyframes if not already present
+  if (!document.getElementById('confetti-style')) {
+    const style = document.createElement('style');
+    style.id = 'confetti-style';
+    style.textContent = `
+      @keyframes confetti-fall {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+/**
  * Show a temporary notification
  */
 function showNotification(message: string): void {
@@ -745,6 +794,32 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', achievementsHandler);
+
+  // Konami code Easter egg: up up down down left right left right b a
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+  let konamiIndex = 0;
+  let konamiTriggered = false;
+
+  const konamiHandler = (event: KeyboardEvent) => {
+    if (konamiTriggered) return;
+
+    if (event.code === konamiCode[konamiIndex]) {
+      konamiIndex++;
+      if (konamiIndex === konamiCode.length) {
+        konamiTriggered = true;
+        triggerConfetti(container);
+        showNotification('You found the secret!');
+        unlockAchievement(achievements, 'konami');
+      }
+    } else {
+      konamiIndex = 0;
+      // Check if current key starts the sequence
+      if (event.code === konamiCode[0]) {
+        konamiIndex = 1;
+      }
+    }
+  };
+  document.addEventListener('keydown', konamiHandler);
 
   // Apply shared view if present in URL
   const sharedView = parseSharedView();
