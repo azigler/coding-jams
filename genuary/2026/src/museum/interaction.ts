@@ -118,6 +118,12 @@ export interface InteractionSystem {
   // Callback to check if a day has been visited
   isVisited: ((dayNumber: number) => boolean) | null;
 
+  // Callback when zooming in to an exhibit
+  onZoomIn: ((dayNumber: number) => void) | null;
+
+  // Callback when exiting zoom
+  onZoomOut: (() => void) | null;
+
   // Currently viewed day number (when zoomed)
   currentDayNumber: number;
 
@@ -167,6 +173,8 @@ export function createInteraction(
     getFavorites: null,
     onTeleport: null,
     isVisited: null,
+    onZoomIn: null,
+    onZoomOut: null,
     currentDayNumber: -1,
     cleanup: () => {},
   };
@@ -682,6 +690,9 @@ function zoomToExhibitMesh(interaction: InteractionSystem, mesh: THREE.Mesh, day
   // Notify that exhibit was viewed
   interaction.onExhibitViewed?.(dayNumber);
 
+  // Notify zoom in
+  interaction.onZoomIn?.(dayNumber);
+
   // Show vignette and info panel
   showVignette();
   showZoomIndicator(
@@ -714,6 +725,9 @@ function exitZoom(interaction: InteractionSystem): void {
   console.log('Exiting zoom');
   playZoomOutSound();
   hideZoomIndicator();
+
+  // Notify zoom out
+  interaction.onZoomOut?.();
 }
 
 // ============================================================================
