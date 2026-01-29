@@ -286,10 +286,12 @@ Each session entry should include:
 - `11b1b2e` - fix: adjust teleport positions to be inside wing corridors
 - `71c705f` - feat: add controls help overlay on startup
 - `cc27ed5` - feat: add glowing orb on central pedestal
+- `dfc8b70` - feat: add bobbing animation and pulsing glow to orb
+- `61f1866` - feat: add welcome sign at entrance
 
 **Blockers**: None
 
-**Session Complete**: Posted summary to PR #32
+**Session Complete**: 10 commits, museum feature-complete!
 
 **Next session**:
 - Consider adding interactive elements (click to zoom)
