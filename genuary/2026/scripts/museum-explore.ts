@@ -103,45 +103,51 @@ async function main() {
       path: path.join(OUTPUT_DIR, `museum-gallery-center-${timestamp}.png`)
     });
 
-    // Look around - turn left
-    console.log('Looking around gallery...');
+    // Full 360° rotation to see all exhibit walls
+    console.log('Looking around gallery - full rotation...');
+
+    // There are 4 exhibit walls (walls 1, 3, 5, 7) between the 4 doorways
+    // Each wall segment is 45° (360° / 8 walls)
+    // Exhibits are on walls 1, 3, 5, 7 which are at roughly 45°, 135°, 225°, 315°
+
+    // Turn ~45° to face first exhibit (wall 1 - Day 1)
     await page.keyboard.down('ArrowLeft');
-    await sleep(800);
+    await sleep(500);
     await page.keyboard.up('ArrowLeft');
     await sleep(300);
 
     await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-gallery-left-${timestamp}.png`)
+      path: path.join(OUTPUT_DIR, `museum-exhibit-day1-${timestamp}.png`)
     });
 
-    // Turn more to see exhibits
+    // Turn ~90° more to face exhibit wall 3 (Day 7)
     await page.keyboard.down('ArrowLeft');
-    await sleep(600);
+    await sleep(1000);
     await page.keyboard.up('ArrowLeft');
     await sleep(300);
 
     await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-wall1-${timestamp}.png`)
+      path: path.join(OUTPUT_DIR, `museum-exhibit-day7-${timestamp}.png`)
     });
 
-    // Continue turning
+    // Turn ~90° more to face exhibit wall 5 (Day 11)
     await page.keyboard.down('ArrowLeft');
-    await sleep(800);
+    await sleep(1000);
     await page.keyboard.up('ArrowLeft');
     await sleep(300);
 
     await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit-wall2-${timestamp}.png`)
+      path: path.join(OUTPUT_DIR, `museum-exhibit-day11-${timestamp}.png`)
     });
 
-    // Turn to see more
+    // Turn ~90° more to face exhibit wall 7 (Day 13)
     await page.keyboard.down('ArrowLeft');
-    await sleep(800);
+    await sleep(1000);
     await page.keyboard.up('ArrowLeft');
     await sleep(300);
 
     await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-gallery-north-${timestamp}.png`)
+      path: path.join(OUTPUT_DIR, `museum-exhibit-day13-${timestamp}.png`)
     });
 
     // Walk toward an exhibit
@@ -160,10 +166,10 @@ async function main() {
     console.log(`  museum-entrance-${timestamp}.png`);
     console.log(`  museum-gallery-approach-${timestamp}.png`);
     console.log(`  museum-gallery-center-${timestamp}.png`);
-    console.log(`  museum-gallery-left-${timestamp}.png`);
-    console.log(`  museum-exhibit-wall1-${timestamp}.png`);
-    console.log(`  museum-exhibit-wall2-${timestamp}.png`);
-    console.log(`  museum-gallery-north-${timestamp}.png`);
+    console.log(`  museum-exhibit-day1-${timestamp}.png`);
+    console.log(`  museum-exhibit-day7-${timestamp}.png`);
+    console.log(`  museum-exhibit-day11-${timestamp}.png`);
+    console.log(`  museum-exhibit-day13-${timestamp}.png`);
     console.log(`  museum-exhibit-closeup-${timestamp}.png`);
 
     await context.close();
