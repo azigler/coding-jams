@@ -161,6 +161,13 @@ import {
   type Spotlight,
 } from './spotlight';
 import { getDailyRecommendation } from './daily';
+import {
+  createRatingsSystem,
+  rateExhibit,
+  getRating,
+  disposeRatingsSystem,
+  type RatingsSystem,
+} from './ratings';
 
 // ============================================================================
 // Types
@@ -188,6 +195,7 @@ export interface MuseumContext {
   breadcrumbs: BreadcrumbTrail;
   particles: ParticleSystem;
   spotlight: Spotlight;
+  ratings: RatingsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -924,6 +932,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create spotlight system for exhibit focus
   const spotlight = createSpotlight(scene.scene);
 
+  // Create ratings system
+  const ratings = createRatingsSystem();
+
   // Wire up breadcrumb navigation to zoom to exhibits
   breadcrumbs.onNavigate = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1087,6 +1098,33 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', achievementsHandler);
 
+  // Rate exhibits with +/- keys (only when zoomed)
+  const ratingHandler = (event: KeyboardEvent) => {
+    if (!interaction.isZoomed || interaction.currentDayNumber < 1) return;
+
+    const dayNumber = interaction.currentDayNumber;
+    let newRating: 'up' | 'down' | null = null;
+
+    if (event.code === 'Equal' || event.code === 'NumpadAdd') {
+      // + key for thumbs up
+      newRating = rateExhibit(ratings, dayNumber, 'up');
+      if (newRating === 'up') {
+        showNotification(`👍 Liked Day ${dayNumber}!`);
+      } else {
+        showNotification(`Removed like from Day ${dayNumber}`);
+      }
+    } else if (event.code === 'Minus' || event.code === 'NumpadSubtract') {
+      // - key for thumbs down
+      newRating = rateExhibit(ratings, dayNumber, 'down');
+      if (newRating === 'down') {
+        showNotification(`👎 Disliked Day ${dayNumber}`);
+      } else {
+        showNotification(`Removed dislike from Day ${dayNumber}`);
+      }
+    }
+  };
+  document.addEventListener('keydown', ratingHandler);
+
   // Mute toggle with M key
   const muteHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyM') {
@@ -1241,6 +1279,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     breadcrumbs,
     particles,
     spotlight,
+    ratings,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1408,6 +1447,7 @@ export function disposeMuseum(): void {
   disposeBreadcrumbTrail(context.breadcrumbs);
   disposeParticleSystem(context.particles);
   disposeSpotlight(context.spotlight);
+  disposeRatingsSystem(context.ratings);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
