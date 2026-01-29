@@ -67,6 +67,15 @@ import {
   disposeTipsSystem,
   type TipsSystem,
 } from './tips';
+import {
+  createStatsTracker,
+  recordExhibitView,
+  recordFavoriteAdded,
+  recordScreenshot,
+  recordMovement,
+  disposeStatsTracker,
+  type StatsTracker,
+} from './stats';
 
 // ============================================================================
 // Types
@@ -83,6 +92,7 @@ export interface MuseumContext {
   discovery: DiscoveryTracker;
   favorites: FavoritesSystem;
   tips: TipsSystem;
+  stats: StatsTracker;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -462,6 +472,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     if (wasNew) {
       playDiscoveryChime();
     }
+    // Record stat
+    recordExhibitView(stats);
   };
 
   // Wire up interaction to toggle favorites
@@ -472,6 +484,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     refreshDiscoveryBadge(discovery);
     // Mark tip as used
     markTipShown(tips, 'favorite');
+    // Record stat if adding
+    if (nowFavorite) {
+      recordFavoriteAdded(stats);
+    }
   };
 
   // Wire up interaction to check favorite status
@@ -486,6 +502,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Create tips system for contextual help
   const tips = createTipsSystem(container);
+
+  // Create stats tracker
+  const stats = createStatsTracker();
 
   updateLoadingProgress(80, 'Preparing gallery...');
 
@@ -542,6 +561,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     discovery,
     favorites,
     tips,
+    stats,
     container,
     isRunning: false,
     lastTime: 0,
@@ -615,6 +635,9 @@ export function startMuseum(): void {
     const pos = context.scene.camera.position;
     updateLocationIndicator(pos.z, pos.x);
 
+    // Track movement distance for stats
+    recordMovement(context.stats, pos.x, pos.z);
+
     // Update minimap
     updateMinimap(context.minimap, context.scene.camera);
 
@@ -657,6 +680,7 @@ export function disposeMuseum(): void {
   disposeDiscoveryTracker(context.discovery);
   disposeFavoritesSystem(context.favorites);
   disposeTipsSystem(context.tips);
+  disposeStatsTracker(context.stats);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
