@@ -564,6 +564,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>WASD</b> Move</div>
         <div><b>Drag</b> Look</div>
         <div><b>0-5</b> Teleport</div>
+        <div><b>Q</b> Gallery</div>
         <div><b>G</b> Go to Day</div>
         <div><b>Click</b> Zoom</div>
         <div><b>[ ]</b> Browse</div>
@@ -857,6 +858,19 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', tourToggleHandler);
+
+  // Quick return to gallery center with Q key
+  const galleryReturnHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyQ' && !interaction.isZoomed) {
+      // Gallery center position
+      scene.camera.position.set(0, 1.6, -32);
+      navigation.euler.set(0, 0, 0, 'YXZ');
+      scene.camera.quaternion.setFromEuler(navigation.euler);
+      playTeleport();
+      showNotification('Returned to gallery center');
+    }
+  };
+  document.addEventListener('keydown', galleryReturnHandler);
 
   // Screenshot with P key, Photo mode with Shift+P
   const screenshotHandler = (event: KeyboardEvent) => {
