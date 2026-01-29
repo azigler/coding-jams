@@ -586,6 +586,36 @@ import {
   disposeSoundscapeSystem,
   type SoundscapeSystem,
 } from './soundscape';
+import {
+  createTriviaSystem,
+  showRandomTrivia,
+  disposeTriviaSystem,
+  type TriviaSystem,
+} from './trivia';
+import {
+  createWaypointsSystem,
+  toggleWaypoints,
+  addCustomWaypoint,
+  disposeWaypointsSystem,
+  type WaypointsSystem,
+} from './waypoints';
+import {
+  createZoomSystem,
+  zoomIn,
+  zoomOut,
+  resetZoom,
+  getZoomFov,
+  disposeZoomSystem,
+  type ZoomSystem,
+} from './zoom';
+import {
+  createPlaylistSystem,
+  togglePlaylistPanel,
+  playlistNext,
+  playlistPrev,
+  disposePlaylistSystem,
+  type PlaylistSystem,
+} from './playlist';
 
 // ============================================================================
 // Types
@@ -679,6 +709,10 @@ export interface MuseumContext {
   photoFrame: PhotoFrameSystem;
   visitorInsights: InsightsSystem;
   soundscape: SoundscapeSystem;
+  trivia: TriviaSystem;
+  waypoints: WaypointsSystem;
+  cameraZoom: ZoomSystem;
+  exhibitPlaylist: PlaylistSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1958,6 +1992,59 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create soundscape system (backslash key to cycle)
   const soundscape = createSoundscapeSystem(container);
 
+  // Create trivia system (? key to show random trivia)
+  const trivia = createTriviaSystem(container);
+
+  // Create waypoints system (P key to open waypoints panel)
+  const waypoints = createWaypointsSystem(container);
+
+  // Wire up waypoint teleportation
+  waypoints.onTeleport = (waypoint) => {
+    scene.camera.position.set(waypoint.position.x, waypoint.position.y, waypoint.position.z);
+    navigation.euler.set(waypoint.rotation.x, waypoint.rotation.y, waypoint.rotation.z, 'YXZ');
+    scene.camera.quaternion.setFromEuler(navigation.euler);
+    showNotification(`Teleported to ${waypoint.name}`);
+  };
+
+  // Create zoom system (scroll wheel and +/- keys)
+  const cameraZoom = createZoomSystem(container);
+
+  // Create playlist system (Shift+P to open)
+  const exhibitPlaylist = createPlaylistSystem(container);
+
+  // Wire up playlist navigation
+  exhibitPlaylist.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2751,6 +2838,98 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', soundscapeHandler);
 
+  // Trivia with ? key (Shift+/)
+  const triviaHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Slash' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      showRandomTrivia(trivia, interaction.currentDayNumber > 0 ? interaction.currentDayNumber : undefined);
+    }
+  };
+  document.addEventListener('keydown', triviaHandler);
+
+  // Waypoints with P key (when not viewing)
+  const waypointsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyP' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      toggleWaypoints(waypoints);
+    }
+  };
+  document.addEventListener('keydown', waypointsHandler);
+
+  // Save current position as waypoint with Ctrl+P
+  const saveWaypointHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyP' && event.ctrlKey && !event.shiftKey) {
+      event.preventDefault();
+      const name = `Location ${waypoints.customWaypoints.length + 1}`;
+      addCustomWaypoint(
+        waypoints,
+        name,
+        {
+          x: scene.camera.position.x,
+          y: scene.camera.position.y,
+          z: scene.camera.position.z,
+        },
+        {
+          x: navigation.euler.x,
+          y: navigation.euler.y,
+          z: navigation.euler.z,
+        }
+      );
+      showNotification(`Waypoint saved: ${name}`);
+    }
+  };
+  document.addEventListener('keydown', saveWaypointHandler);
+
+  // Zoom with + and - keys (when viewing exhibit)
+  const zoomKeyHandler = (event: KeyboardEvent) => {
+    if (interaction.isZoomed) {
+      if (event.code === 'Equal' && !event.ctrlKey) {
+        // + key (Equal without shift, or with shift)
+        event.preventDefault();
+        const newZoom = zoomIn(cameraZoom);
+        scene.camera.fov = getZoomFov(cameraZoom);
+        scene.camera.updateProjectionMatrix();
+        showNotification(`Zoom: ${Math.round(newZoom * 100)}%`);
+      } else if (event.code === 'Minus' && !event.ctrlKey) {
+        event.preventDefault();
+        const newZoom = zoomOut(cameraZoom);
+        scene.camera.fov = getZoomFov(cameraZoom);
+        scene.camera.updateProjectionMatrix();
+        showNotification(`Zoom: ${Math.round(newZoom * 100)}%`);
+      } else if (event.code === 'Digit0' && !event.ctrlKey) {
+        event.preventDefault();
+        resetZoom(cameraZoom);
+        scene.camera.fov = getZoomFov(cameraZoom);
+        scene.camera.updateProjectionMatrix();
+        showNotification('Zoom reset');
+      }
+    }
+  };
+  document.addEventListener('keydown', zoomKeyHandler);
+
+  // Playlist with Shift+P
+  const playlistHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyP' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      togglePlaylistPanel(exhibitPlaylist);
+    }
+  };
+  document.addEventListener('keydown', playlistHandler);
+
+  // Playlist navigation with [ and ] when playlist is active
+  const playlistNavHandler = (event: KeyboardEvent) => {
+    if (exhibitPlaylist.isPlaying) {
+      if (event.code === 'BracketLeft' && !event.ctrlKey) {
+        event.preventDefault();
+        playlistPrev(exhibitPlaylist);
+      } else if (event.code === 'BracketRight' && !event.ctrlKey) {
+        event.preventDefault();
+        playlistNext(exhibitPlaylist);
+      }
+    }
+  };
+  document.addEventListener('keydown', playlistNavHandler);
+
   // Wire up memory lane to track discoveries
   const memoryViewHandler = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -2963,6 +3142,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     photoFrame,
     visitorInsights,
     soundscape,
+    trivia,
+    waypoints,
+    cameraZoom,
+    exhibitPlaylist,
     container,
     isRunning: false,
     lastTime: 0,
@@ -3246,6 +3429,10 @@ export function disposeMuseum(): void {
   disposePhotoFrameSystem(context.photoFrame);
   disposeInsightsSystem(context.visitorInsights);
   disposeSoundscapeSystem(context.soundscape);
+  disposeTriviaSystem(context.trivia);
+  disposeWaypointsSystem(context.waypoints);
+  disposeZoomSystem(context.cameraZoom);
+  disposePlaylistSystem(context.exhibitPlaylist);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
