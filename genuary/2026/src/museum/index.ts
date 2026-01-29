@@ -550,6 +550,42 @@ import {
   disposeTagsSystem,
   type TagsSystem,
 } from './tags';
+import {
+  createMemoryLaneSystem,
+  recordFirstView,
+  recordFavoriteMemory,
+  toggleMemoryLane,
+  disposeMemoryLaneSystem,
+  type MemoryLaneSystem,
+} from './memory';
+import {
+  createMilestonesSystem,
+  checkMilestones,
+  showMilestoneNotification,
+  toggleMilestones,
+  disposeMilestonesSystem,
+  type MilestonesSystem,
+} from './milestones';
+import {
+  createPhotoFrameSystem,
+  showPhotoInFrame,
+  disposePhotoFrameSystem,
+  type PhotoFrameSystem,
+} from './photoframe';
+import {
+  createInsightsSystem,
+  toggleInsights,
+  disposeInsightsSystem,
+  type InsightsSystem,
+  type InsightsData,
+} from './insights';
+import {
+  createSoundscapeSystem,
+  initSoundscapeAudio,
+  cycleSoundscape,
+  disposeSoundscapeSystem,
+  type SoundscapeSystem,
+} from './soundscape';
 
 // ============================================================================
 // Types
@@ -638,6 +674,11 @@ export interface MuseumContext {
   timeWarp: TimeWarpSystem;
   exhibitComments: CommentsSystem;
   exhibitTags: TagsSystem;
+  memoryLane: MemoryLaneSystem;
+  milestones: MilestonesSystem;
+  photoFrame: PhotoFrameSystem;
+  visitorInsights: InsightsSystem;
+  soundscape: SoundscapeSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1864,6 +1905,59 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
 
+  // Create memory lane system (M key to view memories)
+  const memoryLane = createMemoryLaneSystem(container);
+
+  // Wire up memory lane navigation
+  memoryLane.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
+  // Create milestones system (Shift+M to view progress)
+  const milestones = createMilestonesSystem(container);
+
+  // Wire up milestone notifications
+  milestones.onMilestoneUnlocked = (milestone) => {
+    showMilestoneNotification(container, milestone);
+  };
+
+  // Create photo frame system (F key when viewing screenshot)
+  const photoFrame = createPhotoFrameSystem(container);
+
+  // Create visitor insights system (I key to view analytics)
+  const visitorInsights = createInsightsSystem(container);
+
+  // Create soundscape system (backslash key to cycle)
+  const soundscape = createSoundscapeSystem(container);
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2610,6 +2704,90 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', tagsHandler);
 
+  // Memory lane with M key (when not viewing)
+  const memoryLaneHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyM' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      toggleMemoryLane(memoryLane);
+    }
+  };
+  document.addEventListener('keydown', memoryLaneHandler);
+
+  // Milestones with Shift+M
+  const milestonesHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyM' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      toggleMilestones(milestones);
+    }
+  };
+  document.addEventListener('keydown', milestonesHandler);
+
+  // Insights with I key (when not viewing)
+  const insightsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyI' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      // Gather insights data
+      const insightsData: InsightsData = {
+        viewsByDay: new Map(Array.from(sessionSummary.exhibitsViewed).map(d => [d, 1])),
+        viewsByHour: new Map([[new Date().getHours(), 1]]),
+        timeSpentByDay: new Map(),
+        favorites: getFavorites(favorites),
+        totalVisits: stats.stats.sessionCount,
+        totalTime: Math.floor((Date.now() - sessionSummary.sessionStart) / 1000),
+      };
+      toggleInsights(visitorInsights, insightsData);
+    }
+  };
+  document.addEventListener('keydown', insightsHandler);
+
+  // Soundscape with backslash key
+  const soundscapeHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Backslash' && !event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      initSoundscapeAudio(soundscape);
+      const name = cycleSoundscape(soundscape);
+      showNotification(`Soundscape: ${name}`);
+    }
+  };
+  document.addEventListener('keydown', soundscapeHandler);
+
+  // Wire up memory lane to track discoveries
+  const memoryViewHandler = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    // Check if this is first view
+    const wasNew = !sessionSummary.exhibitsViewed.has(dayNumber);
+    memoryViewHandler?.(dayNumber);
+    if (wasNew) {
+      recordFirstView(memoryLane, dayNumber);
+    }
+  };
+
+  // Wire up memory lane to track favorites
+  const memoryFavoriteHandler = interaction.onFavoriteToggle;
+  interaction.onFavoriteToggle = (dayNumber: number) => {
+    const wasFavorite = isFavorite(favorites, dayNumber);
+    memoryFavoriteHandler?.(dayNumber);
+    if (!wasFavorite) {
+      recordFavoriteMemory(memoryLane, dayNumber);
+    }
+  };
+
+  // Wire up milestones to check on exhibit view
+  const milestoneViewHandler = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    milestoneViewHandler?.(dayNumber);
+    // Check milestones periodically
+    checkMilestones(milestones, {
+      exhibitsViewed: sessionSummary.exhibitsViewed.size,
+      totalVisits: stats.stats.sessionCount,
+      screenshotsTaken: stats.stats.screenshotsTaken,
+      favoritesCount: getFavorites(favorites).length,
+      timeSpentMinutes: Math.floor((Date.now() - sessionSummary.sessionStart) / 60000),
+      streakDays: 1, // Would get from streaks system
+      commentsAdded: 0, // Would get from comments system
+    });
+  };
+
   // Wire up heatmap to track views (extend exhibit viewed handler)
   const heatmapViewHandler = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -2688,12 +2866,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   }
 
   // Time milestone notifications
-  const milestones = [
+  const timeNotifications = [
     { time: 5 * 60 * 1000, message: '5 minutes exploring! Take your time.' },
     { time: 15 * 60 * 1000, message: '15 minutes! You\'re a dedicated visitor.' },
     { time: 30 * 60 * 1000, message: '30 minutes! You\'ve unlocked Art Enthusiast!' },
   ];
-  milestones.forEach(({ time, message }) => {
+  timeNotifications.forEach(({ time, message }) => {
     setTimeout(() => showNotification(message), time);
   });
 
@@ -2780,6 +2958,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     timeWarp,
     exhibitComments,
     exhibitTags,
+    memoryLane,
+    milestones,
+    photoFrame,
+    visitorInsights,
+    soundscape,
     container,
     isRunning: false,
     lastTime: 0,
@@ -3058,6 +3241,11 @@ export function disposeMuseum(): void {
   disposeTimeWarpSystem(context.timeWarp);
   disposeCommentsSystem(context.exhibitComments);
   disposeTagsSystem(context.exhibitTags);
+  disposeMemoryLaneSystem(context.memoryLane);
+  disposeMilestonesSystem(context.milestones);
+  disposePhotoFrameSystem(context.photoFrame);
+  disposeInsightsSystem(context.visitorInsights);
+  disposeSoundscapeSystem(context.soundscape);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
