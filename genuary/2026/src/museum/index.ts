@@ -191,6 +191,14 @@ import {
   disposeAccessibilitySystem,
   type AccessibilitySystem,
 } from './accessibility';
+import {
+  createSessionSummary,
+  recordExhibitViewed as recordSessionExhibit,
+  recordScreenshotTaken as recordSessionScreenshot,
+  recordFavoriteAdded as recordSessionFavorite,
+  disposeSessionSummary,
+  type SessionSummary,
+} from './session-summary';
 
 // ============================================================================
 // Types
@@ -223,6 +231,7 @@ export interface MuseumContext {
   guestbook: Guestbook;
   search: SearchSystem;
   accessibility: AccessibilitySystem;
+  sessionSummary: SessionSummary;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -979,6 +988,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create accessibility system (Alt+H/T/R for high contrast, large text, reduced motion)
   const accessibility = createAccessibilitySystem(container);
 
+  // Create session summary (Shift+Escape to show)
+  const sessionSummary = createSessionSummary(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1078,13 +1090,26 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     deactivateSpotlight(spotlight);
   };
 
-  // Override onExhibitViewed to also check speed run (now that achievements exists)
+  // Override onExhibitViewed to also check speed run and track session
   const originalOnExhibitViewed = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
     originalOnExhibitViewed?.(dayNumber);
     // Check for speed run after each exhibit view
     if (checkSpeedRun(stats)) {
       unlockAchievement(achievements, 'speed-run');
+    }
+    // Track in session summary
+    recordSessionExhibit(sessionSummary, dayNumber);
+  };
+
+  // Override onFavoriteToggle to track favorites in session summary
+  const originalOnFavoriteToggle = interaction.onFavoriteToggle;
+  interaction.onFavoriteToggle = (dayNumber: number) => {
+    const wasFavorite = isFavorite(favorites, dayNumber);
+    originalOnFavoriteToggle?.(dayNumber);
+    // Track new favorites in session summary
+    if (!wasFavorite) {
+      recordSessionFavorite(sessionSummary);
     }
   };
 
@@ -1151,6 +1176,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
         playCameraShutter();
         takeScreenshot(scene.renderer.domElement, photoGallery, interaction.currentDayNumber);
         recordScreenshot(stats);
+        recordSessionScreenshot(sessionSummary);
       }
     }
   };
@@ -1382,6 +1408,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     guestbook,
     search,
     accessibility,
+    sessionSummary,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1557,6 +1584,7 @@ export function disposeMuseum(): void {
   disposeGuestbook(context.guestbook);
   disposeSearchSystem(context.search);
   disposeAccessibilitySystem(context.accessibility);
+  disposeSessionSummary(context.sessionSummary);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
