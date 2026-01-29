@@ -306,6 +306,11 @@ import {
   disposeChallengeSystem,
   type ChallengeSystem,
 } from './challenge';
+import {
+  createComparatorSystem,
+  disposeComparatorSystem,
+  type ComparatorSystem,
+} from './comparator';
 
 // ============================================================================
 // Types
@@ -356,6 +361,7 @@ export interface MuseumContext {
   scavenger: ScavengerSystem;
   history: HistorySystem;
   dailyChallenge: ChallengeSystem;
+  comparator: ComparatorSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1260,6 +1266,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create daily challenge system (Shift+D to view)
   const dailyChallenge = createChallengeSystem(container);
 
+  // Create exhibit comparator (Shift+X to compare)
+  const comparator = createComparatorSystem(container);
+
   // Wire up history navigation
   history.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1791,6 +1800,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     scavenger,
     history,
     dailyChallenge,
+    comparator,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2019,6 +2029,7 @@ export function disposeMuseum(): void {
   disposeScavengerSystem(context.scavenger);
   disposeHistorySystem(context.history);
   disposeChallengeSystem(context.dailyChallenge);
+  disposeComparatorSystem(context.comparator);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
