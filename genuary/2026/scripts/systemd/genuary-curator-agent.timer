@@ -1,19 +1,19 @@
 # Genuary Curator Agent Timer (Year-Agnostic)
 #
-# Triggers the curator agent every 4 hours for continuous museum building.
-# Runs at :50 past the hour (0:50, 4:50, 8:50, 12:50, 16:50, 20:50 UTC).
+# Triggers the curator agent every hour for continuous museum building.
+# Runs at :50 past every hour during January.
 #
-# The timer pattern *-01-* works for any year - just update the
-# SERVICE file paths each January.
+# If a session is still running, the new prompt just gets sent to the
+# active window - slightly interruptive but not disruptive.
 #
 
 [Unit]
-Description=Run Genuary Curator Agent every 4 hours (January only)
+Description=Run Genuary Curator Agent hourly (January only)
 Documentation=https://github.com/azigler/coding-jams
 
 [Timer]
-# Every 4 hours at :50 past the hour, January only
-OnCalendar=*-01-* 0,4,8,12,16,20,23:50:00
+# Every hour at :50, January only
+OnCalendar=*-01-* *:50:00
 AccuracySec=1min
 Persistent=false
 
