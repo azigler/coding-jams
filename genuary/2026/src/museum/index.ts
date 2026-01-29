@@ -141,6 +141,12 @@ import {
   disposePhotoGallery,
   type PhotoGallery,
 } from './gallery';
+import {
+  createBreadcrumbTrail,
+  addBreadcrumb,
+  disposeBreadcrumbTrail,
+  type BreadcrumbTrail,
+} from './breadcrumbs';
 
 // ============================================================================
 // Types
@@ -165,6 +171,7 @@ export interface MuseumContext {
   compass: Compass;
   exhibitInfo: ExhibitInfoPanel;
   photoGallery: PhotoGallery;
+  breadcrumbs: BreadcrumbTrail;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -886,9 +893,52 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create photo gallery (Shift+G to open)
   const photoGallery = createPhotoGallery(container);
 
+  // Create breadcrumb trail
+  const breadcrumbs = createBreadcrumbTrail(container);
+
+  // Wire up breadcrumb navigation to zoom to exhibits
+  breadcrumbs.onNavigate = (dayNumber: number) => {
+    // Find the exhibit mesh for this day
+    const mesh = interaction.exhibitMeshes.find(
+      m => m.userData.dayNumber === dayNumber
+    );
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      // Store original position if not already zoomed
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      // Get world position and normal
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      // Set zoom target
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up zoom callbacks for exhibit info panel
   interaction.onZoomIn = (dayNumber: number) => {
     showExhibitInfo(exhibitInfo, dayNumber);
+    addBreadcrumb(breadcrumbs, dayNumber);
     playZoomIn();
   };
 
@@ -1151,6 +1201,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     compass,
     exhibitInfo,
     photoGallery,
+    breadcrumbs,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1312,6 +1363,7 @@ export function disposeMuseum(): void {
   disposeCompass(context.compass);
   disposeExhibitInfoPanel(context.exhibitInfo);
   disposePhotoGallery(context.photoGallery);
+  disposeBreadcrumbTrail(context.breadcrumbs);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
