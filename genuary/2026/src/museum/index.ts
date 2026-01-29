@@ -153,6 +153,13 @@ import {
   disposeParticleSystem,
   type ParticleSystem,
 } from './particles';
+import {
+  createSpotlight,
+  activateSpotlight,
+  deactivateSpotlight,
+  disposeSpotlight,
+  type Spotlight,
+} from './spotlight';
 
 // ============================================================================
 // Types
@@ -179,6 +186,7 @@ export interface MuseumContext {
   photoGallery: PhotoGallery;
   breadcrumbs: BreadcrumbTrail;
   particles: ParticleSystem;
+  spotlight: Spotlight;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -906,6 +914,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create ambient particles
   const particles = createParticleSystem(scene.scene);
 
+  // Create spotlight system for exhibit focus
+  const spotlight = createSpotlight(scene.scene);
+
   // Wire up breadcrumb navigation to zoom to exhibits
   breadcrumbs.onNavigate = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -945,16 +956,25 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
 
-  // Wire up zoom callbacks for exhibit info panel
+  // Wire up zoom callbacks for exhibit info panel and spotlight
   interaction.onZoomIn = (dayNumber: number) => {
     showExhibitInfo(exhibitInfo, dayNumber);
     addBreadcrumb(breadcrumbs, dayNumber);
     playZoomIn();
+
+    // Activate spotlight on the exhibit
+    const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (exhibitMesh) {
+      const exhibitPos = new THREE.Vector3();
+      exhibitMesh.getWorldPosition(exhibitPos);
+      activateSpotlight(spotlight, exhibitPos, scene.camera.position);
+    }
   };
 
   interaction.onZoomOut = () => {
     hideExhibitInfo(exhibitInfo);
     playZoomOut();
+    deactivateSpotlight(spotlight);
   };
 
   // Override onExhibitViewed to also check speed run (now that achievements exists)
@@ -1213,6 +1233,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     photoGallery,
     breadcrumbs,
     particles,
+    spotlight,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1379,6 +1400,7 @@ export function disposeMuseum(): void {
   disposePhotoGallery(context.photoGallery);
   disposeBreadcrumbTrail(context.breadcrumbs);
   disposeParticleSystem(context.particles);
+  disposeSpotlight(context.spotlight);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
