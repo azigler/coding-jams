@@ -326,6 +326,7 @@ import {
 } from './bookmarks';
 import {
   createFocusSystem,
+  toggleFocusMode,
   disposeFocusSystem,
   type FocusSystem,
 } from './focus';
@@ -341,6 +342,35 @@ import {
   disposeSoundMixerSystem,
   type SoundMixerSystem,
 } from './soundmixer';
+import {
+  createQuickMenuSystem,
+  disposeQuickMenuSystem,
+  type QuickMenuSystem,
+} from './quickmenu';
+import {
+  createRelatedSystem,
+  showRelated,
+  hideRelated,
+  disposeRelatedSystem,
+  type RelatedSystem,
+} from './related';
+import {
+  createWeatherSystem,
+  disposeWeatherSystem,
+  type WeatherSystem,
+} from './weather';
+import {
+  createTimerSystem,
+  startViewing,
+  endViewing,
+  disposeTimerSystem,
+  type TimerSystem,
+} from './timer';
+import {
+  createMusicPlayerSystem,
+  disposeMusicPlayerSystem,
+  type MusicPlayerSystem,
+} from './musicplayer';
 
 // ============================================================================
 // Types
@@ -397,6 +427,11 @@ export interface MuseumContext {
   focus: FocusSystem;
   visitors: VisitorSystem;
   soundMixer: SoundMixerSystem;
+  quickMenu: QuickMenuSystem;
+  related: RelatedSystem;
+  weather: WeatherSystem;
+  exhibitTimer: TimerSystem;
+  musicPlayer: MusicPlayerSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1319,6 +1354,113 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create sound mixer system (Shift+A to open)
   const soundMixer = createSoundMixerSystem(container);
 
+  // Create quick menu system (Shift+Space to open, right-click)
+  const quickMenu = createQuickMenuSystem(container);
+
+  // Wire up quick menu actions
+  quickMenu.onAction = (actionId: string) => {
+    switch (actionId) {
+      case 'screenshot':
+        playCameraShutter();
+        takeScreenshot(scene.renderer.domElement, photoGallery, interaction.currentDayNumber);
+        recordScreenshot(stats);
+        recordSessionScreenshot(sessionSummary);
+        break;
+      case 'favorite':
+        if (interaction.currentDayNumber > 0) {
+          interaction.onFavoriteToggle?.(interaction.currentDayNumber);
+        } else {
+          showNotification('View an exhibit first to favorite it');
+        }
+        break;
+      case 'bookmark':
+        addBookmark(bookmarks, scene.camera, interaction.currentDayNumber || null);
+        showNotification('Bookmark saved!');
+        break;
+      case 'share':
+        if (interaction.currentDayNumber > 0) {
+          openSharePopup(social, scene.renderer.domElement, {
+            dayNumber: interaction.currentDayNumber,
+            promptTitle: '',
+            exhibitsViewed: sessionSummary.exhibitsViewed.size,
+            favoritesCount: getFavorites(favorites).length,
+            timeSpent: stats.stats.totalTimeSpent,
+          });
+        } else {
+          shareView(scene.camera);
+          recordSharedView(stats);
+        }
+        break;
+      case 'journal':
+        if (interaction.currentDayNumber > 0) {
+          openJournalEntry(journal, interaction.currentDayNumber);
+        } else {
+          showNotification('View an exhibit first to write in your journal');
+        }
+        break;
+      case 'tour':
+        if (!interaction.isZoomed) {
+          const wasActive = tour.isActive;
+          toggleTour(tour);
+          if (!wasActive && tour.isActive) {
+            recordTourStarted(stats);
+          }
+        }
+        break;
+      case 'help':
+        toggleHelp(help);
+        break;
+      case 'focus':
+        toggleFocusMode(focus);
+        break;
+    }
+  };
+
+  // Create related exhibits system (shows when viewing)
+  const related = createRelatedSystem(container);
+
+  // Wire up related navigation
+  related.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
+  // Create weather effects system (Shift+W to cycle)
+  const weather = createWeatherSystem(container);
+
+  // Create exhibit timer system (Shift+T to view insights)
+  const exhibitTimer = createTimerSystem(container);
+
+  // Create music player system (Shift+M to toggle, Shift+[/] to change tracks)
+  const musicPlayer = createMusicPlayerSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1444,6 +1586,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     addBreadcrumb(breadcrumbs, dayNumber);
     playZoomIn();
     recordHistoryView(history, dayNumber);
+    startViewing(exhibitTimer, dayNumber);
+
+    // Show related exhibits after a short delay
+    setTimeout(() => showRelated(related, dayNumber), 1500);
 
     // Activate spotlight on the exhibit
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1459,6 +1605,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     playZoomOut();
     deactivateSpotlight(spotlight);
     recordHistoryExit(history);
+    hideRelated(related);
+    endViewing(exhibitTimer);
   };
 
   // Override onExhibitViewed to also check speed run and track session
@@ -1892,6 +2040,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     focus,
     visitors,
     soundMixer,
+    quickMenu,
+    related,
+    weather,
+    exhibitTimer,
+    musicPlayer,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2126,6 +2279,11 @@ export function disposeMuseum(): void {
   disposeFocusSystem(context.focus);
   disposeVisitorSystem(context.visitors);
   disposeSoundMixerSystem(context.soundMixer);
+  disposeQuickMenuSystem(context.quickMenu);
+  disposeRelatedSystem(context.related);
+  disposeWeatherSystem(context.weather);
+  disposeTimerSystem(context.exhibitTimer);
+  disposeMusicPlayerSystem(context.musicPlayer);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
