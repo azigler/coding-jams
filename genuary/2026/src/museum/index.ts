@@ -286,6 +286,19 @@ import {
   disposeQuizSystem,
   type QuizSystem,
 } from './quiz';
+import {
+  createScavengerSystem,
+  checkScavengerProgress,
+  disposeScavengerSystem,
+  type ScavengerSystem,
+} from './scavenger';
+import {
+  createHistorySystem,
+  recordHistoryView,
+  recordHistoryExit,
+  disposeHistorySystem,
+  type HistorySystem,
+} from './history';
 
 // ============================================================================
 // Types
@@ -333,6 +346,8 @@ export interface MuseumContext {
   journal: JournalSystem;
   mood: MoodSystem;
   quiz: QuizSystem;
+  scavenger: ScavengerSystem;
+  history: HistorySystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1228,6 +1243,45 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create quiz system (Shift+Q to start quiz)
   const quiz = createQuizSystem(container);
 
+  // Create scavenger hunt system (Shift+H to start hunt)
+  const scavenger = createScavengerSystem(container);
+
+  // Create viewing history system (Shift+Y to view history)
+  const history = createHistorySystem(container);
+
+  // Wire up history navigation
+  history.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1311,6 +1365,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showExhibitInfo(exhibitInfo, dayNumber);
     addBreadcrumb(breadcrumbs, dayNumber);
     playZoomIn();
+    recordHistoryView(history, dayNumber);
 
     // Activate spotlight on the exhibit
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1325,6 +1380,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     hideExhibitInfo(exhibitInfo);
     playZoomOut();
     deactivateSpotlight(spotlight);
+    recordHistoryExit(history);
   };
 
   // Override onExhibitViewed to also check speed run and track session
@@ -1339,6 +1395,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     recordSessionExhibit(sessionSummary, dayNumber);
     // Track in speed run challenge if active
     recordSpeedRunExhibit(speedrun, dayNumber);
+    // Check scavenger hunt progress
+    checkScavengerProgress(scavenger, dayNumber);
 
     // Check for curator notes
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1719,6 +1777,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     journal,
     mood,
     quiz,
+    scavenger,
+    history,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1934,6 +1994,8 @@ export function disposeMuseum(): void {
   disposeJournalSystem(context.journal);
   disposeMoodSystem(context.mood);
   disposeQuizSystem(context.quiz);
+  disposeScavengerSystem(context.scavenger);
+  disposeHistorySystem(context.history);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
