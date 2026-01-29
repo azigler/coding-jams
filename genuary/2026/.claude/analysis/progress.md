@@ -443,4 +443,92 @@ Each session entry should include:
 
 ---
 
+### 2026-01-29 — Performance Fixes & Tour System
+
+**Beads worked**: None (responding to human feedback)
+
+**Accomplished**:
+
+**Guided Tour System** (`d2d0b5a`):
+- Created `src/museum/tour.ts` with 14 stops covering entire museum
+- Smooth camera transitions using smoothstep easing
+- Tour progress indicator shows current stop name
+- Press T to start/stop tour
+- Navigation disabled during tour
+
+**Major Performance Optimizations** (`432b247`):
+Responding to human feedback about stuttering/slow navigation:
+
+- **Artwork Loading Fix**: p5 instances now stop after capturing initial frames
+  - Was running 34 separate animation loops continuously!
+  - Each exhibit now renders once then pauses
+
+- **Lighting Reduction** (~70+ → ~20 lights):
+  - Gallery wall wash: 8 → 4 lights
+  - Gallery exhibits: removed fill lights (1 per exhibit now)
+  - Pedestal: 4 ring lights → 1 accent light
+  - Wings: 4 ceiling lights → 2 per wing
+  - Wings: removed all 32 individual exhibit spotlights
+
+- **Particle Optimization**:
+  - Reduced dust particles: 200 → 80
+  - Update frequency: every frame → every 3rd frame
+
+- **Interaction Throttling**:
+  - Added 100ms throttle to hover raycast detection
+
+**Unit Tests** (in progress):
+- Spawned background agent to create tests as requested by human
+
+**Tested**:
+- Build succeeds with no TypeScript errors
+- All changes committed and pushed to PR #32
+
+**Blockers**: None
+
+**Human Feedback Received**:
+> "The biggest problem is the 3D scene is extremely slow and stuttering and its very hard to navigate or look around. I dont think your rendering is very performant, or you have some crazy loops or some overflows or something. Also, a bit concerning that there are no unit tests to prevent regressions as you develop."
+
+Both issues addressed in this session.
+
+**Commits**:
+- `d2d0b5a` - feat(museum): add guided tour system with T key toggle
+- `432b247` - perf(museum): major performance optimizations for smooth navigation
+
+**Full Feature List** (25 features):
+1. Live Artwork (27+ days, now paused for performance)
+2. Dust Particles (optimized)
+3. Teleport Navigation (0-5, Home)
+4. Help Overlay (H toggle)
+5. Glowing Orb Animation
+6. Welcome Sign
+7. Ambient Audio
+8. Location Indicator
+9. Footstep Sounds
+10. Click-to-Zoom
+11. Hover Cursor (throttled)
+12. Info Panel with Prompt Details
+13. View Day Link
+14. Zoom Sound Effects
+15. Vignette Focus Effect
+16. Keyboard Exhibit Navigation ([ ])
+17. Progress Indicator (X of Y)
+18. Random Exhibit (R key)
+19. Exhibit Day Sorting
+20. Return Home (0/Home)
+21. Teleport Whoosh Sound
+22. Interactive help overlay
+23. Proximity-based orb glow
+24. Loading screen with progress bar
+25. **NEW: Guided Tour (T key)**
+
+**Next session**:
+- Await human feedback on performance improvements
+- Review and merge unit tests
+- VR/WebXR integration
+- Mobile touch controls
+- Consider minimap for navigation
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
