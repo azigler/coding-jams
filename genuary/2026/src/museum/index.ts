@@ -1019,6 +1019,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }, 2000);
   }
 
+  // Time milestone notifications
+  const milestones = [
+    { time: 5 * 60 * 1000, message: '5 minutes exploring! Take your time.' },
+    { time: 15 * 60 * 1000, message: '15 minutes! You\'re a dedicated visitor.' },
+    { time: 30 * 60 * 1000, message: '30 minutes! You\'ve unlocked Art Enthusiast!' },
+  ];
+  milestones.forEach(({ time, message }) => {
+    setTimeout(() => showNotification(message), time);
+  });
+
   context = {
     scene,
     navigation,
