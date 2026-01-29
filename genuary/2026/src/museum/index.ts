@@ -257,6 +257,13 @@ import {
   disposeLandmarkSystem,
   type LandmarkSystem,
 } from './landmarks';
+import {
+  createFootstepSystem,
+  initFootstepAudio,
+  updateFootsteps,
+  disposeFootstepSystem,
+  type FootstepSystem,
+} from './footsteps';
 
 // ============================================================================
 // Types
@@ -299,6 +306,7 @@ export interface MuseumContext {
   completion: CompletionSystem;
   postcards: PostcardSystem;
   landmarks: LandmarkSystem;
+  footsteps: FootstepSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1179,6 +1187,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create landmarks system (Shift+L to toggle)
   const landmarks = createLandmarkSystem(container);
 
+  // Create footsteps sound system
+  const footsteps = createFootstepSystem();
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1332,6 +1343,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   const startAudioOnInteraction = () => {
     initAudio();
     startAmbient();
+    initFootstepAudio(footsteps);
     // Remove listeners after first interaction
     document.removeEventListener('click', startAudioOnInteraction);
     document.removeEventListener('keydown', startAudioOnInteraction);
@@ -1653,6 +1665,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     completion,
     postcards,
     landmarks,
+    footsteps,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1718,6 +1731,12 @@ export function startMuseum(): void {
     if (!interactionActive && !context.interaction.isZoomed && !tourActive && !autoWalkActive) {
       updateNavigation(context.navigation, deltaTime);
     }
+
+    // Update footstep sounds based on movement
+    const isWalking = context.navigation.velocity.length() > 0.1 &&
+                      !context.interaction.isZoomed &&
+                      !tourActive;
+    updateFootsteps(context.footsteps, isWalking, context.navigation.velocity.length());
 
     // Update scene (animations, etc.)
     updateScene(context.scene, deltaTime);
@@ -1857,6 +1876,7 @@ export function disposeMuseum(): void {
   disposeCompletionSystem(context.completion);
   disposePostcardSystem(context.postcards);
   disposeLandmarkSystem(context.landmarks);
+  disposeFootstepSystem(context.footsteps);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
