@@ -160,6 +160,7 @@ import {
   disposeSpotlight,
   type Spotlight,
 } from './spotlight';
+import { getDailyRecommendation } from './daily';
 
 // ============================================================================
 // Types
@@ -835,6 +836,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
       showNotification('Welcome to the Genuary 2026 Museum! Press H for help.');
     }
   }, 3000); // Show after 3 seconds to let things settle
+
+  // Show daily recommendation after welcome
+  setTimeout(() => {
+    const daily = getDailyRecommendation();
+    showNotification(`Today's pick: Day ${daily.dayNumber} — ${daily.reason}. Press G to go there.`);
+  }, 8000); // Show after 8 seconds
 
   // Create day selector for quick navigation
   const daySelector = createDaySelector(container);
