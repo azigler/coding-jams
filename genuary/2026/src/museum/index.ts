@@ -359,6 +359,25 @@ function parseSharedView(): { x: number; y: number; z: number; rx: number; ry: n
 }
 
 /**
+ * Toggle fullscreen mode
+ */
+function toggleFullscreen(container: HTMLElement): void {
+  if (!document.fullscreenElement) {
+    container.requestFullscreen().then(() => {
+      showNotification('Entered fullscreen');
+    }).catch((err) => {
+      console.warn('Fullscreen request failed:', err);
+    });
+  } else {
+    document.exitFullscreen().then(() => {
+      showNotification('Exited fullscreen');
+    }).catch((err) => {
+      console.warn('Exit fullscreen failed:', err);
+    });
+  }
+}
+
+/**
  * Trigger confetti celebration for Easter egg
  */
 function triggerConfetti(container: HTMLElement): void {
@@ -490,7 +509,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
         <div><b>T</b> Tour</div>
-        <div><b>F</b> Fav</div>
+        <div><b>F</b> Fav/Full</div>
         <div><b>J</b> Jump Fav</div>
         <div><b>P</b> Photo</div>
         <div><b>S</b> Share</div>
@@ -806,6 +825,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', muteHandler);
+
+  // Fullscreen toggle with F key (when not zoomed, to avoid conflicts)
+  const fullscreenHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyF' && !interaction.isZoomed && !event.shiftKey) {
+      toggleFullscreen(container);
+    }
+  };
+  document.addEventListener('keydown', fullscreenHandler);
 
   // Konami code Easter egg: up up down down left right left right b a
   const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
