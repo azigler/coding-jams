@@ -293,3 +293,95 @@ export function getRunningArtworks(): number[] {
     .filter(([_, artwork]) => artwork.isRunning)
     .map(([dayNumber]) => dayNumber);
 }
+
+// ============================================================================
+// Visibility-Based Animation
+// ============================================================================
+
+// Frustum for visibility culling
+const frustum = new THREE.Frustum();
+const projScreenMatrix = new THREE.Matrix4();
+
+// Distance threshold for animating (closer exhibits get animated)
+const ANIMATION_DISTANCE = 15; // meters
+
+// Throttle visibility checks
+let lastVisibilityCheck = 0;
+const VISIBILITY_CHECK_INTERVAL = 500; // Check every 500ms
+
+// Track which artworks were visible last check
+const previouslyVisible = new Set<number>();
+
+/**
+ * Update artwork animation based on visibility to camera
+ * Call this from the render loop to animate only visible exhibits
+ */
+export function updateArtworkVisibility(
+  camera: THREE.PerspectiveCamera,
+  exhibitMeshes: THREE.Mesh[]
+): void {
+  const now = performance.now();
+  if (now - lastVisibilityCheck < VISIBILITY_CHECK_INTERVAL) {
+    return; // Skip - not time for a check yet
+  }
+  lastVisibilityCheck = now;
+
+  // Update frustum from camera
+  projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+  frustum.setFromProjectionMatrix(projScreenMatrix);
+
+  const cameraPos = camera.position;
+  const currentlyVisible = new Set<number>();
+
+  // Check each exhibit mesh for visibility
+  for (const mesh of exhibitMeshes) {
+    const dayNumber = mesh.userData?.dayNumber;
+    if (dayNumber === undefined) continue;
+
+    // Check if artwork is loaded
+    if (!artworkCache.has(dayNumber)) continue;
+
+    // Get world position of the exhibit
+    const meshPos = new THREE.Vector3();
+    mesh.getWorldPosition(meshPos);
+
+    // Check distance to camera
+    const distance = cameraPos.distanceTo(meshPos);
+    if (distance > ANIMATION_DISTANCE) {
+      continue; // Too far away
+    }
+
+    // Check if in camera frustum using bounding sphere
+    const boundingSphere = mesh.geometry.boundingSphere;
+    if (boundingSphere) {
+      const worldSphere = boundingSphere.clone();
+      worldSphere.center.copy(meshPos);
+      if (!frustum.intersectsSphere(worldSphere)) {
+        continue; // Not in view
+      }
+    }
+
+    // This exhibit is visible!
+    currentlyVisible.add(dayNumber);
+  }
+
+  // Resume newly visible artworks
+  for (const dayNumber of currentlyVisible) {
+    if (!previouslyVisible.has(dayNumber)) {
+      resumeArtwork(dayNumber);
+    }
+  }
+
+  // Pause artworks that are no longer visible
+  for (const dayNumber of previouslyVisible) {
+    if (!currentlyVisible.has(dayNumber)) {
+      pauseArtwork(dayNumber);
+    }
+  }
+
+  // Update tracking
+  previouslyVisible.clear();
+  for (const dayNumber of currentlyVisible) {
+    previouslyVisible.add(dayNumber);
+  }
+}

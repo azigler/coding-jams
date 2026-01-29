@@ -324,42 +324,114 @@ function checkBoxCollision(x: number, z: number, boxes: CollisionBox[]): boolean
 }
 
 /**
- * Check if position is valid within the museum bounds
- * Uses a combination of box collision and custom zone logic
+ * Check if position is inside an allowed zone
  */
-function isPositionValid(x: number, z: number, boxes: CollisionBox[]): boolean {
-  // Check box collisions first
-  if (checkBoxCollision(x, z, boxes)) {
-    return false;
+interface AllowedZone {
+  type: 'rect' | 'circle';
+  minX?: number;
+  maxX?: number;
+  minZ?: number;
+  maxZ?: number;
+  centerX?: number;
+  centerZ?: number;
+  radius?: number;
+}
+
+/**
+ * Define all allowed movement zones in the museum
+ */
+function getAllowedZones(): AllowedZone[] {
+  const galleryZ = -32;
+  const galleryRadius = 11; // Slightly less than 12 for wall clearance
+  const wingLength = 18;
+  const wingWidth = 5; // Slightly less than 6 for wall clearance
+  const wallDist = galleryRadius * Math.cos(Math.PI / 8); // ~11.1
+
+  return [
+    // Entrance hallway
+    {
+      type: 'rect',
+      minX: -1.7,
+      maxX: 1.7,
+      minZ: -21,
+      maxZ: 1,
+    },
+    // Main gallery (octagonal approximated as circle)
+    {
+      type: 'circle',
+      centerX: 0,
+      centerZ: galleryZ,
+      radius: galleryRadius,
+    },
+    // North wing corridor (extends from gallery toward -Z)
+    {
+      type: 'rect',
+      minX: -wingWidth / 2,
+      maxX: wingWidth / 2,
+      minZ: galleryZ - wallDist - wingLength,
+      maxZ: galleryZ - wallDist + 2,
+    },
+    // West wing corridor (extends from gallery toward -X)
+    {
+      type: 'rect',
+      minX: -wallDist - wingLength,
+      maxX: -wallDist + 2,
+      minZ: galleryZ - wingWidth / 2,
+      maxZ: galleryZ + wingWidth / 2,
+    },
+    // East wing corridor (extends from gallery toward +X)
+    {
+      type: 'rect',
+      minX: wallDist - 2,
+      maxX: wallDist + wingLength,
+      minZ: galleryZ - wingWidth / 2,
+      maxZ: galleryZ + wingWidth / 2,
+    },
+    // South wing corridor (angled, but approximate as rect for now)
+    // Positioned at angle toward +X +Z from gallery
+    {
+      type: 'rect',
+      minX: wallDist * 0.4,
+      maxX: wallDist * 0.7 + wingLength * 0.7,
+      minZ: galleryZ + wallDist * 0.4,
+      maxZ: galleryZ + wallDist * 0.7 + wingLength * 0.7,
+    },
+  ];
+}
+
+// Cache allowed zones
+let cachedZones: AllowedZone[] | null = null;
+
+/**
+ * Check if position is valid within the museum bounds
+ */
+function isPositionValid(x: number, z: number, _boxes: CollisionBox[]): boolean {
+  if (!cachedZones) {
+    cachedZones = getAllowedZones();
   }
 
-  // Gallery zone parameters
-  const galleryZ = -32; // Center of gallery
-  const galleryRadius = 12;
-  const hallLength = 20;
-  const hallWidth = 4;
-
-  // If in entrance hallway zone (z > -hallLength and z < 1)
-  if (z > -hallLength && z < 1) {
-    // Must stay within hallway width
-    return Math.abs(x) < hallWidth / 2 - PLAYER_RADIUS;
-  }
-
-  // If past the hallway end, check gallery bounds
-  if (z <= -hallLength) {
-    // Calculate distance from gallery center
-    const dx = x;
-    const dz = z - galleryZ;
-    const dist = Math.sqrt(dx * dx + dz * dz);
-
-    // Allow slightly less than full radius for wall clearance
-    // The octagonal gallery has radius=12, so we use ~11.5 for safety
-    if (dist > galleryRadius - PLAYER_RADIUS - 0.5) {
-      return false;
+  // Check if position is in any allowed zone
+  for (const zone of cachedZones) {
+    if (zone.type === 'rect') {
+      if (
+        x >= zone.minX! + PLAYER_RADIUS &&
+        x <= zone.maxX! - PLAYER_RADIUS &&
+        z >= zone.minZ! + PLAYER_RADIUS &&
+        z <= zone.maxZ! - PLAYER_RADIUS
+      ) {
+        return true;
+      }
+    } else if (zone.type === 'circle') {
+      const dx = x - zone.centerX!;
+      const dz = z - zone.centerZ!;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < zone.radius! - PLAYER_RADIUS) {
+        return true;
+      }
     }
   }
 
-  return true;
+  return false;
 }
 
 /**

@@ -27,6 +27,7 @@ import {
   disposeTour,
   type TourSystem,
 } from './tour';
+import { updateArtworkVisibility } from './exhibits/artwork';
 
 // ============================================================================
 // Types
@@ -401,6 +402,9 @@ export function startMuseum(): void {
 
     // Update scene (animations, etc.)
     updateScene(context.scene, deltaTime);
+
+    // Update artwork visibility (animate only visible exhibits)
+    updateArtworkVisibility(context.scene.camera, context.interaction.exhibitMeshes);
 
     // Update location indicator
     const pos = context.scene.camera.position;

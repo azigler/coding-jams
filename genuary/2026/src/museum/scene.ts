@@ -75,17 +75,17 @@ export function createScene(container: HTMLElement): MuseumScene {
   camera.position.copy(INITIAL_POSITION);
   camera.lookAt(0, CAMERA_HEIGHT, -10);
 
-  // Renderer
+  // Renderer - optimized for performance
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
+    antialias: false, // Disable antialiasing for performance
     preserveDrawingBuffer: true, // Required for screenshots
+    powerPreference: 'high-performance',
   });
   renderer.setSize(CANVAS_SIZE, CANVAS_SIZE);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setPixelRatio(1); // Fixed pixel ratio for consistent performance
+  renderer.shadowMap.enabled = false; // Disable shadows for performance
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 1.2; // Slightly brighter to compensate for no shadows
 
   // Style the canvas
   const canvas = renderer.domElement;
@@ -171,26 +171,14 @@ function addLighting(scene: THREE.Scene): void {
   const ambient = new THREE.AmbientLight(0x404060, 0.3);
   scene.add(ambient);
 
-  // Directional light - simulates moonlight
-  const directional = new THREE.DirectionalLight(0x8090a0, 0.5);
+  // Directional light - simulates moonlight (shadows disabled for performance)
+  const directional = new THREE.DirectionalLight(0x8090a0, 0.8);
   directional.position.set(10, 20, 10);
-  directional.castShadow = true;
-  directional.shadow.mapSize.width = 2048;
-  directional.shadow.mapSize.height = 2048;
-  directional.shadow.camera.near = 0.5;
-  directional.shadow.camera.far = 50;
-  directional.shadow.camera.left = -20;
-  directional.shadow.camera.right = 20;
-  directional.shadow.camera.top = 20;
-  directional.shadow.camera.bottom = -20;
   scene.add(directional);
 
   // Warm point light at entrance - welcoming
-  const entranceLight = new THREE.PointLight(0xffaa77, 2, 15, 2);
+  const entranceLight = new THREE.PointLight(0xffaa77, 3, 20, 2);
   entranceLight.position.set(0, 3, 2);
-  entranceLight.castShadow = true;
-  entranceLight.shadow.mapSize.width = 512;
-  entranceLight.shadow.mapSize.height = 512;
   scene.add(entranceLight);
 }
 

@@ -26,9 +26,26 @@ vi.mock('three', () => {
     dispose() {}
   }
 
+  class Frustum {
+    planes: unknown[] = [];
+    setFromProjectionMatrix() {}
+    intersectsSphere() {
+      return true;
+    }
+  }
+
+  class Matrix4 {
+    elements = new Float32Array(16);
+    multiplyMatrices() {
+      return this;
+    }
+  }
+
   return {
     CanvasTexture,
     LinearFilter: 1,
+    Frustum,
+    Matrix4,
   };
 });
 
