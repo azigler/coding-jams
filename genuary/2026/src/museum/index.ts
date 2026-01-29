@@ -74,7 +74,9 @@ import {
   recordExhibitView,
   recordFavoriteAdded,
   recordScreenshot,
+  recordSharedView,
   recordMovement,
+  recordTourStarted,
   checkSpeedRun,
   showStatsPopup,
   disposeStatsTracker,
@@ -688,7 +690,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Tour toggle with T key
   const tourToggleHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyT' && !interaction.isZoomed) {
+      const wasActive = tour.isActive;
       toggleTour(tour);
+      // Record stat if starting a new tour
+      if (!wasActive && tour.isActive) {
+        recordTourStarted(stats);
+      }
     }
   };
   document.addEventListener('keydown', tourToggleHandler);
@@ -697,6 +704,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   const screenshotHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyP') {
       takeScreenshot(scene.renderer.domElement);
+      recordScreenshot(stats);
     }
   };
   document.addEventListener('keydown', screenshotHandler);
@@ -705,6 +713,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   const shareHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyS' && !interaction.isZoomed) {
       shareView(scene.camera);
+      recordSharedView(stats);
     }
   };
   document.addEventListener('keydown', shareHandler);
@@ -845,7 +854,7 @@ export function startMuseum(): void {
       toursTaken: context.stats.stats.toursTaken,
       totalTimeSpent: context.stats.stats.totalTimeSpent,
       distanceWalked: context.stats.stats.distanceWalked,
-      sharedViews: 0, // Would need to track this
+      sharedViews: context.stats.stats.sharedViews,
     });
 
     // Check for speed run achievement (10 exhibits in under 2 minutes)

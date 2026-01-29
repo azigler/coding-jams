@@ -15,6 +15,7 @@ export interface MuseumStats {
   favoritesAdded: number; // Total times added to favorites
   toursTaken: number; // Number of tours started
   screenshotsTaken: number; // Number of screenshots
+  sharedViews: number; // Number of times shared a view
   distanceWalked: number; // Approximate distance in meters
   lastVisit: string; // ISO date of last visit
 }
@@ -46,6 +47,7 @@ function createDefaultStats(): MuseumStats {
     favoritesAdded: 0,
     toursTaken: 0,
     screenshotsTaken: 0,
+    sharedViews: 0,
     distanceWalked: 0,
     lastVisit: new Date().toISOString(),
   };
@@ -192,6 +194,13 @@ export function recordScreenshot(tracker: StatsTracker): void {
 }
 
 /**
+ * Record a shared view
+ */
+export function recordSharedView(tracker: StatsTracker): void {
+  tracker.stats.sharedViews++;
+}
+
+/**
  * Record movement distance
  */
 export function recordMovement(tracker: StatsTracker, x: number, z: number): void {
@@ -306,9 +315,13 @@ export function showStatsPopup(tracker: StatsTracker, container: HTMLElement): v
         <span style="color: #888;">Screenshots</span>
         <span style="font-weight: bold;">${stats.screenshotsTaken}</span>
       </div>
-      <div style="display: flex; justify-content: space-between;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
         <span style="color: #888;">Tours Taken</span>
         <span style="font-weight: bold;">${stats.toursTaken}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: #888;">Links Shared</span>
+        <span style="font-weight: bold;">${stats.sharedViews}</span>
       </div>
     </div>
     <div style="color: #666; font-size: 11px; text-align: center; margin-top: 15px;">
