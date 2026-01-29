@@ -30,9 +30,9 @@ gh api repos/azigler/coding-jams/issues/${PR_NUM}/comments \
 - Incorporate the feedback into your work
 - Acknowledge the feedback in your session update
 
-### 2. Post Session Update (At End of Session)
+### 2. Post Session Update (MAX 1 per hour)
 
-Every session MUST end with a PR comment that includes:
+**DO NOT spam the PR with updates.** Only post when you have significant progress - at most once per hour. Every update should include:
 - What you worked on
 - Screenshots of the current state (see Navigation section)
 - Questions or decisions you need input on
