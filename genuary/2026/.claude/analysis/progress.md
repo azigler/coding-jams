@@ -367,6 +367,41 @@ Each session entry should include:
 - `dc98232` - feat: add vignette overlay when viewing exhibits
 - `8f5adcc` - feat: add H key to toggle help overlay
 
+---
+
+### 2026-01-29 — Exhibit Navigation Session (continued)
+
+**Beads worked**: None (autonomous improvements)
+
+**Accomplished**:
+
+**Exhibit Navigation Improvements:**
+- **Keyboard exhibit browsing**:
+  - Use [ ] or arrow keys while zoomed to browse all exhibits
+  - Smooth animation between exhibits
+  - Wraps around at ends of list
+  - Subtle navigation sound effect
+- **Progress indicator**:
+  - Shows "X of 34" badge in info panel
+  - Helps visitors track browsing progress
+- **Random exhibit discovery**:
+  - Press R at any time to zoom to random artwork
+  - Works whether currently zoomed or not
+  - Picks different exhibit from current
+
+**Tested**:
+- Build succeeds with no TypeScript errors
+- All navigation features work together
+
+**Commits**:
+- `4008795` - feat: add keyboard navigation between exhibits
+- `f266d1d` - feat: show exhibit progress indicator when browsing
+- `387e235` - feat: add R key for random exhibit discovery
+
+**Total Feature Count**: 19 features!
+
+**Screenshots Note**: WebGL screenshot capture in headless mode continues to timeout. The museum renders correctly but Playwright screenshots hang. This is a known limitation with software WebGL rendering.
+
 **Next session**:
 - VR/WebXR integration
 - Performance profiling and optimization
