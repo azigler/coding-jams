@@ -187,9 +187,9 @@ export function createNavigation(
 const TELEPORT_POINTS: Record<string, { pos: [number, number, number]; lookAt: [number, number, number] }> = {
   'Digit1': { pos: [0, 1.6, -2], lookAt: [0, 1.6, -20] },        // Entrance - look toward gallery
   'Digit2': { pos: [0, 1.6, -32], lookAt: [0, 1.6, -50] },       // Gallery center - look north
-  'Digit3': { pos: [0, 1.6, -44], lookAt: [0, 1.6, -60] },       // North wing entrance
-  'Digit4': { pos: [-11, 1.6, -32], lookAt: [-20, 1.6, -32] },   // West wing entrance
-  'Digit5': { pos: [11, 1.6, -32], lookAt: [20, 1.6, -32] },     // East wing entrance
+  'Digit3': { pos: [0, 1.6, -44], lookAt: [0, 1.6, -60] },       // North wing - inside corridor
+  'Digit4': { pos: [-16, 1.6, -32], lookAt: [-30, 1.6, -32] },   // West wing - inside corridor
+  'Digit5': { pos: [16, 1.6, -32], lookAt: [30, 1.6, -32] },     // East wing - inside corridor
 };
 
 /**

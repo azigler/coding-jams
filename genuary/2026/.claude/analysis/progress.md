@@ -268,12 +268,28 @@ Each session entry should include:
   - 200 particles slowly drifting upward in the gallery
   - Creates ethereal, liminal atmosphere
   - Particles contained within skylight cylinder area
+- **Added teleport navigation (keys 1-5)**:
+  - 1: Entrance, 2: Gallery center, 3: North wing, 4: West wing, 5: East wing
+  - Useful for testing and quick exploration
+- **Captured screenshot showing live artwork in wing corridor**:
+  - North wing screenshot clearly shows colorful generative art in frames
+  - Confirms artwork loading is working correctly
+
+**Screenshots**:
+- `museum-north-wing-artwork.png` - North wing corridor with visible live artwork
+
+**Commits**:
+- `306b0ce` - feat: expand live artwork loading to all wing exhibits
+- `d83e55a` - feat: add atmospheric dust particles in gallery skylight
+- `ed5b1d1` - feat: add teleport navigation with number keys 1-5
+- `a52f8b9` - docs: add north wing screenshot showing live artwork
 
 **Blockers**: None
 
 **Next session**:
 - Consider adding interactive elements (click to zoom)
 - Add ambient sound/music
+- Fix west wing teleport position (currently facing wall)
 - Investigate loading GLSL shader days as static images
 
 ---
