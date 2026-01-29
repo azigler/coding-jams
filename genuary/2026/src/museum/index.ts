@@ -513,6 +513,43 @@ import {
   disposeAmbientPresetsSystem,
   type AmbientPresetsSystem,
 } from './ambientpresets';
+import {
+  createWishListSystem,
+  toggleWishListItem,
+  toggleWishList,
+  isInWishList,
+  disposeWishListSystem,
+  type WishListSystem,
+} from './wishlist';
+import {
+  createHeatmapSystem,
+  recordHeatmapView,
+  recordHeatmapTime,
+  toggleHeatmap,
+  disposeHeatmapSystem,
+  type HeatmapSystem,
+} from './heatmap';
+import {
+  createTimeWarpSystem,
+  cycleTimeWarp,
+  getTimeWarpSpeed,
+  showTimeWarpSelector,
+  disposeTimeWarpSystem,
+  type TimeWarpSystem,
+} from './timewarp';
+import {
+  createCommentsSystem,
+  openComments,
+  disposeCommentsSystem,
+  type CommentsSystem,
+} from './comments';
+import {
+  createTagsSystem,
+  openTagManager,
+  openTagBrowser,
+  disposeTagsSystem,
+  type TagsSystem,
+} from './tags';
 
 // ============================================================================
 // Types
@@ -596,6 +633,11 @@ export interface MuseumContext {
   shareCard: ShareCardSystem;
   streaks: StreaksSystem;
   ambientPresets: AmbientPresetsSystem;
+  wishList: WishListSystem;
+  heatmap: HeatmapSystem;
+  timeWarp: TimeWarpSystem;
+  exhibitComments: CommentsSystem;
+  exhibitTags: TagsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1741,6 +1783,87 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showNotification(`Ambient: ${preset.name}`);
   };
 
+  // Create wish list system (W key when viewing to add, Shift+W to view list)
+  const wishList = createWishListSystem(container);
+
+  // Wire up wish list navigation
+  wishList.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
+  // Create heatmap system (Shift+H to view engagement heatmap)
+  const heatmap = createHeatmapSystem(container);
+
+  // Create time warp system (T key to change animation speed)
+  const timeWarp = createTimeWarpSystem(container);
+
+  // Create comments system (C key when viewing to add personal notes)
+  const exhibitComments = createCommentsSystem(container);
+
+  // Create tags system (G key when viewing to add tags, Shift+G to browse)
+  const exhibitTags = createTagsSystem(container);
+
+  // Wire up tags navigation
+  exhibitTags.onNavigate = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2424,6 +2547,76 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', ambientPresetsHandler);
 
+  // Wish list with W key when viewing exhibit, Shift+W to view list
+  const wishListHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyW' && !event.ctrlKey) {
+      if (event.shiftKey) {
+        // Open wish list panel
+        event.preventDefault();
+        toggleWishList(wishList);
+      } else if (interaction.isZoomed && interaction.currentDayNumber > 0) {
+        // Add to wish list
+        event.preventDefault();
+        const added = toggleWishListItem(wishList, interaction.currentDayNumber);
+        showNotification(added ? '📌 Added to wish list' : '📌 Removed from wish list');
+      }
+    }
+  };
+  document.addEventListener('keydown', wishListHandler);
+
+  // Heatmap with Shift+H
+  const heatmapHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyH' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      toggleHeatmap(heatmap);
+    }
+  };
+  document.addEventListener('keydown', heatmapHandler);
+
+  // Time warp with T key (cycle), Shift+T (panel)
+  const timeWarpHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyT' && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      if (event.shiftKey) {
+        showTimeWarpSelector(timeWarp);
+      } else {
+        const newSpeed = cycleTimeWarp(timeWarp);
+        showNotification(`Time: ${newSpeed}×`);
+      }
+    }
+  };
+  document.addEventListener('keydown', timeWarpHandler);
+
+  // Comments with C key when viewing exhibit (no shift, no ctrl)
+  const commentsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyC' && !event.shiftKey && !event.ctrlKey && interaction.isZoomed && interaction.currentDayNumber > 0) {
+      event.preventDefault();
+      openComments(exhibitComments, interaction.currentDayNumber);
+    }
+  };
+  document.addEventListener('keydown', commentsHandler);
+
+  // Tags with # key when viewing, Shift+# to browse all tags
+  const tagsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Digit3' && event.shiftKey && !event.ctrlKey) {
+      // Shift+3 = #
+      event.preventDefault();
+      if (interaction.isZoomed && interaction.currentDayNumber > 0) {
+        openTagManager(exhibitTags, interaction.currentDayNumber);
+      } else {
+        openTagBrowser(exhibitTags);
+      }
+    }
+  };
+  document.addEventListener('keydown', tagsHandler);
+
+  // Wire up heatmap to track views (extend exhibit viewed handler)
+  const heatmapViewHandler = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    heatmapViewHandler?.(dayNumber);
+    recordHeatmapView(heatmap, dayNumber);
+  };
+
   // Wire up visit log to track activities
   const prevOnExhibitViewed = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -2582,6 +2775,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     shareCard,
     streaks,
     ambientPresets,
+    wishList,
+    heatmap,
+    timeWarp,
+    exhibitComments,
+    exhibitTags,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2855,6 +3053,11 @@ export function disposeMuseum(): void {
   disposeShareCardSystem(context.shareCard);
   disposeStreaksSystem(context.streaks);
   disposeAmbientPresetsSystem(context.ambientPresets);
+  disposeWishListSystem(context.wishList);
+  disposeHeatmapSystem(context.heatmap);
+  disposeTimeWarpSystem(context.timeWarp);
+  disposeCommentsSystem(context.exhibitComments);
+  disposeTagsSystem(context.exhibitTags);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
