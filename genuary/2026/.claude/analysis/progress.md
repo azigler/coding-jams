@@ -301,38 +301,67 @@ Each session entry should include:
 
 ---
 
-### 2026-01-29 — Audio & Location Session (continued)
+### 2026-01-29 — Audio & Interaction Session
 
 **Beads worked**: None (autonomous improvements)
 
 **Accomplished**:
-- **Added footstep sounds when walking**:
+
+**Audio Features:**
+- **Footstep sounds when walking**:
   - Subtle footstep audio triggers every ~0.5 meters of movement
   - Sound scales with movement speed (faster = more frequent)
   - Uses Web Audio API with triangle wave oscillator
-- **Audio system was added in previous session**:
-  - Ambient drone/hum creates gallery atmosphere
-  - Low frequency tones (A1, E2, A2) with slight detune
-  - Filtered noise for room tone/air sound
-  - Initializes on first user interaction (browser autoplay policy)
-- **Location indicator shows current area**:
-  - HUD element shows "Entrance", "Main Gallery", "North Wing", etc.
-  - Updates based on camera position in real-time
-  - Subtle styling that doesn't distract from the art
+
+**Interaction System:**
+- **Click-to-zoom for exhibits**:
+  - Click any exhibit to zoom in for closer viewing
+  - Smooth camera animation toward artwork
+  - ESC or click to exit zoom mode
+  - Navigation disabled while zoomed
+- **Hover cursor feedback**:
+  - Pointer cursor when hovering over clickable exhibits
+  - Grab cursor for normal navigation
+- **Detailed info panel when zoomed**:
+  - Shows day number and title
+  - Displays prompt description
+  - Credits prompt author
+  - Glassmorphism styling with blur backdrop
+- **Link to full interactive day**:
+  - Panel includes "View Interactive Day N" link
+  - Navigates to full day experience at #dayN
 
 **Tested**:
 - Build succeeds with no TypeScript errors
-- Footstep timer initializes and triggers correctly
-- Screenshots captured (limited by WebGL headless timeout issues)
+- All features integrated into main museum module
+- 34 exhibits registered for interaction (gallery + all wings)
 
 **Commits**:
 - `ebe43ef` - feat: add footstep sounds when walking
-- Previous session commits for audio system, location indicator, help overlay
+- `23213cd` - feat: add click-to-zoom for exhibits
+- `5d42b4e` - feat: add hover cursor for clickable exhibits
+- `76daeb2` - feat: show prompt details when zooming exhibits
+- `1c96918` - feat: add link to view full interactive day from zoom
+
+**Current Feature Count**: 13 features!
+- Live Artwork (27+ days)
+- Dust Particles
+- Teleport Navigation (1-5)
+- Help Overlay
+- Glowing Orb Animation
+- Welcome Sign
+- Ambient Audio
+- Location Indicator
+- Footstep Sounds
+- Click-to-Zoom
+- Hover Cursor
+- Info Panel with Prompt Details
+- View Day Link
 
 **Next session**:
-- Add click-to-zoom for exhibits
-- Consider VR/WebXR integration
+- VR/WebXR integration
 - Performance profiling and optimization
+- Consider minimap for navigation
 
 ---
 
