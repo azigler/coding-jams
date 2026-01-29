@@ -15,6 +15,7 @@ import {
   startAmbient,
   disposeAudio,
   setAudioMuted,
+  isAudioMuted,
   playDiscoveryChime,
   playCameraShutter,
   playZoomIn,
@@ -495,6 +496,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>S</b> Share</div>
         <div><b>I</b> Stats</div>
         <div><b>A</b> Awards</div>
+        <div><b>M</b> Mute</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -794,6 +796,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', achievementsHandler);
+
+  // Mute toggle with M key
+  const muteHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyM') {
+      const newMuted = !isAudioMuted();
+      setAudioMuted(newMuted);
+      showNotification(newMuted ? 'Sound muted' : 'Sound enabled');
+    }
+  };
+  document.addEventListener('keydown', muteHandler);
 
   // Konami code Easter egg: up up down down left right left right b a
   const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
