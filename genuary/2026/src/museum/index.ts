@@ -77,6 +77,11 @@ import {
   disposeStatsTracker,
   type StatsTracker,
 } from './stats';
+import {
+  createDaySelector,
+  disposeDaySelector,
+  type DaySelector,
+} from './dayselect';
 
 // ============================================================================
 // Types
@@ -94,6 +99,7 @@ export interface MuseumContext {
   favorites: FavoritesSystem;
   tips: TipsSystem;
   stats: StatsTracker;
+  daySelector: DaySelector;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -404,6 +410,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>WASD</b> Move</div>
         <div><b>Drag</b> Look</div>
         <div><b>0-5</b> Teleport</div>
+        <div><b>G</b> Go to Day</div>
         <div><b>Click</b> Zoom</div>
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
@@ -561,6 +568,54 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create stats tracker
   const stats = createStatsTracker();
 
+  // Create day selector for quick navigation
+  const daySelector = createDaySelector(container);
+
+  // Wire up day selector to zoom to exhibit
+  daySelector.onDaySelected = (dayNumber: number) => {
+    // Find the exhibit mesh for this day
+    const mesh = interaction.exhibitMeshes.find(
+      m => m.userData.dayNumber === dayNumber
+    );
+    if (mesh) {
+      // Trigger zoom to this exhibit
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      // Store original position if not already zoomed
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      // Calculate zoom target (similar to zoomToExhibitMesh logic)
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      const worldQuat = new THREE.Quaternion();
+      mesh.getWorldQuaternion(worldQuat);
+      normal.applyQuaternion(worldQuat);
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+
+      // Mark as discovered
+      markDayDiscovered(discovery, dayNumber);
+      recordExhibitView(stats);
+
+      showNotification(`Viewing Day ${dayNumber}`);
+    } else {
+      showNotification(`Day ${dayNumber} exhibit not found`);
+    }
+  };
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -634,6 +689,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     favorites,
     tips,
     stats,
+    daySelector,
     container,
     isRunning: false,
     lastTime: 0,
@@ -753,6 +809,7 @@ export function disposeMuseum(): void {
   disposeFavoritesSystem(context.favorites);
   disposeTipsSystem(context.tips);
   disposeStatsTracker(context.stats);
+  disposeDaySelector(context.daySelector);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);

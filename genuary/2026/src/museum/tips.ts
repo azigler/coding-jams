@@ -40,6 +40,7 @@ const TIPS: Tip[] = [
   { id: 'jump-fav', text: 'Press J to jump between your favorited exhibits' },
   { id: 'screenshot', text: 'Press P to take a screenshot of your view' },
   { id: 'share', text: 'Press S to copy a shareable link to your current view' },
+  { id: 'go-to-day', text: 'Press G to open a quick menu and jump to any day' },
   { id: 'teleport', text: 'Press number keys 1-5 to teleport to different areas' },
   { id: 'minimap', text: 'Check the minimap in the corner to see your location' },
   { id: 'settings', text: 'Click the gear icon to adjust quality and sound settings' },
