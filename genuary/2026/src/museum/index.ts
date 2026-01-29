@@ -75,6 +75,7 @@ import {
   recordFavoriteAdded,
   recordScreenshot,
   recordMovement,
+  checkSpeedRun,
   showStatsPopup,
   disposeStatsTracker,
   type StatsTracker,
@@ -87,6 +88,7 @@ import {
 import {
   createAchievementsSystem,
   checkAchievements,
+  unlockAchievement,
   showAchievementNotification,
   showAchievementsPopup,
   disposeAchievementsSystem,
@@ -431,6 +433,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>P</b> Photo</div>
         <div><b>S</b> Share</div>
         <div><b>I</b> Stats</div>
+        <div><b>A</b> Awards</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -644,6 +647,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showAchievementNotification(achievement);
   };
 
+  // Override onExhibitViewed to also check speed run (now that achievements exists)
+  const originalOnExhibitViewed = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    originalOnExhibitViewed?.(dayNumber);
+    // Check for speed run after each exhibit view
+    if (checkSpeedRun(stats)) {
+      unlockAchievement(achievements, 'speed-run');
+    }
+  };
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -703,6 +716,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', statsHandler);
+
+  // Achievements with A key
+  const achievementsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyA' && !interaction.isZoomed) {
+      showAchievementsPopup(achievements, container);
+    }
+  };
+  document.addEventListener('keydown', achievementsHandler);
 
   // Apply shared view if present in URL
   const sharedView = parseSharedView();
@@ -826,6 +847,11 @@ export function startMuseum(): void {
       distanceWalked: context.stats.stats.distanceWalked,
       sharedViews: 0, // Would need to track this
     });
+
+    // Check for speed run achievement (10 exhibits in under 2 minutes)
+    if (checkSpeedRun(context.stats)) {
+      unlockAchievement(context.achievements, 'speed-run');
+    }
   }, 10000); // Check every 10 seconds
 
   // Store interval for cleanup

@@ -23,6 +23,7 @@ export interface StatsTracker {
   stats: MuseumStats;
   sessionStart: number;
   lastPosition: { x: number; z: number } | null;
+  sessionExhibitsViewed: number; // Exhibits viewed this session (for speed run tracking)
   cleanup: () => void;
 }
 
@@ -68,6 +69,7 @@ export function createStatsTracker(): StatsTracker {
     stats,
     sessionStart: performance.now(),
     lastPosition: null,
+    sessionExhibitsViewed: 0,
     cleanup: () => {},
   };
 
@@ -156,6 +158,16 @@ function updateTimeSpent(tracker: StatsTracker): void {
  */
 export function recordExhibitView(tracker: StatsTracker): void {
   tracker.stats.exhibitsViewed++;
+  tracker.sessionExhibitsViewed++;
+}
+
+/**
+ * Check if speed run achievement criteria met (10 exhibits in under 2 minutes)
+ */
+export function checkSpeedRun(tracker: StatsTracker): boolean {
+  const elapsedMs = performance.now() - tracker.sessionStart;
+  const twoMinutesMs = 2 * 60 * 1000;
+  return tracker.sessionExhibitsViewed >= 10 && elapsedMs < twoMinutesMs;
 }
 
 /**
