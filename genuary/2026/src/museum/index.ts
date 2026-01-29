@@ -740,13 +740,15 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create stats tracker
   const stats = createStatsTracker();
 
-  // Show welcome back message for returning visitors (delayed)
+  // Show welcome message (different for first-time vs returning visitors)
   const welcomeMessage = getWelcomeMessage(stats);
-  if (welcomeMessage) {
-    setTimeout(() => {
+  setTimeout(() => {
+    if (welcomeMessage) {
       showNotification(welcomeMessage);
-    }, 3000); // Show after 3 seconds to let things settle
-  }
+    } else if (stats.stats.sessionCount === 1) {
+      showNotification('Welcome to the Genuary 2026 Museum! Press H for help.');
+    }
+  }, 3000); // Show after 3 seconds to let things settle
 
   // Create day selector for quick navigation
   const daySelector = createDaySelector(container);
