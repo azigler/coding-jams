@@ -130,8 +130,13 @@ export function registerExhibits(interaction: InteractionSystem, frames: Exhibit
  * Handle click events
  */
 function handleClick(interaction: InteractionSystem, event: MouseEvent): void {
-  // If already zoomed, exit zoom on any click
+  // If already zoomed, exit zoom on canvas click (not UI clicks)
   if (interaction.isZoomed) {
+    // Don't exit if clicking on the info panel
+    const target = event.target as HTMLElement;
+    if (target.closest('#zoom-indicator')) {
+      return; // Let the link handle itself
+    }
     exitZoom(interaction);
     return;
   }
@@ -318,13 +323,29 @@ function showZoomIndicator(dayNumber: number): void {
         color: #666;
         font-style: italic;
       ">${credit}</div>` : ''}
+      <a href="#day${dayNumber}" style="
+        display: block;
+        margin-top: 12px;
+        padding: 8px 12px;
+        background: rgba(100, 150, 255, 0.2);
+        border: 1px solid rgba(100, 150, 255, 0.3);
+        border-radius: 4px;
+        color: #88bbff;
+        text-decoration: none;
+        font-size: 12px;
+        text-align: center;
+        pointer-events: auto;
+        transition: background 0.2s;
+      " onmouseover="this.style.background='rgba(100, 150, 255, 0.3)'"
+         onmouseout="this.style.background='rgba(100, 150, 255, 0.2)'">
+        View Interactive Day ${dayNumber} →
+      </a>
       <div style="
         font-size: 11px;
         color: #666;
-        margin-top: 12px;
-        padding-top: 8px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-      ">Click or ESC to exit</div>
+        margin-top: 8px;
+        text-align: center;
+      ">Click elsewhere or ESC to exit</div>
     </div>
   `;
   document.body.appendChild(indicator);
