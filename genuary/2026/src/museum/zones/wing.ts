@@ -14,6 +14,8 @@ import * as THREE from 'three';
 import {
   createExhibitFrame,
   setPlaceholderTexture,
+  setFrameTexture,
+  getDayTexture,
   disposeExhibitFrame,
   createPlacard,
   disposePlacard,
@@ -164,6 +166,27 @@ export function createWingZone(
 }
 
 // ============================================================================
+// Artwork Loading
+// ============================================================================
+
+/**
+ * Asynchronously load live artwork into an exhibit frame
+ */
+async function loadLiveArtwork(frame: ExhibitFrame, dayNumber: number): Promise<void> {
+  try {
+    const texture = await getDayTexture(dayNumber);
+    if (texture) {
+      setFrameTexture(frame, texture);
+      console.log(`[Wing] Loaded live artwork for Day ${dayNumber}`);
+    } else {
+      console.warn(`[Wing] Could not load artwork for Day ${dayNumber}, keeping placeholder`);
+    }
+  } catch (error) {
+    console.error(`[Wing] Error loading artwork for Day ${dayNumber}:`, error);
+  }
+}
+
+// ============================================================================
 // Exhibit Creation
 // ============================================================================
 
@@ -196,16 +219,21 @@ function createWingExhibits(
   for (let i = 0; i < cfg.exhibitsPerSide && dayNumber <= 31; i++) {
     const z = -(i + 1) * spacing;
 
-    const frame = createExhibitFrame(dayNumber, frameConfig);
+    const currentDay = dayNumber; // Capture for async closure
+    const frame = createExhibitFrame(currentDay, frameConfig);
     frame.group.position.set(-cfg.width / 2 + wallOffset, exhibitY, z);
     frame.group.rotation.y = -Math.PI / 2; // Canvas faces -Z, rotate to face +X
 
+    // Set placeholder immediately, then try loading live artwork
     setPlaceholderTexture(frame);
+    loadLiveArtwork(frame, currentDay).catch(() => {
+      console.log(`[Wing] Day ${currentDay} artwork failed, using placeholder`);
+    });
     group.add(frame.group);
     exhibits.push(frame);
 
     // Placard
-    const placard = createPlacard(dayNumber);
+    const placard = createPlacard(currentDay);
     const placardY = exhibitY - totalFrameHeight / 2 - 0.1;
     placard.group.position.set(-cfg.width / 2 + wallOffset + 0.02, placardY, z);
     placard.group.rotation.y = -Math.PI / 2; // Match exhibit rotation
@@ -229,16 +257,21 @@ function createWingExhibits(
   for (let i = 0; i < cfg.exhibitsPerSide && dayNumber <= 31; i++) {
     const z = -(i + 1) * spacing;
 
-    const frame = createExhibitFrame(dayNumber, frameConfig);
+    const currentDay = dayNumber; // Capture for async closure
+    const frame = createExhibitFrame(currentDay, frameConfig);
     frame.group.position.set(cfg.width / 2 - wallOffset, exhibitY, z);
     frame.group.rotation.y = Math.PI / 2; // Canvas faces -Z, rotate to face -X
 
+    // Set placeholder immediately, then try loading live artwork
     setPlaceholderTexture(frame);
+    loadLiveArtwork(frame, currentDay).catch(() => {
+      console.log(`[Wing] Day ${currentDay} artwork failed, using placeholder`);
+    });
     group.add(frame.group);
     exhibits.push(frame);
 
     // Placard
-    const placard = createPlacard(dayNumber);
+    const placard = createPlacard(currentDay);
     const placardY = exhibitY - totalFrameHeight / 2 - 0.1;
     placard.group.position.set(cfg.width / 2 - wallOffset - 0.02, placardY, z);
     placard.group.rotation.y = Math.PI / 2; // Match exhibit rotation

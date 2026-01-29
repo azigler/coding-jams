@@ -184,4 +184,93 @@ Each session entry should include:
 
 ---
 
+---
+
+### 2026-01-29 — Exhibit System Overhaul & Wing Expansion
+
+**Beads worked**: None (autonomous improvements)
+
+**Accomplished**:
+- **Fixed exhibit canvas orientation** - Canvas meshes were rendering INTO walls:
+  - Root cause: After frame group rotation by PI, the canvas (facing +Z) pointed toward wall
+  - Fix: Rotate canvas by PI and use negative Z positioning
+  - Same fix applied to matte border geometry
+- **Created 3 exhibit wing corridors**:
+  - North Wing (Days 2-9): 8 exhibits
+  - West Wing (Days 10-17): 8 exhibits
+  - East Wing (Days 18-25): 8 exhibits
+- **Fixed wing exhibit orientations**:
+  - Left wall: rotate -PI/2 to transform -Z to +X
+  - Right wall: rotate +PI/2 to transform -Z to -X
+- **Added 4th wing (South Wing)**:
+  - Houses Days 26-31 (6 exhibits)
+  - Positioned at angle (southeast) off gallery
+- **Implemented doorway signage**:
+  - Signs above each wing entrance
+  - Canvas texture with wing names
+- **Improved screenshot capture**:
+  - Switched from SwiftShader to EGL with Xvfb
+  - Page screenshots instead of canvas element (avoids stability timeout)
+- **Live artwork loading working**:
+  - Days 1, 7, 11, 13 load actual p5 sketches in headless mode
+
+**Tested**:
+- All 31 days now have exhibit space
+- Wing exhibits show colorful generative placeholders
+- Gallery exhibits load live artwork
+- Screenshots posted to PR #32
+
+**Commits**:
+- `5520ce2` - fix canvas orientation
+- `7ca6c41` - add exhibit wing corridors
+- `4ec131c` - fix wing exhibit orientation
+- `0314acc` - add screenshots
+- `596f19e` - add 4th wing and doorway signage
+- `9e877df` - update screenshots
+
+**Blockers**: None
+
+**Next session**:
+- Consider adding more live artwork loading (beyond Days 1, 7, 11, 13)
+- Add ambient sound/music
+- Improve navigation script to capture all exhibits clearly
+- Add interaction with exhibits (click to view full screen?)
+
+---
+
+### 2026-01-29 — Live Artwork in Wings
+
+**Beads worked**: None (autonomous improvements)
+
+**Accomplished**:
+- **Expanded live artwork loading to all wing exhibits**:
+  - Wings now load actual p5.js sketches instead of just placeholders
+  - 27+ days now display live generative artwork
+  - Days 16, 17, 27, 31 use glsl/three modes (fallback to placeholder)
+- **Added artwork loading infrastructure to wing.ts**:
+  - Imported `getDayTexture` and `setFrameTexture`
+  - Added `loadLiveArtwork` async function
+  - Each exhibit loads placeholder immediately, then attempts live artwork
+- **Console now shows live artwork loading for each day**:
+  - `[Wing] Loaded live artwork for Day X` messages confirm loading
+
+**Tested**:
+- Build succeeds with no TypeScript errors
+- Live artwork loads for most days (verified via console)
+- North wing corridor screenshot shows colorful exhibits on both walls
+
+**Screenshots**:
+- `museum-north-wing-corridor.png` - View into north wing with exhibits
+- `museum-gallery-with-artwork.png` - Gallery approach showing live exhibit
+
+**Blockers**: None
+
+**Next session**:
+- Add more camera positions to capture all wing exhibits
+- Consider adding interactive elements (click to zoom)
+- Add ambient sound/music
+- Investigate loading GLSL shader days as static images
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
