@@ -70,6 +70,7 @@ import {
 } from './tips';
 import {
   createStatsTracker,
+  getWelcomeMessage,
   recordExhibitView,
   recordFavoriteAdded,
   recordScreenshot,
@@ -578,6 +579,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Create stats tracker
   const stats = createStatsTracker();
+
+  // Show welcome back message for returning visitors (delayed)
+  const welcomeMessage = getWelcomeMessage(stats);
+  if (welcomeMessage) {
+    setTimeout(() => {
+      showNotification(welcomeMessage);
+    }, 3000); // Show after 3 seconds to let things settle
+  }
 
   // Create day selector for quick navigation
   const daySelector = createDaySelector(container);

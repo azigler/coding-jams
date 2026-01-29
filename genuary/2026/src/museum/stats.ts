@@ -97,6 +97,47 @@ export function createStatsTracker(): StatsTracker {
 }
 
 /**
+ * Check if this is a returning visitor and get welcome message
+ */
+export function getWelcomeMessage(tracker: StatsTracker): string | null {
+  const stats = tracker.stats;
+
+  // First visit - no welcome back message
+  if (stats.sessionCount <= 1) {
+    return null;
+  }
+
+  // Calculate time since last visit
+  const lastVisit = new Date(stats.lastVisit);
+  const now = new Date();
+  const hoursSince = (now.getTime() - lastVisit.getTime()) / (1000 * 60 * 60);
+
+  if (hoursSince < 1) {
+    return null; // Too soon to welcome back
+  }
+
+  // Craft a welcome message
+  const timeAgo = formatTimeAgo(hoursSince);
+  return `Welcome back! Last visit: ${timeAgo}. Total time: ${formatTime(stats.totalTimeSpent)}`;
+}
+
+/**
+ * Format hours ago as human-readable string
+ */
+function formatTimeAgo(hours: number): string {
+  if (hours < 24) {
+    const h = Math.round(hours);
+    return `${h} hour${h === 1 ? '' : 's'} ago`;
+  } else if (hours < 168) { // 7 days
+    const days = Math.round(hours / 24);
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+  } else {
+    const weeks = Math.round(hours / 168);
+    return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+  }
+}
+
+/**
  * Update time spent in current session
  */
 function updateTimeSpent(tracker: StatsTracker): void {
