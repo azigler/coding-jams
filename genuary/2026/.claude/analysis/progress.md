@@ -995,6 +995,65 @@ All three issues addressed in this session.
 57. **NEW: Session Timer Display**
 58. **NEW: Photo Mode (Shift+P)**
 
+---
+
+### 2026-01-29 — Enhanced Experience Session (Part 2)
+
+**Beads worked**: None (feature development)
+
+**Accomplished**:
+
+**Credits/About Screen** (`bbafd6c`):
+- Press C to open credits popup
+- Shows controls, about info, built-with details
+- Attribution for Curator Agent
+
+**Time-Based Ambient Lighting** (`5797e27`):
+- Morning (6-10am): warm golden tones
+- Day (10am-5pm): bright natural light
+- Evening (5-8pm): warm sunset colors
+- Night (8pm-6am): cool blue moonlight
+
+**Double-Click to Teleport** (`c1d7e9b`):
+- Double-click on floor to teleport instantly
+- Plays teleport sound effect
+- Great for quick navigation
+
+**Visual Filter Easter Eggs** (`432ab78`):
+- Backtick: Matrix mode (green tint)
+- N key: Inverted colors
+- Shift+B: Black & white mode
+
+**Next Unvisited Exhibit** (`e880ce2`):
+- Press U to jump to random unvisited exhibit
+- Helps complete exploration efficiently
+
+**Additional Tips** (`23fd289`, `b5afa33`):
+- Tips for double-click teleport
+- Tips for credits screen
+- Tips for unvisited exhibit feature
+- 19 tips total now
+
+**Commits**:
+- `bbafd6c` - feat(museum): add credits/about screen with C key
+- `5797e27` - feat(museum): add time-based ambient lighting
+- `c1d7e9b` - feat(museum): add double-click to teleport
+- `23fd289` - feat(museum): add matrix mode Easter egg and more tips
+- `432ab78` - feat(museum): add visual filter Easter eggs
+- `e880ce2` - feat(museum): add next unvisited exhibit with U key
+- `b5afa33` - feat(museum): add tip for unvisited exhibit feature
+
+**Full Feature List** (66 features):
+1-58. (previous features)
+59. **NEW: Credits/About Screen (C key)**
+60. **NEW: Time-Based Ambient Lighting**
+61. **NEW: Double-Click to Teleport**
+62. **NEW: Matrix Mode Easter Egg**
+63. **NEW: Inverted Colors Easter Egg**
+64. **NEW: Black & White Mode Easter Egg**
+65. **NEW: Next Unvisited Exhibit (U key)**
+66. **NEW: More Tips (19 total)**
+
 **Next session**:
 - VR/WebXR integration
 - Photo gallery of taken screenshots
