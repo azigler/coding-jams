@@ -501,7 +501,7 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): { orb: THREE.Me
   const pedestalHeight = 1.2;
 
   // Base - polished stone look with subtle glow
-  const baseGeom = new THREE.CylinderGeometry(pedestalRadius * 1.2, pedestalRadius * 1.3, 0.15, 32);
+  const baseGeom = new THREE.CylinderGeometry(pedestalRadius * 1.2, pedestalRadius * 1.3, 0.15, 16);
   const baseMaterial = new THREE.MeshStandardMaterial({
     color: 0x404550,
     roughness: 0.3,
@@ -516,7 +516,7 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): { orb: THREE.Me
   group.add(base);
 
   // Column - slightly glowing pillar
-  const columnGeom = new THREE.CylinderGeometry(pedestalRadius, pedestalRadius, pedestalHeight, 32);
+  const columnGeom = new THREE.CylinderGeometry(pedestalRadius, pedestalRadius, pedestalHeight, 16);
   const columnMaterial = new THREE.MeshStandardMaterial({
     color: 0x4a4a55,
     roughness: 0.4,
@@ -530,7 +530,7 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): { orb: THREE.Me
   group.add(column);
 
   // Top platform
-  const topGeom = new THREE.CylinderGeometry(pedestalRadius * 1.1, pedestalRadius, 0.1, 32);
+  const topGeom = new THREE.CylinderGeometry(pedestalRadius * 1.1, pedestalRadius, 0.1, 16);
   const top = new THREE.Mesh(topGeom, baseMaterial);
   top.position.y = 0.15 + pedestalHeight + 0.05;
   top.receiveShadow = true;
@@ -552,7 +552,7 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): { orb: THREE.Me
   // Glowing orb on top - focal point of the gallery
   const orbRadius = 0.3;
   const orbBaseY = 0.15 + pedestalHeight + 0.1 + orbRadius;
-  const orbGeom = new THREE.SphereGeometry(orbRadius, 32, 32);
+  const orbGeom = new THREE.SphereGeometry(orbRadius, 16, 16);
   const orbMaterial = new THREE.MeshStandardMaterial({
     color: 0x6080c0,
     roughness: 0.1,

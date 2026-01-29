@@ -49,8 +49,8 @@ const CAMERA_HEIGHT = 1.6;
 // Initial camera position (inside entrance hallway, looking toward the main gallery)
 const INITIAL_POSITION = new THREE.Vector3(0, CAMERA_HEIGHT, -2);
 
-// Canvas size
-const CANVAS_SIZE = 800;
+// Canvas size - reduced from 800 for better performance
+const CANVAS_SIZE = 640;
 
 // ============================================================================
 // Scene Creation
