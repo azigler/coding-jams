@@ -574,9 +574,24 @@ Responding to continued human feedback about performance and wall clipping:
 
 All three issues addressed in this session.
 
+**Additional Performance Optimizations**:
+
+- `4c59003` - Reduced artwork resolution from 400x400 to 256x256
+- `4c59003` - Limited artwork frame rate to 20fps (was 60fps)
+- `71daef1` - Reduced entrance sconces from 8 to 4 lights
+- `71daef1` - Removed 4 doorway lights from gallery
+- `71daef1` - Reduced dust particles from 80 to 40
+- `fe352a6` - Reduced canvas from 800x800 to 640x640
+- `fe352a6` - Reduced geometry segments from 32 to 16
+
+**Total Light Count**: ~15 lights (down from ~70+)
+
 **Commits**:
 - `cc1dc1e` - test(museum): add comprehensive unit tests (96 tests)
 - `b8b42ae` - feat(museum): visibility-based animation and collision fix
+- `4c59003` - perf(museum): reduce artwork resolution and frame rate
+- `71daef1` - perf(museum): further reduce lights and particles
+- `fe352a6` - perf(museum): reduce canvas size and geometry complexity
 
 **Full Feature List** (26 features):
 1. Live Artwork (27+ days, visibility-animated)
