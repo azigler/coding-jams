@@ -273,6 +273,7 @@ import {
 import {
   createJournalSystem,
   openJournalEntry,
+  getJournalCount,
   disposeJournalSystem,
   type JournalSystem,
 } from './journal';
@@ -299,6 +300,12 @@ import {
   disposeHistorySystem,
   type HistorySystem,
 } from './history';
+import {
+  createChallengeSystem,
+  updateChallengeProgress,
+  disposeChallengeSystem,
+  type ChallengeSystem,
+} from './challenge';
 
 // ============================================================================
 // Types
@@ -348,6 +355,7 @@ export interface MuseumContext {
   quiz: QuizSystem;
   scavenger: ScavengerSystem;
   history: HistorySystem;
+  dailyChallenge: ChallengeSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1249,6 +1257,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create viewing history system (Shift+Y to view history)
   const history = createHistorySystem(container);
 
+  // Create daily challenge system (Shift+D to view)
+  const dailyChallenge = createChallengeSystem(container);
+
   // Wire up history navigation
   history.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1779,6 +1790,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     quiz,
     scavenger,
     history,
+    dailyChallenge,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1921,6 +1933,16 @@ export function startMuseum(): void {
     if (checkSpeedRun(context.stats)) {
       unlockAchievement(context.achievements, 'speed-run');
     }
+
+    // Update daily challenge progress
+    updateChallengeProgress(context.dailyChallenge, {
+      exhibitsViewed: context.sessionSummary.exhibitsViewed,
+      favoritesCount: getFavorites(context.favorites).length,
+      screenshotsTaken: context.stats.stats.screenshotsTaken,
+      journalEntriesCount: getJournalCount(context.journal),
+      timeSpent: context.stats.stats.totalTimeSpent,
+      distanceWalked: context.stats.stats.distanceWalked,
+    });
   }, 10000); // Check every 10 seconds
 
   // Store interval for cleanup
@@ -1996,6 +2018,7 @@ export function disposeMuseum(): void {
   disposeQuizSystem(context.quiz);
   disposeScavengerSystem(context.scavenger);
   disposeHistorySystem(context.history);
+  disposeChallengeSystem(context.dailyChallenge);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
