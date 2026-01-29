@@ -406,9 +406,50 @@ function createDoorways(group: THREE.Group, cfg: GalleryConfig): void {
     );
     group.add(floorGlow);
 
-    // TODO: Add signage for wing names
-    void doorNames[i]; // Placeholder for future signage
+    // Add signage above doorway
+    if (i > 0) { // Skip entrance (i=0)
+      const sign = createDoorwaySign(doorNames[i]);
+      sign.position.set(frameX, doorHeight + 0.4, frameZ);
+      sign.rotation.y = angle;
+      group.add(sign);
+    }
   });
+}
+
+/**
+ * Create a text sign for a doorway
+ */
+function createDoorwaySign(text: string): THREE.Mesh {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    // Background
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Border
+    ctx.strokeStyle = '#404050';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+
+    // Text
+    ctx.fillStyle = '#b0b0c0';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const geometry = new THREE.PlaneGeometry(0.8, 0.2);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+  });
+
+  return new THREE.Mesh(geometry, material);
 }
 
 /**

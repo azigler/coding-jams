@@ -133,14 +133,20 @@ export function createScene(container: HTMLElement): MuseumScene {
   scene.add(westWing.group);
   wingZones.push(westWing);
 
-  // East wing (wall 6) - Days 18-25 (gallery has Day 11, 13)
+  // East wing (wall 6) - Days 18-25
   const eastWing = createWingZone('east', 18);
   eastWing.group.position.set(wallDist, 0, galleryZ);
   eastWing.group.rotation.y = Math.PI / 2; // Faces +X
   scene.add(eastWing.group);
   wingZones.push(eastWing);
 
-  // Note: Days 26-31 would need a 4th wing or featured in gallery
+  // South wing (back toward entrance, but offset) - Days 26-31
+  // Position it parallel to entrance hallway but offset to the side
+  const southWing = createWingZone('south', 26, { exhibitsPerSide: 3 }); // 6 exhibits for Days 26-31
+  southWing.group.position.set(wallDist * 0.7, 0, galleryZ + wallDist * 0.7);
+  southWing.group.rotation.y = Math.PI * 0.75; // Angled southeast
+  scene.add(southWing.group);
+  wingZones.push(southWing);
 
   return {
     renderer,

@@ -57,8 +57,8 @@ async function main() {
 
     // Wait for museum to load
     console.log('Waiting for museum to load...');
-    await page.waitForSelector('#museum-container', { timeout: 20000 });
-    await page.waitForSelector('#museum-container canvas', { timeout: 10000 });
+    await page.waitForSelector('#museum-container', { timeout: 30000, state: 'attached' });
+    await page.waitForSelector('#museum-container canvas', { timeout: 30000 });
     console.log('Museum loaded, waiting for artwork...');
     await sleep(8000); // Let scene and artwork load
 
