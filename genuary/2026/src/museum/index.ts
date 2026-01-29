@@ -102,7 +102,11 @@ function updateLocationIndicator(z: number, x: number): void {
 /**
  * Create the help overlay showing controls
  */
-function createHelpOverlay(container: HTMLElement): HTMLElement {
+function createHelpOverlay(container: HTMLElement, permanent: boolean = false): HTMLElement {
+  // Remove existing help overlay
+  const existing = document.getElementById('museum-help');
+  if (existing) existing.remove();
+
   const overlay = document.createElement('div');
   overlay.id = 'museum-help';
   overlay.innerHTML = `
@@ -129,19 +133,35 @@ function createHelpOverlay(container: HTMLElement): HTMLElement {
         <div><b>Drag</b> Look</div>
         <div><b>1-5</b> Teleport</div>
         <div><b>Click</b> Zoom Exhibit</div>
+        <div><b>H</b> Help</div>
       </div>
     </div>
   `;
   container.style.position = 'relative';
   container.appendChild(overlay);
 
-  // Fade out after 5 seconds
-  setTimeout(() => {
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 500);
-  }, 5000);
+  // Fade out after 5 seconds unless permanent
+  if (!permanent) {
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 500);
+    }, 5000);
+  }
 
   return overlay;
+}
+
+/**
+ * Toggle help overlay visibility
+ */
+function toggleHelpOverlay(container: HTMLElement): void {
+  const existing = document.getElementById('museum-help');
+  if (existing) {
+    existing.style.opacity = '0';
+    setTimeout(() => existing.remove(), 300);
+  } else {
+    createHelpOverlay(container, true);
+  }
 }
 
 /**
@@ -179,6 +199,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('click', startAudioOnInteraction, { once: true });
   document.addEventListener('keydown', startAudioOnInteraction, { once: true });
+
+  // Help toggle with H key
+  const helpToggleHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyH') {
+      toggleHelpOverlay(container);
+    }
+  };
+  document.addEventListener('keydown', helpToggleHandler);
 
   context = {
     scene,
