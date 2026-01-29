@@ -18,6 +18,12 @@ import {
   disposeGalleryZone,
   type GalleryZone,
 } from './zones/gallery';
+import {
+  createWingZone,
+  updateWingZone,
+  disposeWingZone,
+  type WingZone,
+} from './zones/wing';
 
 // ============================================================================
 // Types
@@ -30,6 +36,7 @@ export interface MuseumScene {
   time: number;
   entranceZone: EntranceZone | null;
   galleryZone: GalleryZone | null;
+  wingZones: WingZone[];
 }
 
 // ============================================================================
@@ -104,6 +111,37 @@ export function createScene(container: HTMLElement): MuseumScene {
   const galleryZone = createGalleryZone();
   scene.add(galleryZone.group);
 
+  // Create exhibit wings off the gallery doorways
+  // Gallery center is at z = -32, radius = 12
+  // Doorways at walls 2 (west), 4 (north), 6 (east)
+  const galleryZ = -32;
+  const galleryRadius = 12;
+  const wallDist = galleryRadius * Math.cos(Math.PI / 8);
+  const wingZones: WingZone[] = [];
+
+  // North wing (wall 4) - Days 2-9 (gallery has Day 1)
+  const northWing = createWingZone('north', 2);
+  northWing.group.position.set(0, 0, galleryZ - wallDist);
+  northWing.group.rotation.y = 0; // Faces -Z
+  scene.add(northWing.group);
+  wingZones.push(northWing);
+
+  // West wing (wall 2) - Days 10-17 (gallery has Day 7)
+  const westWing = createWingZone('west', 10);
+  westWing.group.position.set(-wallDist, 0, galleryZ);
+  westWing.group.rotation.y = -Math.PI / 2; // Faces -X
+  scene.add(westWing.group);
+  wingZones.push(westWing);
+
+  // East wing (wall 6) - Days 18-25 (gallery has Day 11, 13)
+  const eastWing = createWingZone('east', 18);
+  eastWing.group.position.set(wallDist, 0, galleryZ);
+  eastWing.group.rotation.y = Math.PI / 2; // Faces +X
+  scene.add(eastWing.group);
+  wingZones.push(eastWing);
+
+  // Note: Days 26-31 would need a 4th wing or featured in gallery
+
   return {
     renderer,
     scene,
@@ -111,6 +149,7 @@ export function createScene(container: HTMLElement): MuseumScene {
     time: 0,
     entranceZone,
     galleryZone,
+    wingZones,
   };
 }
 
@@ -194,6 +233,11 @@ export function updateScene(museumScene: MuseumScene, deltaTime: number): void {
   if (museumScene.galleryZone) {
     updateGalleryZone(museumScene.galleryZone, deltaTime);
   }
+
+  // Update wing zones
+  for (const wing of museumScene.wingZones) {
+    updateWingZone(wing, deltaTime);
+  }
 }
 
 // ============================================================================
@@ -212,6 +256,11 @@ export function disposeScene(museumScene: MuseumScene): void {
   // Dispose of gallery zone
   if (museumScene.galleryZone) {
     disposeGalleryZone(museumScene.galleryZone);
+  }
+
+  // Dispose of wing zones
+  for (const wing of museumScene.wingZones) {
+    disposeWingZone(wing);
   }
 
   // Dispose of all geometries and materials

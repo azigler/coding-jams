@@ -23,13 +23,12 @@ async function main() {
   await mkdir(OUTPUT_DIR, { recursive: true });
 
   // Launch browser with better WebGL support
-  // Try EGL first (hardware-accelerated), fall back to ANGLE
   const browser = await chromium.launch({
     headless: true,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--use-gl=egl',  // Better than swiftshader for canvas textures
+      '--use-gl=egl',
       '--enable-webgl',
       '--ignore-gpu-blocklist',
     ],
@@ -37,7 +36,7 @@ async function main() {
 
   try {
     const context = await browser.newContext({
-      viewport: { width: 1200, height: 1000 },
+      viewport: { width: 1000, height: 900 },
     });
 
     const page = await context.newPage();
@@ -56,195 +55,133 @@ async function main() {
 
     await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
 
-    // Wait a bit for JS to initialize
-    await sleep(2000);
-
-    // Check what's on the page
-    const bodyHTML = await page.evaluate(() => document.body.innerHTML.slice(0, 500));
-    console.log('Body HTML preview:', bodyHTML);
-
-    // Wait for museum container to be created
+    // Wait for museum to load
     console.log('Waiting for museum to load...');
     await page.waitForSelector('#museum-container', { timeout: 20000 });
-    await sleep(1000);
-
-    // Wait for canvas to appear inside museum container
-    console.log('Waiting for canvas...');
     await page.waitForSelector('#museum-container canvas', { timeout: 10000 });
-    await sleep(6000); // Let scene and live artwork fully load
+    console.log('Museum loaded, waiting for artwork...');
+    await sleep(8000); // Let scene and artwork load
 
     const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '');
 
+    // Helper to take screenshot (using page screenshot to avoid stability issues with animated canvas)
+    async function screenshot(name: string) {
+      // Wait a tiny bit for any render to complete
+      await sleep(200);
+      await page.screenshot({
+        path: path.join(OUTPUT_DIR, `museum-${name}-${timestamp}.png`),
+        fullPage: false,
+      });
+      console.log(`  Captured: museum-${name}-${timestamp}.png`);
+    }
+
     // Take initial screenshot (entrance view)
-    console.log('Taking entrance screenshot...');
-    const canvas = page.locator('#museum-container canvas').first();
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-entrance-${timestamp}.png`)
-    });
+    console.log('Taking screenshots...');
+    await screenshot('entrance');
 
     // Move forward into the gallery
-    console.log('Moving forward into gallery...');
+    console.log('Moving into gallery...');
     await page.keyboard.down('KeyW');
     await sleep(3000);
     await page.keyboard.up('KeyW');
-    await sleep(500);
+    await sleep(300);
+    await screenshot('gallery-approach');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-gallery-approach-${timestamp}.png`)
-    });
-
-    // Continue forward
+    // Continue forward to center
     await page.keyboard.down('KeyW');
     await sleep(2500);
     await page.keyboard.up('KeyW');
-    await sleep(500);
+    await sleep(300);
+    await screenshot('gallery-center');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-gallery-center-${timestamp}.png`)
-    });
-
-    // Helper to turn and walk toward an exhibit
-    async function visitExhibit(name: string, turnTime: number) {
-      // Turn to face the exhibit
-      console.log(`Turning to ${name}...`);
-      await page.keyboard.down('ArrowLeft');
-      await sleep(turnTime);
-      await page.keyboard.up('ArrowLeft');
-      await sleep(400);
-
-      // Take a screenshot from distance
-      await canvas.screenshot({
-        path: path.join(OUTPUT_DIR, `museum-${name}-far-${timestamp}.png`)
-      });
-
-      // Walk toward the exhibit
-      await page.keyboard.down('KeyW');
-      await sleep(1200);
-      await page.keyboard.up('KeyW');
-      await sleep(400);
-
-      // Take close-up screenshot
-      await canvas.screenshot({
-        path: path.join(OUTPUT_DIR, `museum-${name}-close-${timestamp}.png`)
-      });
-
-      // Back up to center
-      await page.keyboard.down('KeyS');
-      await sleep(1200);
-      await page.keyboard.up('KeyS');
-      await sleep(300);
-    }
-
-    // Gallery is octagonal - exhibits are on walls 1, 3, 5, 7
-    // We enter facing north (toward wall 4/doorway)
-    // Turn right to see wall 1 (first exhibit - Day 1) - need ~67.5° turn
-    console.log('Visiting all 4 exhibits...');
-
-    // First exhibit - turn right ~67° (wall 1 has Day 1)
+    // Turn right to face first exhibit (Day 1)
+    console.log('Visiting exhibits...');
     await page.keyboard.down('ArrowRight');
     await sleep(1500);
     await page.keyboard.up('ArrowRight');
-    await sleep(400);
-
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit1-day1-${timestamp}.png`)
-    });
+    await sleep(300);
+    await screenshot('exhibit-day1');
 
     // Walk closer
     await page.keyboard.down('KeyW');
     await sleep(1000);
     await page.keyboard.up('KeyW');
-    await sleep(400);
+    await sleep(300);
+    await screenshot('exhibit-day1-close');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit1-close-${timestamp}.png`)
-    });
-
-    // Back up and turn to next exhibit (~90° left)
+    // Back up
     await page.keyboard.down('KeyS');
     await sleep(1000);
     await page.keyboard.up('KeyS');
 
+    // Turn left ~90° to next exhibit
     await page.keyboard.down('ArrowLeft');
-    await sleep(2000);  // ~90° turn
+    await sleep(2000);
     await page.keyboard.up('ArrowLeft');
-    await sleep(400);
-
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit2-day7-${timestamp}.png`)
-    });
+    await sleep(300);
+    await screenshot('exhibit-day7');
 
     // Walk closer to exhibit 2
     await page.keyboard.down('KeyW');
     await sleep(1000);
     await page.keyboard.up('KeyW');
-    await sleep(400);
+    await sleep(300);
+    await screenshot('exhibit-day7-close');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit2-close-${timestamp}.png`)
-    });
-
-    // Back up and turn to exhibit 3 (~90° left)
+    // Back up and turn to exhibit 3
     await page.keyboard.down('KeyS');
     await sleep(1000);
     await page.keyboard.up('KeyS');
-
     await page.keyboard.down('ArrowLeft');
     await sleep(2000);
     await page.keyboard.up('ArrowLeft');
-    await sleep(400);
+    await sleep(300);
+    await screenshot('exhibit-day11');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit3-day11-${timestamp}.png`)
-    });
-
-    // Walk closer to exhibit 3
+    // Walk closer
     await page.keyboard.down('KeyW');
     await sleep(1000);
     await page.keyboard.up('KeyW');
-    await sleep(400);
+    await sleep(300);
+    await screenshot('exhibit-day11-close');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit3-close-${timestamp}.png`)
-    });
-
-    // Back up and turn to exhibit 4 (~90° left)
+    // Back up and turn to exhibit 4
     await page.keyboard.down('KeyS');
     await sleep(1000);
     await page.keyboard.up('KeyS');
-
     await page.keyboard.down('ArrowLeft');
     await sleep(2000);
     await page.keyboard.up('ArrowLeft');
-    await sleep(400);
+    await sleep(300);
+    await screenshot('exhibit-day13');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit4-day13-${timestamp}.png`)
-    });
-
-    // Walk closer to exhibit 4
+    // Walk closer
     await page.keyboard.down('KeyW');
     await sleep(1000);
     await page.keyboard.up('KeyW');
-    await sleep(400);
+    await sleep(300);
+    await screenshot('exhibit-day13-close');
 
-    await canvas.screenshot({
-      path: path.join(OUTPUT_DIR, `museum-exhibit4-close-${timestamp}.png`)
-    });
+    // Look toward a wing (north doorway)
+    console.log('Looking toward wings...');
+    await page.keyboard.down('KeyS');
+    await sleep(1500);
+    await page.keyboard.up('KeyS');
+    await page.keyboard.down('ArrowLeft');
+    await sleep(1500);
+    await page.keyboard.up('ArrowLeft');
+    await sleep(300);
+    await screenshot('north-doorway');
 
-    console.log('\n=== Screenshots saved to outputs/ ===');
-    console.log('Files:');
-    console.log(`  museum-entrance-${timestamp}.png`);
-    console.log(`  museum-gallery-approach-${timestamp}.png`);
-    console.log(`  museum-gallery-center-${timestamp}.png`);
-    console.log(`  museum-exhibit1-day1-${timestamp}.png (far)`);
-    console.log(`  museum-exhibit1-close-${timestamp}.png`);
-    console.log(`  museum-exhibit2-day7-${timestamp}.png (far)`);
-    console.log(`  museum-exhibit2-close-${timestamp}.png`);
-    console.log(`  museum-exhibit3-day11-${timestamp}.png (far)`);
-    console.log(`  museum-exhibit3-close-${timestamp}.png`);
-    console.log(`  museum-exhibit4-day13-${timestamp}.png (far)`);
-    console.log(`  museum-exhibit4-close-${timestamp}.png`);
+    // Walk toward north wing
+    await page.keyboard.down('KeyW');
+    await sleep(3000);
+    await page.keyboard.up('KeyW');
+    await sleep(300);
+    await screenshot('north-wing-entrance');
+
+    console.log('\n=== Screenshots complete! ===');
+    console.log(`Saved to: ${OUTPUT_DIR}`);
 
     await context.close();
   } finally {
