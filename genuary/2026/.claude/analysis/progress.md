@@ -405,7 +405,7 @@ Each session entry should include:
 - `16a3587` - feat: add 0/Home key to return to spawn point
 - `3665909` - feat: add whoosh sound effect when teleporting
 
-**Total Feature Count**: 22 features!
+**Total Feature Count**: 24 features!
 
 **Screenshots Note**: WebGL screenshot capture in headless mode continues to timeout. The museum renders correctly but Playwright screenshots hang. This is a known limitation with software WebGL rendering.
 
@@ -432,6 +432,8 @@ Each session entry should include:
 20. Return Home (0/Home)
 21. Teleport Whoosh Sound
 22. Interactive help overlay
+23. Proximity-based orb glow
+24. Loading screen with progress bar
 
 **Next session**:
 - VR/WebXR integration
