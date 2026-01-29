@@ -9,6 +9,67 @@ import type { ExhibitFrame } from './exhibits/frame';
 import { dayInfoMap } from './exhibits/placard';
 
 // ============================================================================
+// Audio Helpers
+// ============================================================================
+
+let audioContext: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (!audioContext) {
+    try {
+      audioContext = new AudioContext();
+    } catch (e) {
+      return null;
+    }
+  }
+  return audioContext;
+}
+
+/**
+ * Play a subtle zoom-in sound
+ */
+function playZoomInSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(300, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.2);
+}
+
+/**
+ * Play a subtle zoom-out sound
+ */
+function playZoomOutSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(500, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.15);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.06, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.15);
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -236,6 +297,7 @@ function zoomToExhibit(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumb
   interaction.zoomProgress = 0;
 
   console.log(`Zooming to Day ${dayNumber}`);
+  playZoomInSound();
 
   // Show zoom indicator
   showZoomIndicator(dayNumber);
@@ -261,6 +323,7 @@ function exitZoom(interaction: InteractionSystem): void {
   // Will set isZoomed = false when animation completes
 
   console.log('Exiting zoom');
+  playZoomOutSound();
   hideZoomIndicator();
 }
 
