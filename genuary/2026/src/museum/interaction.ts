@@ -358,7 +358,7 @@ function playNavigateSound(): void {
 function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): void {
   // Don't check hover when zoomed
   if (interaction.isZoomed) {
-    interaction.element.style.cursor = 'pointer';
+    interaction.element.style.cursor = 'zoom-in';
     return;
   }
 
@@ -375,7 +375,7 @@ function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): voi
     const hit = intersects[0].object as THREE.Mesh;
     if (interaction.hoveredExhibit !== hit) {
       interaction.hoveredExhibit = hit;
-      interaction.element.style.cursor = 'pointer';
+      interaction.element.style.cursor = 'zoom-in';
     }
   } else {
     if (interaction.hoveredExhibit !== null) {
