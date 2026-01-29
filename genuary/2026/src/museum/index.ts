@@ -128,12 +128,13 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
       <div style="text-align: center; margin-bottom: 8px; color: #fff; font-weight: bold;">
         Controls
       </div>
-      <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
         <div><b>WASD</b> Move</div>
         <div><b>Drag</b> Look</div>
         <div><b>1-5</b> Teleport</div>
         <div><b>Click</b> Zoom</div>
-        <div><b>[ ]</b> Prev/Next</div>
+        <div><b>[ ]</b> Browse</div>
+        <div><b>R</b> Random</div>
         <div><b>H</b> Help</div>
       </div>
     </div>

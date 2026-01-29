@@ -228,6 +228,13 @@ function handleClick(interaction: InteractionSystem, event: MouseEvent): void {
  * Handle keyboard events
  */
 function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): void {
+  // R for random exhibit (works even when not zoomed)
+  if (event.code === 'KeyR' && !interaction.animating) {
+    zoomToRandomExhibit(interaction);
+    event.preventDefault();
+    return;
+  }
+
   if (!interaction.isZoomed) return;
 
   if (event.code === 'Escape') {
@@ -242,6 +249,39 @@ function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): vo
   } else if (event.code === 'BracketRight' || event.code === 'ArrowRight') {
     navigateExhibit(interaction, 1);
     event.preventDefault();
+  }
+}
+
+/**
+ * Zoom to a random exhibit
+ */
+function zoomToRandomExhibit(interaction: InteractionSystem): void {
+  if (interaction.exhibitMeshes.length === 0) return;
+
+  // Store original position if not already zoomed
+  if (!interaction.isZoomed) {
+    interaction.originalPosition.copy(interaction.camera.position);
+    interaction.originalQuaternion.copy(interaction.camera.quaternion);
+  }
+
+  // Pick a random exhibit (different from current if possible)
+  let newIndex: number;
+  if (interaction.exhibitMeshes.length === 1) {
+    newIndex = 0;
+  } else {
+    do {
+      newIndex = Math.floor(Math.random() * interaction.exhibitMeshes.length);
+    } while (newIndex === interaction.currentExhibitIndex && interaction.exhibitMeshes.length > 1);
+  }
+
+  const mesh = interaction.exhibitMeshes[newIndex];
+  const dayNumber = mesh.userData.dayNumber;
+
+  if (dayNumber !== undefined) {
+    interaction.currentExhibitIndex = newIndex;
+    zoomToExhibitMesh(interaction, mesh, dayNumber);
+    playZoomInSound();
+    console.log(`Random exhibit: Day ${dayNumber}`);
   }
 }
 
