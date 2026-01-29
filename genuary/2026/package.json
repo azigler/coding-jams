@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "capture": "bun run scripts/capture.ts",
     "capture:diagnostics": "bun run scripts/capture-diagnostics.ts",
-    "museum:test": "bun run scripts/museum-test.ts"
+    "museum:test": "bun run scripts/museum-test.ts",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "keywords": [
     "generative-art",
@@ -26,7 +28,8 @@
     "playwright": "^1.58.0",
     "three": "^0.182.0",
     "typescript": "^5.7.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "ccapture.js": "^1.1.0",
