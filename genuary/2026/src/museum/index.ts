@@ -7,6 +7,7 @@
  * The art doesn't hang on walls - it BECOMES the architecture.
  */
 
+import * as THREE from 'three';
 import { createScene, updateScene, disposeScene, setQuality, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
 import { initAudio, startAmbient, disposeAudio, setAudioMuted, playDiscoveryChime } from './audio';
@@ -273,6 +274,59 @@ function takeScreenshot(canvas: HTMLCanvasElement): void {
 }
 
 /**
+ * Generate and copy a shareable link with current view position
+ */
+function shareView(camera: THREE.PerspectiveCamera): void {
+  const pos = camera.position;
+  const euler = new THREE.Euler().setFromQuaternion(camera.quaternion);
+
+  // Encode position and rotation in URL hash
+  const params = new URLSearchParams({
+    x: pos.x.toFixed(1),
+    y: pos.y.toFixed(1),
+    z: pos.z.toFixed(1),
+    rx: euler.x.toFixed(2),
+    ry: euler.y.toFixed(2),
+  });
+
+  const url = `${window.location.origin}${window.location.pathname}#museum?${params.toString()}`;
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(url).then(() => {
+    showNotification('View link copied to clipboard!');
+  }).catch(() => {
+    // Fallback: show the URL
+    showNotification('Share: ' + url.slice(-50));
+  });
+}
+
+/**
+ * Parse shared view parameters from URL
+ */
+function parseSharedView(): { x: number; y: number; z: number; rx: number; ry: number } | null {
+  const hash = window.location.hash;
+  if (!hash.includes('museum?')) return null;
+
+  try {
+    const queryString = hash.split('?')[1];
+    if (!queryString) return null;
+
+    const params = new URLSearchParams(queryString);
+    const x = parseFloat(params.get('x') || '');
+    const y = parseFloat(params.get('y') || '');
+    const z = parseFloat(params.get('z') || '');
+    const rx = parseFloat(params.get('rx') || '');
+    const ry = parseFloat(params.get('ry') || '');
+
+    if (isNaN(x) || isNaN(y) || isNaN(z)) return null;
+
+    return { x, y, z, rx: rx || 0, ry: ry || 0 };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Show a temporary notification
  */
 function showNotification(message: string): void {
@@ -357,6 +411,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>F</b> Fav</div>
         <div><b>J</b> Jump Fav</div>
         <div><b>P</b> Photo</div>
+        <div><b>S</b> Share</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -549,6 +604,23 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', screenshotHandler);
+
+  // Share view with S key
+  const shareHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyS' && !interaction.isZoomed) {
+      shareView(scene.camera);
+    }
+  };
+  document.addEventListener('keydown', shareHandler);
+
+  // Apply shared view if present in URL
+  const sharedView = parseSharedView();
+  if (sharedView) {
+    scene.camera.position.set(sharedView.x, sharedView.y, sharedView.z);
+    navigation.euler.set(sharedView.rx, sharedView.ry, 0, 'YXZ');
+    scene.camera.quaternion.setFromEuler(navigation.euler);
+    showNotification('Loaded shared view');
+  }
 
   context = {
     scene,
