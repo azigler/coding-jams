@@ -218,6 +218,13 @@ import {
   disposeCollectionsSystem,
   type CollectionsSystem,
 } from './collections';
+import {
+  createQuickFactsSystem,
+  showQuickFact,
+  hideQuickFact,
+  disposeQuickFactsSystem,
+  type QuickFactsSystem,
+} from './quick-facts';
 
 // ============================================================================
 // Types
@@ -254,6 +261,7 @@ export interface MuseumContext {
   curatorNotes: CuratorNoteSystem;
   timeLighting: TimeLighting;
   collections: CollectionsSystem;
+  quickFacts: QuickFactsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1058,6 +1066,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
 
+  // Create quick facts system (shows facts when hovering near exhibits)
+  const quickFacts = createQuickFactsSystem(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1289,6 +1300,22 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', achievementsHandler);
 
+  // Quick facts with F key (F for Fun Fact)
+  const quickFactsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyF' && !event.ctrlKey && !event.metaKey) {
+      const dayNumber = interaction.currentDayNumber;
+      if (dayNumber > 0) {
+        // Get screen center for tooltip position
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2 - 100;
+        showQuickFact(quickFacts, dayNumber, centerX, centerY);
+        // Auto-hide after 4 seconds
+        setTimeout(() => hideQuickFact(quickFacts), 4000);
+      }
+    }
+  };
+  document.addEventListener('keydown', quickFactsHandler);
+
   // Rate exhibits with +/- keys (only when zoomed)
   const ratingHandler = (event: KeyboardEvent) => {
     if (!interaction.isZoomed || interaction.currentDayNumber < 1) return;
@@ -1494,6 +1521,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     curatorNotes,
     timeLighting,
     collections,
+    quickFacts,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1673,6 +1701,7 @@ export function disposeMuseum(): void {
   disposeCuratorNoteSystem(context.curatorNotes);
   disposeTimeLighting(context.timeLighting);
   disposeCollectionsSystem(context.collections);
+  disposeQuickFactsSystem(context.quickFacts);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
