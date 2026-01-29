@@ -220,6 +220,152 @@ export function playDiscoveryChime(): void {
 }
 
 /**
+ * Play a camera shutter sound (for screenshots)
+ */
+export function playCameraShutter(): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+  const now = ctx.currentTime;
+
+  // Quick click sound
+  const clickOsc = ctx.createOscillator();
+  clickOsc.type = 'square';
+  clickOsc.frequency.value = 1200;
+
+  const clickGain = ctx.createGain();
+  clickGain.gain.setValueAtTime(0.08, now);
+  clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+  clickOsc.connect(clickGain);
+  clickGain.connect(audioSystem.masterGain);
+
+  clickOsc.start(now);
+  clickOsc.stop(now + 0.05);
+
+  // Mechanical shutter follow sound
+  const mechOsc = ctx.createOscillator();
+  mechOsc.type = 'triangle';
+  mechOsc.frequency.value = 400;
+
+  const mechGain = ctx.createGain();
+  mechGain.gain.setValueAtTime(0, now + 0.03);
+  mechGain.gain.linearRampToValueAtTime(0.04, now + 0.05);
+  mechGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+  mechOsc.connect(mechGain);
+  mechGain.connect(audioSystem.masterGain);
+
+  mechOsc.start(now + 0.03);
+  mechOsc.stop(now + 0.15);
+}
+
+/**
+ * Play a zoom-in sound (when focusing on exhibit)
+ */
+export function playZoomIn(): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+  const now = ctx.currentTime;
+
+  // Soft ascending tone
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(300, now);
+  osc.frequency.exponentialRampToValueAtTime(500, now + 0.15);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.04, now + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+  osc.connect(gain);
+  gain.connect(audioSystem.masterGain);
+
+  osc.start(now);
+  osc.stop(now + 0.25);
+}
+
+/**
+ * Play a zoom-out sound (when unfocusing from exhibit)
+ */
+export function playZoomOut(): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+  const now = ctx.currentTime;
+
+  // Soft descending tone
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(500, now);
+  osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.03, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+  osc.connect(gain);
+  gain.connect(audioSystem.masterGain);
+
+  osc.start(now);
+  osc.stop(now + 0.25);
+}
+
+/**
+ * Play a favorite toggle sound
+ */
+export function playFavoriteToggle(added: boolean): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+  const now = ctx.currentTime;
+
+  if (added) {
+    // Happy ascending ding
+    const freq1 = 659.26; // E5
+    const freq2 = 880;    // A5
+
+    [freq1, freq2].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const gain = ctx.createGain();
+      const t = now + i * 0.1;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.05, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+      osc.connect(gain);
+      gain.connect(audioSystem!.masterGain!);
+
+      osc.start(t);
+      osc.stop(t + 0.35);
+    });
+  } else {
+    // Soft descending tone for removal
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.03, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(audioSystem.masterGain);
+
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
+}
+
+/**
  * Play a whoosh/teleport sound
  */
 export function playTeleport(): void {

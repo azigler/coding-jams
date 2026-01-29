@@ -10,7 +10,17 @@
 import * as THREE from 'three';
 import { createScene, updateScene, disposeScene, setQuality, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
-import { initAudio, startAmbient, disposeAudio, setAudioMuted, playDiscoveryChime } from './audio';
+import {
+  initAudio,
+  startAmbient,
+  disposeAudio,
+  setAudioMuted,
+  playDiscoveryChime,
+  playCameraShutter,
+  playZoomIn,
+  playZoomOut,
+  playFavoriteToggle,
+} from './audio';
 import {
   createInteraction,
   updateInteraction,
@@ -558,6 +568,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Wire up interaction to toggle favorites
   interaction.onFavoriteToggle = (dayNumber: number) => {
     const nowFavorite = toggleFavorite(favorites, dayNumber);
+    playFavoriteToggle(nowFavorite);
     showNotification(nowFavorite ? `Day ${dayNumber} added to favorites` : `Day ${dayNumber} removed from favorites`);
     // Update discovery badge to show new favorites count
     refreshDiscoveryBadge(discovery);
@@ -703,6 +714,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Screenshot with P key
   const screenshotHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyP') {
+      playCameraShutter();
       takeScreenshot(scene.renderer.domElement);
       recordScreenshot(stats);
     }
