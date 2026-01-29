@@ -106,6 +106,9 @@ export interface InteractionSystem {
   // Callback when favorite is toggled
   onFavoriteToggle: ((dayNumber: number) => void) | null;
 
+  // Callback to check if a day is favorited
+  isFavorite: ((dayNumber: number) => boolean) | null;
+
   // Currently viewed day number (when zoomed)
   currentDayNumber: number;
 
@@ -151,6 +154,7 @@ export function createInteraction(
     currentExhibitIndex: -1,
     onExhibitViewed: null,
     onFavoriteToggle: null,
+    isFavorite: null,
     currentDayNumber: -1,
     cleanup: () => {},
   };
@@ -470,6 +474,7 @@ function zoomToExhibitMesh(interaction: InteractionSystem, mesh: THREE.Mesh, day
   // Show vignette and info panel
   showVignette();
   showZoomIndicator(
+    interaction,
     dayNumber,
     interaction.currentExhibitIndex,
     interaction.exhibitMeshes.length
@@ -507,7 +512,12 @@ function exitZoom(interaction: InteractionSystem): void {
 /**
  * Show zoom indicator overlay with exhibit details
  */
-function showZoomIndicator(dayNumber: number, currentIndex?: number, totalCount?: number): void {
+function showZoomIndicator(
+  interaction: InteractionSystem,
+  dayNumber: number,
+  currentIndex?: number,
+  totalCount?: number
+): void {
   // Remove existing indicator
   hideZoomIndicator();
 
@@ -520,6 +530,9 @@ function showZoomIndicator(dayNumber: number, currentIndex?: number, totalCount?
   const progressText = (currentIndex !== undefined && totalCount !== undefined)
     ? `${currentIndex + 1} of ${totalCount}`
     : '';
+
+  // Check if favorited
+  const favorited = interaction.isFavorite?.(dayNumber) ?? false;
 
   const indicator = document.createElement('div');
   indicator.id = 'zoom-indicator';
@@ -552,13 +565,24 @@ function showZoomIndicator(dayNumber: number, currentIndex?: number, totalCount?
           letter-spacing: 1px;
           color: #888;
         ">Genuary 2026</div>
-        ${progressText ? `<div style="
-          font-size: 11px;
-          color: #666;
-          background: rgba(255,255,255,0.1);
-          padding: 2px 8px;
-          border-radius: 10px;
-        ">${progressText}</div>` : ''}
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="favorite-btn" style="
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 4px;
+            pointer-events: auto;
+            transition: transform 0.2s;
+          " title="${favorited ? 'Remove from favorites' : 'Add to favorites (F)'}">${favorited ? '❤️' : '🤍'}</button>
+          ${progressText ? `<div style="
+            font-size: 11px;
+            color: #666;
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+          ">${progressText}</div>` : ''}
+        </div>
       </div>
       <div style="
         font-size: 20px;
@@ -599,10 +623,28 @@ function showZoomIndicator(dayNumber: number, currentIndex?: number, totalCount?
         color: #666;
         margin-top: 8px;
         text-align: center;
-      ">[ ] or ←→ to browse • ESC to exit</div>
+      ">[ ] or ←→ to browse • F to favorite • ESC to exit</div>
     </div>
   `;
   document.body.appendChild(indicator);
+
+  // Wire up favorite button click
+  const favBtn = document.getElementById('favorite-btn');
+  if (favBtn) {
+    favBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      interaction.onFavoriteToggle?.(dayNumber);
+      // Update button state
+      const nowFavorited = interaction.isFavorite?.(dayNumber) ?? false;
+      favBtn.innerHTML = nowFavorited ? '❤️' : '🤍';
+      favBtn.title = nowFavorited ? 'Remove from favorites' : 'Add to favorites (F)';
+      // Animate
+      favBtn.style.transform = 'scale(1.3)';
+      setTimeout(() => {
+        favBtn.style.transform = 'scale(1)';
+      }, 200);
+    });
+  }
 }
 
 /**

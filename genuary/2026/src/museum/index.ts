@@ -451,6 +451,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showNotification(nowFavorite ? `Day ${dayNumber} added to favorites` : `Day ${dayNumber} removed from favorites`);
   };
 
+  // Wire up interaction to check favorite status
+  interaction.isFavorite = (dayNumber: number) => {
+    return isFavorite(favorites, dayNumber);
+  };
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
