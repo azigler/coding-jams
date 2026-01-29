@@ -23,6 +23,7 @@ import {
   playZoomOut,
   playFavoriteToggle,
   playTeleport,
+  updateAmbientForWing,
 } from './audio';
 import {
   createInteraction,
@@ -309,6 +310,28 @@ function createLocationIndicator(container: HTMLElement): HTMLElement {
   (indicator as unknown as Record<string, unknown>).timerInterval = timerInterval;
 
   return indicator;
+}
+
+/**
+ * Determine the current wing/location based on position
+ */
+function getWingFromPosition(z: number, x: number): string {
+  // Gallery center is at z = -32
+  if (z < -20 && z > -45) {
+    if (Math.abs(x) < 8) {
+      return 'gallery';
+    } else if (x < -8) {
+      return 'west';
+    } else if (x > 8) {
+      return 'east';
+    }
+  } else if (z <= -45) {
+    return 'north';
+  } else if (z >= -20) {
+    // South is the entrance area
+    return 'south';
+  }
+  return 'gallery';
 }
 
 /**
@@ -1200,6 +1223,10 @@ export function startMuseum(): void {
     // Update location indicator
     const pos = context.scene.camera.position;
     updateLocationIndicator(pos.z, pos.x);
+
+    // Update ambient audio based on wing location
+    const currentWing = getWingFromPosition(pos.z, pos.x);
+    updateAmbientForWing(currentWing);
 
     // Track movement distance for stats
     recordMovement(context.stats, pos.x, pos.z);

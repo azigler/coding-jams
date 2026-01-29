@@ -14,6 +14,8 @@ export interface AudioSystem {
   masterGain: GainNode | null;
   isPlaying: boolean;
   ambientOscillators: OscillatorNode[];
+  wingFilterNode: BiquadFilterNode | null;
+  currentWing: string;
 }
 
 // ============================================================================
@@ -44,6 +46,8 @@ export function initAudio(): AudioSystem {
       masterGain,
       isPlaying: false,
       ambientOscillators: [],
+      wingFilterNode: null,
+      currentWing: 'gallery',
     };
 
     console.log('Museum audio system initialized');
@@ -55,6 +59,8 @@ export function initAudio(): AudioSystem {
       masterGain: null,
       isPlaying: false,
       ambientOscillators: [],
+      wingFilterNode: null,
+      currentWing: 'gallery',
     };
   }
 }
@@ -158,6 +164,74 @@ export function stopAmbient(): void {
   audioSystem.ambientOscillators = [];
   audioSystem.isPlaying = false;
   console.log('Ambient audio stopped');
+}
+
+/**
+ * Update ambient sound based on wing location
+ * Each wing has a unique audio character
+ */
+export function updateAmbientForWing(wing: string): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+  if (audioSystem.currentWing === wing) return;
+
+  audioSystem.currentWing = wing;
+  const ctx = audioSystem.context;
+
+  // Create or update wing filter
+  if (!audioSystem.wingFilterNode) {
+    audioSystem.wingFilterNode = ctx.createBiquadFilter();
+    audioSystem.wingFilterNode.type = 'lowpass';
+    audioSystem.wingFilterNode.frequency.value = 500;
+    audioSystem.wingFilterNode.Q.value = 1;
+  }
+
+  const filter = audioSystem.wingFilterNode;
+  const now = ctx.currentTime;
+
+  // Smoothly transition filter parameters based on wing
+  switch (wing.toLowerCase()) {
+    case 'north':
+      // North wing: crisp, airy
+      filter.frequency.linearRampToValueAtTime(800, now + 0.5);
+      filter.Q.linearRampToValueAtTime(0.5, now + 0.5);
+      break;
+    case 'south':
+      // South wing: warm, muffled
+      filter.frequency.linearRampToValueAtTime(300, now + 0.5);
+      filter.Q.linearRampToValueAtTime(2, now + 0.5);
+      break;
+    case 'east':
+      // East wing: bright, resonant
+      filter.frequency.linearRampToValueAtTime(600, now + 0.5);
+      filter.Q.linearRampToValueAtTime(1.5, now + 0.5);
+      break;
+    case 'west':
+      // West wing: deep, cavernous
+      filter.frequency.linearRampToValueAtTime(400, now + 0.5);
+      filter.Q.linearRampToValueAtTime(3, now + 0.5);
+      break;
+    case 'gallery':
+    default:
+      // Gallery/center: balanced
+      filter.frequency.linearRampToValueAtTime(500, now + 0.5);
+      filter.Q.linearRampToValueAtTime(1, now + 0.5);
+      break;
+  }
+
+  // Update ambient oscillator frequencies slightly per wing
+  const wingOffsets: Record<string, number> = {
+    north: 0,
+    east: 2,
+    south: -3,
+    west: -1,
+    gallery: 0,
+  };
+  const offset = wingOffsets[wing.toLowerCase()] ?? 0;
+
+  audioSystem.ambientOscillators.forEach((osc, i) => {
+    const baseFreq = [55, 82.5, 110][i] ?? 55;
+    osc.frequency.linearRampToValueAtTime(baseFreq + offset, now + 0.5);
+  });
 }
 
 // ============================================================================
