@@ -355,6 +355,46 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
   );
   group.add(topWall);
 
+  // Welcome sign on entry wall
+  const signCanvas = document.createElement('canvas');
+  signCanvas.width = 512;
+  signCanvas.height = 128;
+  const ctx = signCanvas.getContext('2d');
+  if (ctx) {
+    // Subtle background
+    ctx.fillStyle = '#1a1a22';
+    ctx.fillRect(0, 0, signCanvas.width, signCanvas.height);
+
+    // Gold border
+    ctx.strokeStyle = '#8a7a60';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(4, 4, signCanvas.width - 8, signCanvas.height - 8);
+
+    // Title text
+    ctx.fillStyle = '#c0b090';
+    ctx.font = 'bold 48px Georgia, serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GENUARY 2026', signCanvas.width / 2, signCanvas.height / 2 - 10);
+
+    // Subtitle
+    ctx.fillStyle = '#807060';
+    ctx.font = '20px Georgia, serif';
+    ctx.fillText('Virtual Museum', signCanvas.width / 2, signCanvas.height / 2 + 30);
+  }
+  const signTexture = new THREE.CanvasTexture(signCanvas);
+  const signGeom = new THREE.PlaneGeometry(2.0, 0.5);
+  const signMat = new THREE.MeshBasicMaterial({ map: signTexture, transparent: true });
+  const sign = new THREE.Mesh(signGeom, signMat);
+  sign.position.set(0, cfg.hallHeight * 0.75, 0.5); // On entry wall, facing visitors
+  sign.rotation.y = Math.PI; // Face toward the hallway
+  group.add(sign);
+
+  // Subtle light on the sign
+  const signLight = new THREE.PointLight(0xffeedd, 0.5, 4, 2);
+  signLight.position.set(0, cfg.hallHeight * 0.75, 0);
+  group.add(signLight);
+
   return {
     group,
     sconceLights,
