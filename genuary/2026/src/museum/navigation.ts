@@ -187,14 +187,16 @@ export function createNavigation(
 // ============================================================================
 
 /**
- * Teleport points for quick navigation (press 1-5)
+ * Teleport points for quick navigation (press 0-5 or Home)
  */
-const TELEPORT_POINTS: Record<string, { pos: [number, number, number]; lookAt: [number, number, number] }> = {
-  'Digit1': { pos: [0, 1.6, -2], lookAt: [0, 1.6, -20] },        // Entrance - look toward gallery
-  'Digit2': { pos: [0, 1.6, -32], lookAt: [0, 1.6, -50] },       // Gallery center - look north
-  'Digit3': { pos: [0, 1.6, -44], lookAt: [0, 1.6, -60] },       // North wing - inside corridor
-  'Digit4': { pos: [-16, 1.6, -32], lookAt: [-30, 1.6, -32] },   // West wing - inside corridor
-  'Digit5': { pos: [16, 1.6, -32], lookAt: [30, 1.6, -32] },     // East wing - inside corridor
+const TELEPORT_POINTS: Record<string, { pos: [number, number, number]; lookAt: [number, number, number]; name: string }> = {
+  'Digit0': { pos: [0, 1.6, 0], lookAt: [0, 1.6, -20], name: 'Spawn' },         // Original spawn
+  'Home': { pos: [0, 1.6, 0], lookAt: [0, 1.6, -20], name: 'Spawn' },           // Home key alias
+  'Digit1': { pos: [0, 1.6, -2], lookAt: [0, 1.6, -20], name: 'Entrance' },     // Entrance
+  'Digit2': { pos: [0, 1.6, -32], lookAt: [0, 1.6, -50], name: 'Gallery' },     // Gallery center
+  'Digit3': { pos: [0, 1.6, -44], lookAt: [0, 1.6, -60], name: 'North Wing' },  // North wing
+  'Digit4': { pos: [-16, 1.6, -32], lookAt: [-30, 1.6, -32], name: 'West Wing' }, // West wing
+  'Digit5': { pos: [16, 1.6, -32], lookAt: [30, 1.6, -32], name: 'East Wing' },   // East wing
 };
 
 /**
@@ -204,12 +206,12 @@ function handleKeyDown(navigation: Navigation, event: KeyboardEvent): void {
   // Check for teleport keys
   const teleport = TELEPORT_POINTS[event.code];
   if (teleport) {
-    const { pos, lookAt } = teleport;
+    const { pos, lookAt, name } = teleport;
     navigation.camera.position.set(pos[0], pos[1], pos[2]);
     navigation.camera.lookAt(lookAt[0], lookAt[1], lookAt[2]);
     navigation.euler.setFromQuaternion(navigation.camera.quaternion);
     navigation.velocity.set(0, 0, 0);
-    console.log(`Teleported to ${event.code.replace('Digit', 'Point ')}`);
+    console.log(`Teleported to ${name}`);
     return;
   }
 
