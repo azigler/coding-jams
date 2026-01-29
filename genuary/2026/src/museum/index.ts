@@ -567,6 +567,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>Click</b> Zoom</div>
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
+        <div><b>U</b> Unvisited</div>
         <div><b>T</b> Tour</div>
         <div><b>F</b> Fav/Full</div>
         <div><b>J</b> Jump Fav</div>
@@ -724,6 +725,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   interaction.onTeleport = (_x: number, _z: number) => {
     playTeleport();
     showNotification('Teleported!');
+  };
+
+  // Wire up visited check for "next unvisited" feature
+  interaction.isVisited = (dayNumber: number) => {
+    return discovery.viewedDays.has(dayNumber);
   };
 
   // Create tips system for contextual help

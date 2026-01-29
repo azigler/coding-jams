@@ -115,6 +115,9 @@ export interface InteractionSystem {
   // Callback when teleporting via double-click
   onTeleport: ((x: number, z: number) => void) | null;
 
+  // Callback to check if a day has been visited
+  isVisited: ((dayNumber: number) => boolean) | null;
+
   // Currently viewed day number (when zoomed)
   currentDayNumber: number;
 
@@ -163,6 +166,7 @@ export function createInteraction(
     isFavorite: null,
     getFavorites: null,
     onTeleport: null,
+    isVisited: null,
     currentDayNumber: -1,
     cleanup: () => {},
   };
@@ -310,6 +314,13 @@ function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): vo
     return;
   }
 
+  // U for next unvisited exhibit (works even when not zoomed)
+  if (event.code === 'KeyU' && !interaction.animating) {
+    zoomToNextUnvisited(interaction);
+    event.preventDefault();
+    return;
+  }
+
   if (!interaction.isZoomed) return;
 
   if (event.code === 'Escape') {
@@ -369,6 +380,43 @@ function zoomToRandomExhibit(interaction: InteractionSystem): void {
     zoomToExhibitMesh(interaction, mesh, dayNumber);
     playZoomInSound();
     console.log(`Random exhibit: Day ${dayNumber}`);
+  }
+}
+
+/**
+ * Zoom to the next unvisited exhibit
+ */
+function zoomToNextUnvisited(interaction: InteractionSystem): void {
+  if (interaction.exhibitMeshes.length === 0) return;
+  if (!interaction.isVisited) return;
+
+  // Find all unvisited exhibits
+  const unvisited = interaction.exhibitMeshes.filter(mesh => {
+    const dayNumber = mesh.userData.dayNumber;
+    return dayNumber !== undefined && !interaction.isVisited!(dayNumber);
+  });
+
+  if (unvisited.length === 0) {
+    console.log('All exhibits visited!');
+    return;
+  }
+
+  // Store original position if not already zoomed
+  if (!interaction.isZoomed) {
+    interaction.originalPosition.copy(interaction.camera.position);
+    interaction.originalQuaternion.copy(interaction.camera.quaternion);
+  }
+
+  // Pick a random unvisited exhibit
+  const mesh = unvisited[Math.floor(Math.random() * unvisited.length)];
+  const dayNumber = mesh.userData.dayNumber;
+  const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+
+  if (dayNumber !== undefined) {
+    interaction.currentExhibitIndex = meshIndex;
+    zoomToExhibitMesh(interaction, mesh, dayNumber);
+    playZoomInSound();
+    console.log(`Unvisited exhibit: Day ${dayNumber} (${unvisited.length} remaining)`);
   }
 }
 
