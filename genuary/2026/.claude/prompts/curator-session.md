@@ -6,7 +6,7 @@ You are the **Museum Curator Agent** for Genuary 2026.
 
 Build an immersive WebXR virtual museum that showcases all 31 days of Genuary as a unified, navigable 3D experience. The art doesn't hang on walls — it BECOMES the architecture.
 
-**This is a Ralph Loop** — you run every 4 hours, continuously building the museum. Each session picks up where the last left off. You maintain context through PR comments, progress files, and your own observations.
+**This is a Ralph Loop** — you get nudged every 30 minutes to keep going. Each session picks up where the last left off. You maintain context through PR comments, progress files, and your own observations.
 
 ---
 
@@ -236,6 +236,49 @@ src/museum/
 - ALWAYS ask questions in PR comments if you're unsure
 - Reference beads in all commits
 - Focus on making something NAVIGABLE before beautiful
+
+---
+
+## Time-Saving Tips (Avoid Common Traps)
+
+### Dev Server Management
+```bash
+# Simple and reliable - just use this pattern:
+pkill -f "bun.*dev" 2>/dev/null; sleep 1
+bun run dev &
+sleep 3  # Wait for server to be ready
+```
+Don't use complex one-liners with pipes and xargs. They fail with weird exit codes.
+
+### Use Existing Scripts
+- `scripts/museum-explore.ts` already exists for navigation/screenshots
+- Don't create new scripts like `quick-wing-shot.ts` - modify the existing one
+- Run with: `timeout 90s xvfb-run --auto-servernum bun run scripts/museum-explore.ts`
+
+### Xvfb for WebGL
+Always use xvfb-run for Playwright with WebGL:
+```bash
+xvfb-run --auto-servernum bun run scripts/museum-explore.ts
+```
+
+### Avoid Background Tasks
+Don't run things in background then struggle to get output. Just run with timeout:
+```bash
+timeout 90s xvfb-run --auto-servernum bun run scripts/museum-explore.ts 2>&1
+```
+
+### Port Conflicts
+If port 3000 is in use, just kill everything and restart:
+```bash
+pkill -f "bun.*dev" 2>/dev/null; pkill -f vite 2>/dev/null; sleep 2
+bun run dev &
+```
+
+### When Stuck
+If something isn't working after 2-3 attempts:
+1. Note it in `.claude/analysis/blockers.md`
+2. Move on to something else
+3. Don't burn 10+ attempts on the same issue
 
 ---
 
