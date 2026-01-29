@@ -1,0 +1,318 @@
+/**
+ * Museum Interaction System
+ *
+ * Handles click-to-zoom for exhibits and other interactive elements.
+ */
+
+import * as THREE from 'three';
+import type { ExhibitFrame } from './exhibits/frame';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface InteractionSystem {
+  camera: THREE.PerspectiveCamera;
+  scene: THREE.Scene;
+  element: HTMLElement;
+  raycaster: THREE.Raycaster;
+  mouse: THREE.Vector2;
+
+  // All clickable exhibit meshes
+  exhibitMeshes: THREE.Mesh[];
+
+  // Zoom state
+  isZoomed: boolean;
+  zoomTarget: THREE.Vector3;
+  zoomLookAt: THREE.Vector3;
+  originalPosition: THREE.Vector3;
+  originalQuaternion: THREE.Quaternion;
+  zoomProgress: number;
+
+  // Animation
+  animating: boolean;
+
+  // Cleanup
+  cleanup: () => void;
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const ZOOM_DISTANCE = 1.2; // Distance from exhibit when zoomed
+const ZOOM_SPEED = 3; // Animation speed multiplier
+const ZOOM_EASING = 0.08; // Lerp factor
+
+// ============================================================================
+// Creation
+// ============================================================================
+
+/**
+ * Create the interaction system
+ */
+export function createInteraction(
+  camera: THREE.PerspectiveCamera,
+  scene: THREE.Scene,
+  element: HTMLElement
+): InteractionSystem {
+  const interaction: InteractionSystem = {
+    camera,
+    scene,
+    element,
+    raycaster: new THREE.Raycaster(),
+    mouse: new THREE.Vector2(),
+    exhibitMeshes: [],
+    isZoomed: false,
+    zoomTarget: new THREE.Vector3(),
+    zoomLookAt: new THREE.Vector3(),
+    originalPosition: new THREE.Vector3(),
+    originalQuaternion: new THREE.Quaternion(),
+    zoomProgress: 0,
+    animating: false,
+    cleanup: () => {},
+  };
+
+  // Event handlers
+  const onClick = (event: MouseEvent) => handleClick(interaction, event);
+  const onKeyDown = (event: KeyboardEvent) => handleKeyDown(interaction, event);
+
+  element.addEventListener('click', onClick);
+  document.addEventListener('keydown', onKeyDown);
+
+  interaction.cleanup = () => {
+    element.removeEventListener('click', onClick);
+    document.removeEventListener('keydown', onKeyDown);
+  };
+
+  return interaction;
+}
+
+// ============================================================================
+// Exhibit Registration
+// ============================================================================
+
+/**
+ * Register an exhibit frame for interaction
+ */
+export function registerExhibit(interaction: InteractionSystem, frame: ExhibitFrame): void {
+  // The mesh is the canvas surface - make it clickable
+  if (frame.mesh) {
+    frame.mesh.userData.exhibitFrame = frame;
+    frame.mesh.userData.dayNumber = frame.dayNumber;
+    interaction.exhibitMeshes.push(frame.mesh);
+  }
+}
+
+/**
+ * Register multiple exhibits
+ */
+export function registerExhibits(interaction: InteractionSystem, frames: ExhibitFrame[]): void {
+  frames.forEach(frame => registerExhibit(interaction, frame));
+}
+
+// ============================================================================
+// Event Handlers
+// ============================================================================
+
+/**
+ * Handle click events
+ */
+function handleClick(interaction: InteractionSystem, event: MouseEvent): void {
+  // If already zoomed, exit zoom on any click
+  if (interaction.isZoomed) {
+    exitZoom(interaction);
+    return;
+  }
+
+  // Calculate mouse position in normalized device coordinates
+  const rect = interaction.element.getBoundingClientRect();
+  interaction.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  interaction.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // Raycast to find intersected exhibits
+  interaction.raycaster.setFromCamera(interaction.mouse, interaction.camera);
+  const intersects = interaction.raycaster.intersectObjects(interaction.exhibitMeshes, false);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0];
+    const dayNumber = hit.object.userData.dayNumber;
+    if (dayNumber !== undefined) {
+      zoomToExhibit(interaction, hit.object as THREE.Mesh, dayNumber);
+    }
+  }
+}
+
+/**
+ * Handle keyboard events
+ */
+function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): void {
+  if (interaction.isZoomed && event.code === 'Escape') {
+    exitZoom(interaction);
+  }
+}
+
+// ============================================================================
+// Zoom Functions
+// ============================================================================
+
+/**
+ * Zoom to an exhibit
+ */
+function zoomToExhibit(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumber: number): void {
+  // Store original camera state
+  interaction.originalPosition.copy(interaction.camera.position);
+  interaction.originalQuaternion.copy(interaction.camera.quaternion);
+
+  // Get the world position and normal of the exhibit
+  const worldPos = new THREE.Vector3();
+  mesh.getWorldPosition(worldPos);
+
+  // Get the normal direction the exhibit faces
+  const normal = new THREE.Vector3(0, 0, 1);
+  const worldQuat = new THREE.Quaternion();
+  mesh.getWorldQuaternion(worldQuat);
+  normal.applyQuaternion(worldQuat);
+
+  // Calculate zoom target position (in front of exhibit)
+  interaction.zoomTarget.copy(worldPos).addScaledVector(normal, ZOOM_DISTANCE);
+  interaction.zoomTarget.y = interaction.camera.position.y; // Keep same height
+
+  // Look at the exhibit center
+  interaction.zoomLookAt.copy(worldPos);
+  interaction.zoomLookAt.y = interaction.camera.position.y;
+
+  interaction.isZoomed = true;
+  interaction.animating = true;
+  interaction.zoomProgress = 0;
+
+  console.log(`Zooming to Day ${dayNumber}`);
+
+  // Show zoom indicator
+  showZoomIndicator(dayNumber);
+}
+
+/**
+ * Exit zoom mode
+ */
+function exitZoom(interaction: InteractionSystem): void {
+  if (!interaction.isZoomed) return;
+
+  // Swap target and original for reverse animation
+  const tempPos = interaction.zoomTarget.clone();
+  const tempLook = interaction.zoomLookAt.clone();
+
+  interaction.zoomTarget.copy(interaction.originalPosition);
+  // Keep the look direction more or less the same when exiting
+  interaction.zoomLookAt.copy(interaction.originalPosition).add(new THREE.Vector3(0, 0, -5));
+
+  interaction.animating = true;
+  interaction.zoomProgress = 0;
+
+  // Will set isZoomed = false when animation completes
+
+  console.log('Exiting zoom');
+  hideZoomIndicator();
+}
+
+// ============================================================================
+// UI Helpers
+// ============================================================================
+
+/**
+ * Show zoom indicator overlay
+ */
+function showZoomIndicator(dayNumber: number): void {
+  // Remove existing indicator
+  hideZoomIndicator();
+
+  const indicator = document.createElement('div');
+  indicator.id = 'zoom-indicator';
+  indicator.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      z-index: 200;
+      pointer-events: none;
+    ">
+      <div style="font-weight: bold; margin-bottom: 4px;">Day ${dayNumber}</div>
+      <div style="font-size: 12px; color: #aaa;">Click or ESC to exit</div>
+    </div>
+  `;
+  document.body.appendChild(indicator);
+}
+
+/**
+ * Hide zoom indicator
+ */
+function hideZoomIndicator(): void {
+  const existing = document.getElementById('zoom-indicator');
+  if (existing) existing.remove();
+}
+
+// ============================================================================
+// Update Loop
+// ============================================================================
+
+/**
+ * Update interaction system (call each frame)
+ */
+export function updateInteraction(interaction: InteractionSystem, deltaTime: number): boolean {
+  if (!interaction.animating) return false;
+
+  // Lerp camera position toward target
+  interaction.camera.position.lerp(interaction.zoomTarget, ZOOM_EASING * ZOOM_SPEED);
+
+  // Look at target smoothly
+  const currentLook = new THREE.Vector3();
+  interaction.camera.getWorldDirection(currentLook);
+  currentLook.add(interaction.camera.position);
+
+  currentLook.lerp(interaction.zoomLookAt, ZOOM_EASING * ZOOM_SPEED);
+
+  // Only update lookAt if we're zooming in (not exiting)
+  if (interaction.isZoomed) {
+    interaction.camera.lookAt(interaction.zoomLookAt);
+  }
+
+  interaction.zoomProgress += deltaTime * ZOOM_SPEED;
+
+  // Check if animation is complete
+  const distance = interaction.camera.position.distanceTo(interaction.zoomTarget);
+  if (distance < 0.05) {
+    interaction.animating = false;
+
+    // If we were exiting zoom, mark as no longer zoomed
+    if (!interaction.isZoomed || interaction.zoomProgress > 2) {
+      // We've completed an exit animation
+    }
+  }
+
+  // Check if exit animation complete
+  if (!interaction.isZoomed === false && interaction.zoomProgress > 1) {
+    // Reset zoom state after exit animation
+    interaction.isZoomed = false;
+  }
+
+  return true; // Indicates camera was moved by interaction
+}
+
+// ============================================================================
+// Cleanup
+// ============================================================================
+
+/**
+ * Dispose of interaction system
+ */
+export function disposeInteraction(interaction: InteractionSystem): void {
+  hideZoomIndicator();
+  interaction.cleanup();
+  interaction.exhibitMeshes = [];
+}

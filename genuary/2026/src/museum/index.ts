@@ -10,6 +10,13 @@
 import { createScene, updateScene, disposeScene, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
 import { initAudio, startAmbient, disposeAudio } from './audio';
+import {
+  createInteraction,
+  updateInteraction,
+  disposeInteraction,
+  registerExhibits,
+  type InteractionSystem,
+} from './interaction';
 
 // ============================================================================
 // Types
@@ -18,6 +25,7 @@ import { initAudio, startAmbient, disposeAudio } from './audio';
 export interface MuseumContext {
   scene: MuseumScene;
   navigation: Navigation;
+  interaction: InteractionSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -116,10 +124,11 @@ function createHelpOverlay(container: HTMLElement): HTMLElement {
       <div style="text-align: center; margin-bottom: 8px; color: #fff; font-weight: bold;">
         Controls
       </div>
-      <div style="display: flex; gap: 20px;">
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
         <div><b>WASD</b> Move</div>
         <div><b>Drag</b> Look</div>
         <div><b>1-5</b> Teleport</div>
+        <div><b>Click</b> Zoom Exhibit</div>
       </div>
     </div>
   `;
@@ -145,6 +154,17 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create navigation system
   const navigation = createNavigation(scene.camera, scene.renderer.domElement);
 
+  // Create interaction system for click-to-zoom
+  const interaction = createInteraction(scene.camera, scene.scene, scene.renderer.domElement);
+
+  // Register all exhibits for interaction
+  if (scene.galleryZone) {
+    registerExhibits(interaction, scene.galleryZone.exhibits);
+  }
+  scene.wingZones.forEach(wing => {
+    registerExhibits(interaction, wing.exhibits);
+  });
+
   // Show help overlay and location indicator
   createHelpOverlay(container);
   createLocationIndicator(container);
@@ -163,6 +183,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   context = {
     scene,
     navigation,
+    interaction,
     container,
     isRunning: false,
     lastTime: 0,
@@ -209,8 +230,13 @@ export function startMuseum(): void {
     const deltaTime = (time - context.lastTime) / 1000;
     context.lastTime = time;
 
-    // Update navigation (camera movement)
-    updateNavigation(context.navigation, deltaTime);
+    // Update interaction (click-to-zoom)
+    const interactionActive = updateInteraction(context.interaction, deltaTime);
+
+    // Update navigation only if not in zoom mode
+    if (!interactionActive && !context.interaction.isZoomed) {
+      updateNavigation(context.navigation, deltaTime);
+    }
 
     // Update scene (animations, etc.)
     updateScene(context.scene, deltaTime);
@@ -250,6 +276,7 @@ export function disposeMuseum(): void {
 
   stopMuseum();
   disposeAudio();
+  disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
   disposeScene(context.scene);
 
