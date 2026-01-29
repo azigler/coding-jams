@@ -251,6 +251,12 @@ import {
   disposePostcardSystem,
   type PostcardSystem,
 } from './postcards';
+import {
+  createLandmarkSystem,
+  updateLandmarks,
+  disposeLandmarkSystem,
+  type LandmarkSystem,
+} from './landmarks';
 
 // ============================================================================
 // Types
@@ -292,6 +298,7 @@ export interface MuseumContext {
   suggestedNext: SuggestedNext;
   completion: CompletionSystem;
   postcards: PostcardSystem;
+  landmarks: LandmarkSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1169,6 +1176,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showNotification('Postcard saved!');
   };
 
+  // Create landmarks system (Shift+L to toggle)
+  const landmarks = createLandmarkSystem(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1642,6 +1652,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     suggestedNext,
     completion,
     postcards,
+    landmarks,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1745,6 +1756,14 @@ export function startMuseum(): void {
     // Update compass
     updateCompass(context.compass, context.scene.camera);
 
+    // Update landmark markers
+    updateLandmarks(
+      context.landmarks,
+      context.scene.camera,
+      context.container.clientWidth,
+      context.container.clientHeight
+    );
+
     // Render
     context.scene.renderer.render(context.scene.scene, context.scene.camera);
 
@@ -1837,6 +1856,7 @@ export function disposeMuseum(): void {
   disposeSuggestedNext(context.suggestedNext);
   disposeCompletionSystem(context.completion);
   disposePostcardSystem(context.postcards);
+  disposeLandmarkSystem(context.landmarks);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
