@@ -103,6 +103,12 @@ export interface InteractionSystem {
   // Callback when exhibit is viewed
   onExhibitViewed: ((dayNumber: number) => void) | null;
 
+  // Callback when favorite is toggled
+  onFavoriteToggle: ((dayNumber: number) => void) | null;
+
+  // Currently viewed day number (when zoomed)
+  currentDayNumber: number;
+
   // Cleanup
   cleanup: () => void;
 }
@@ -144,6 +150,8 @@ export function createInteraction(
     hoveredExhibit: null,
     currentExhibitIndex: -1,
     onExhibitViewed: null,
+    onFavoriteToggle: null,
+    currentDayNumber: -1,
     cleanup: () => {},
   };
 
@@ -265,6 +273,12 @@ function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): vo
     event.preventDefault();
   } else if (event.code === 'BracketRight' || event.code === 'ArrowRight') {
     navigateExhibit(interaction, 1);
+    event.preventDefault();
+  }
+
+  // Toggle favorite with F key
+  if (event.code === 'KeyF' && interaction.currentDayNumber > 0) {
+    interaction.onFavoriteToggle?.(interaction.currentDayNumber);
     event.preventDefault();
   }
 }
@@ -446,6 +460,7 @@ function zoomToExhibitMesh(interaction: InteractionSystem, mesh: THREE.Mesh, day
   interaction.isZoomed = true;
   interaction.animating = true;
   interaction.zoomProgress = 0;
+  interaction.currentDayNumber = dayNumber;
 
   console.log(`Zooming to Day ${dayNumber}`);
 

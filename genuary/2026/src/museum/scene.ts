@@ -235,6 +235,41 @@ export function updateScene(museumScene: MuseumScene, deltaTime: number): void {
 }
 
 // ============================================================================
+// Quality Settings
+// ============================================================================
+
+export type QualityLevel = 'low' | 'medium' | 'high';
+
+/**
+ * Apply quality settings to the renderer
+ */
+export function setQuality(museumScene: MuseumScene, quality: QualityLevel): void {
+  const renderer = museumScene.renderer;
+
+  switch (quality) {
+    case 'low':
+      renderer.setPixelRatio(0.75);
+      renderer.setSize(480, 480);
+      break;
+    case 'medium':
+      renderer.setPixelRatio(1);
+      renderer.setSize(640, 640);
+      break;
+    case 'high':
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(800, 800);
+      break;
+  }
+
+  // Update canvas styles
+  const canvas = renderer.domElement;
+  canvas.style.maxWidth = '100%';
+  canvas.style.height = 'auto';
+
+  console.log(`Quality set to: ${quality}`);
+}
+
+// ============================================================================
 // Scene Cleanup
 // ============================================================================
 

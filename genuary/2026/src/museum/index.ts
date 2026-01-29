@@ -7,7 +7,7 @@
  * The art doesn't hang on walls - it BECOMES the architecture.
  */
 
-import { createScene, updateScene, disposeScene, type MuseumScene } from './scene';
+import { createScene, updateScene, disposeScene, setQuality, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
 import { initAudio, startAmbient, disposeAudio, setAudioMuted } from './audio';
 import {
@@ -52,6 +52,13 @@ import {
   disposeDiscoveryTracker,
   type DiscoveryTracker,
 } from './discovery';
+import {
+  createFavoritesSystem,
+  toggleFavorite,
+  isFavorite,
+  disposeFavoritesSystem,
+  type FavoritesSystem,
+} from './favorites';
 
 // ============================================================================
 // Types
@@ -66,6 +73,7 @@ export interface MuseumContext {
   minimap: Minimap;
   settings: SettingsPanel;
   discovery: DiscoveryTracker;
+  favorites: FavoritesSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -327,6 +335,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>[ ]</b> Browse</div>
         <div><b>R</b> Random</div>
         <div><b>T</b> Tour</div>
+        <div><b>F</b> Favorite</div>
         <div><b>P</b> Photo</div>
         <div><b>H</b> Help</div>
       </div>
@@ -409,7 +418,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     // Toggle sound
     setAudioMuted(!newSettings.soundEnabled);
 
-    // Quality would require renderer changes (not implemented yet)
+    // Apply quality settings
+    setQuality(scene, newSettings.qualityLevel);
   };
 
   // Apply initial settings
@@ -419,6 +429,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   if (!settings.settings.soundEnabled) {
     setAudioMuted(true);
   }
+  // Apply initial quality (default is medium, which matches our defaults)
+  if (settings.settings.qualityLevel !== 'medium') {
+    setQuality(scene, settings.settings.qualityLevel);
+  }
 
   // Create discovery tracker
   const discovery = createDiscoveryTracker(container);
@@ -426,6 +440,15 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Wire up interaction to track discoveries
   interaction.onExhibitViewed = (dayNumber: number) => {
     markDayDiscovered(discovery, dayNumber);
+  };
+
+  // Create favorites system
+  const favorites = createFavoritesSystem();
+
+  // Wire up interaction to toggle favorites
+  interaction.onFavoriteToggle = (dayNumber: number) => {
+    const nowFavorite = toggleFavorite(favorites, dayNumber);
+    showNotification(nowFavorite ? `Day ${dayNumber} added to favorites` : `Day ${dayNumber} removed from favorites`);
   };
 
   updateLoadingProgress(80, 'Preparing gallery...');
@@ -481,6 +504,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     minimap,
     settings,
     discovery,
+    favorites,
     container,
     isRunning: false,
     lastTime: 0,
@@ -594,6 +618,7 @@ export function disposeMuseum(): void {
   disposeMinimap(context.minimap);
   disposeSettingsPanel(context.settings);
   disposeDiscoveryTracker(context.discovery);
+  disposeFavoritesSystem(context.favorites);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
