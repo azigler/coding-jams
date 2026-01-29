@@ -165,6 +165,33 @@ function showDiscoveryDetails(tracker: DiscoveryTracker): void {
   }
   daysHtml += '</div>';
 
+  // Wing progress
+  const wings = [
+    { name: 'Gallery', days: [1], color: '#ffd700' },
+    { name: 'North', days: [2, 3, 4, 5, 6, 7, 8, 9], color: '#4a9eff' },
+    { name: 'West', days: [10, 11, 12, 13, 14, 15, 16, 17], color: '#a855f7' },
+    { name: 'East', days: [18, 19, 20, 21, 22, 23, 24, 25], color: '#10b981' },
+    { name: 'South', days: [26, 27, 28, 29, 30, 31], color: '#f59e0b' },
+  ];
+
+  let wingProgressHtml = '<div style="margin-top: 12px; font-size: 10px;">';
+  wingProgressHtml += '<div style="color: #888; margin-bottom: 6px;">Wing Progress</div>';
+  wings.forEach(wing => {
+    const viewed = wing.days.filter(d => tracker.viewedDays.has(d)).length;
+    const total = wing.days.length;
+    const pct = Math.round((viewed / total) * 100);
+    wingProgressHtml += `
+      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+        <span style="width: 40px; color: ${wing.color};">${wing.name}</span>
+        <div style="flex: 1; height: 4px; background: rgba(60,60,70,0.5); border-radius: 2px;">
+          <div style="width: ${pct}%; height: 100%; background: ${wing.color}; border-radius: 2px;"></div>
+        </div>
+        <span style="width: 30px; text-align: right; color: #888;">${viewed}/${total}</span>
+      </div>
+    `;
+  });
+  wingProgressHtml += '</div>';
+
   // Legend
   const legendHtml = `
     <div style="display: flex; gap: 12px; margin-top: 10px; font-size: 10px;">
@@ -204,6 +231,7 @@ function showDiscoveryDetails(tracker: DiscoveryTracker): void {
     </div>
     ${daysHtml}
     ${legendHtml}
+    ${wingProgressHtml}
   `;
 
   tracker.container.appendChild(popup);
