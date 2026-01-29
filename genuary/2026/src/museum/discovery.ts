@@ -247,9 +247,12 @@ export function markDayDiscovered(tracker: DiscoveryTracker, dayNumber: number):
 }
 
 /**
- * Show completion celebration
+ * Show completion celebration with confetti
  */
 function showCompletionMessage(container: HTMLElement): void {
+  // Trigger confetti first
+  triggerCompletionConfetti(container);
+
   const message = document.createElement('div');
   message.style.cssText = `
     position: fixed;
@@ -296,6 +299,54 @@ function showCompletionMessage(container: HTMLElement): void {
   `;
 
   container.appendChild(message);
+}
+
+/**
+ * Trigger confetti celebration for completion
+ */
+function triggerCompletionConfetti(container: HTMLElement): void {
+  const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#a855f7', '#4a9eff', '#7bed9f'];
+  const confettiCount = 150;
+
+  // Add keyframes if not present
+  if (!document.getElementById('completion-confetti-style')) {
+    const style = document.createElement('style');
+    style.id = 'completion-confetti-style';
+    style.textContent = `
+      @keyframes completion-confetti-fall {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(1080deg); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  for (let i = 0; i < confettiCount; i++) {
+    const confetti = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const left = Math.random() * 100;
+    const delay = Math.random() * 1.5;
+    const duration = 2.5 + Math.random() * 2;
+    const size = 8 + Math.random() * 10;
+
+    confetti.style.cssText = `
+      position: fixed;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      left: ${left}%;
+      top: -20px;
+      z-index: 10000;
+      pointer-events: none;
+      animation: completion-confetti-fall ${duration}s ease-out ${delay}s forwards;
+      transform: rotate(${Math.random() * 360}deg);
+      border-radius: ${Math.random() > 0.3 ? '50%' : '2px'};
+      box-shadow: 0 0 ${size / 2}px ${color};
+    `;
+
+    container.appendChild(confetti);
+    setTimeout(() => confetti.remove(), (duration + delay) * 1000 + 100);
+  }
 }
 
 // ============================================================================
