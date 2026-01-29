@@ -40,6 +40,12 @@ import {
   disposeMinimap,
   type Minimap,
 } from './minimap';
+import {
+  createSettingsPanel,
+  disposeSettingsPanel,
+  type SettingsPanel,
+  type Settings,
+} from './settings';
 
 // ============================================================================
 // Types
@@ -52,6 +58,7 @@ export interface MuseumContext {
   tour: TourSystem;
   touch: TouchControls | null;
   minimap: Minimap;
+  settings: SettingsPanel;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -383,6 +390,24 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Create minimap
   const minimap = createMinimap(container);
+
+  // Create settings panel
+  const settings = createSettingsPanel(container);
+
+  // Handle settings changes
+  settings.onSettingsChange = (newSettings: Settings) => {
+    // Toggle minimap visibility
+    minimap.canvas.style.display = newSettings.minimapVisible ? 'block' : 'none';
+
+    // Sound is handled by audio system (controlled on next sound trigger)
+    // Quality would require renderer changes (not implemented yet)
+  };
+
+  // Apply initial settings
+  if (!settings.settings.minimapVisible) {
+    minimap.canvas.style.display = 'none';
+  }
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -434,6 +459,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     tour,
     touch,
     minimap,
+    settings,
     container,
     isRunning: false,
     lastTime: 0,
@@ -545,6 +571,7 @@ export function disposeMuseum(): void {
     disposeTouchControls(context.touch);
   }
   disposeMinimap(context.minimap);
+  disposeSettingsPanel(context.settings);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
