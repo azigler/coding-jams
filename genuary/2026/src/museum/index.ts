@@ -181,6 +181,11 @@ import {
   disposeGuestbook,
   type Guestbook,
 } from './guestbook';
+import {
+  createSearchSystem,
+  disposeSearchSystem,
+  type SearchSystem,
+} from './search';
 
 // ============================================================================
 // Types
@@ -211,6 +216,7 @@ export interface MuseumContext {
   ratings: RatingsSystem;
   autoWalk: AutoWalk;
   guestbook: Guestbook;
+  search: SearchSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -961,6 +967,48 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create guestbook (L key to open)
   const guestbook = createGuestbook(container);
 
+  // Create search system (/ key to open)
+  const search = createSearchSystem(container);
+
+  // Wire up search to zoom to exhibits
+  search.onSelect = (dayNumber: number) => {
+    // Find the exhibit mesh for this day
+    const mesh = interaction.exhibitMeshes.find(
+      m => m.userData.dayNumber === dayNumber
+    );
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      // Store original position if not already zoomed
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      // Get world position and normal
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      // Set zoom target
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up breadcrumb navigation to zoom to exhibits
   breadcrumbs.onNavigate = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1323,6 +1371,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     ratings,
     autoWalk,
     guestbook,
+    search,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1496,6 +1545,7 @@ export function disposeMuseum(): void {
   disposeRatingsSystem(context.ratings);
   disposeAutoWalk(context.autoWalk);
   disposeGuestbook(context.guestbook);
+  disposeSearchSystem(context.search);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
