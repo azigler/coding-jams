@@ -245,6 +245,12 @@ import {
   disposeCompletionSystem,
   type CompletionSystem,
 } from './completion';
+import {
+  createPostcardSystem,
+  openPostcardCreator,
+  disposePostcardSystem,
+  type PostcardSystem,
+} from './postcards';
 
 // ============================================================================
 // Types
@@ -285,6 +291,7 @@ export interface MuseumContext {
   photoBooth: PhotoBooth;
   suggestedNext: SuggestedNext;
   completion: CompletionSystem;
+  postcards: PostcardSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1152,6 +1159,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create completion system (celebration for viewing all 31)
   const completion = createCompletionSystem(container);
 
+  // Create postcards system (Shift+C to create postcard when viewing)
+  const postcards = createPostcardSystem(container);
+  postcards.onSave = (dataUrl: string) => {
+    const link = document.createElement('a');
+    link.download = `genuary-2026-postcard.png`;
+    link.href = dataUrl;
+    link.click();
+    showNotification('Postcard saved!');
+  };
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1406,6 +1423,15 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', quickFactsHandler);
 
+  // Postcards with Shift+C (only when viewing an exhibit)
+  const postcardHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyC' && event.shiftKey && interaction.currentDayNumber > 0) {
+      event.preventDefault();
+      openPostcardCreator(postcards, scene.renderer.domElement, interaction.currentDayNumber);
+    }
+  };
+  document.addEventListener('keydown', postcardHandler);
+
   // Rate exhibits with +/- keys (only when zoomed)
   const ratingHandler = (event: KeyboardEvent) => {
     if (!interaction.isZoomed || interaction.currentDayNumber < 1) return;
@@ -1615,6 +1641,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     photoBooth,
     suggestedNext,
     completion,
+    postcards,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1809,6 +1836,7 @@ export function disposeMuseum(): void {
   disposePhotoBooth(context.photoBooth);
   disposeSuggestedNext(context.suggestedNext);
   disposeCompletionSystem(context.completion);
+  disposePostcardSystem(context.postcards);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
