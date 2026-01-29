@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import type { ExhibitFrame } from './exhibits/frame';
+import { dayInfoMap } from './exhibits/placard';
 
 // ============================================================================
 // Types
@@ -263,11 +264,16 @@ function exitZoom(interaction: InteractionSystem): void {
 // ============================================================================
 
 /**
- * Show zoom indicator overlay
+ * Show zoom indicator overlay with exhibit details
  */
 function showZoomIndicator(dayNumber: number): void {
   // Remove existing indicator
   hideZoomIndicator();
+
+  const info = dayInfoMap[dayNumber];
+  const title = info?.title || `Day ${dayNumber}`;
+  const description = info?.description || '';
+  const credit = info?.credit ? `Prompt by ${info.credit}` : '';
 
   const indicator = document.createElement('div');
   indicator.id = 'zoom-indicator';
@@ -276,17 +282,49 @@ function showZoomIndicator(dayNumber: number): void {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.85);
       color: white;
-      padding: 10px 16px;
-      border-radius: 6px;
+      padding: 16px 20px;
+      border-radius: 8px;
       font-family: system-ui, sans-serif;
       font-size: 14px;
       z-index: 200;
+      max-width: 280px;
       pointer-events: none;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     ">
-      <div style="font-weight: bold; margin-bottom: 4px;">Day ${dayNumber}</div>
-      <div style="font-size: 12px; color: #aaa;">Click or ESC to exit</div>
+      <div style="
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        margin-bottom: 4px;
+      ">Genuary 2026</div>
+      <div style="
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #fff;
+      ">Day ${dayNumber}: ${title}</div>
+      ${description ? `<div style="
+        font-size: 13px;
+        color: #ccc;
+        line-height: 1.4;
+        margin-bottom: 8px;
+      ">${description}</div>` : ''}
+      ${credit ? `<div style="
+        font-size: 11px;
+        color: #666;
+        font-style: italic;
+      ">${credit}</div>` : ''}
+      <div style="
+        font-size: 11px;
+        color: #666;
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+      ">Click or ESC to exit</div>
     </div>
   `;
   document.body.appendChild(indicator);
