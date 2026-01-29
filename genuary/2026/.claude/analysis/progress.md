@@ -837,12 +837,29 @@ All three issues addressed in this session.
 - Persists to localStorage across sessions
 - Logs stats on session start
 
-**Full Feature List** (39 features):
+**Share View** (`a11612c`):
+- Press S to copy shareable link with camera position
+- Opening shared link restores exact view
+
+**Day Selector** (`356b718`):
+- Press G to open quick day selection popup
+- Click any day 1-31 to zoom directly to that exhibit
+
+**Achievements System** (`1533e28`):
+- 16 achievements across multiple categories
+- Exploration, favorites, photos, time, distance badges
+- 2 secret achievements to discover
+- Animated unlock notifications
+
+**Full Feature List** (42 features):
 1-35. (previous features)
 36. **NEW: Discovery Chime**
 37. **NEW: Contextual Tips System**
 38. **NEW: Hover Tooltip**
 39. **NEW: Usage Statistics Tracker**
+40. **NEW: Share View (S key)**
+41. **NEW: Day Selector (G key)**
+42. **NEW: Achievements System**
 
 **Commits**:
 - `24a8f93` - feat(museum): add discovery chime for new exhibits
@@ -850,6 +867,9 @@ All three issues addressed in this session.
 - `7762bbc` - feat(museum): mark favorite tip as used when favoriting
 - `b07df16` - feat(museum): add hover tooltip showing exhibit info
 - `d31f7b0` - feat(museum): add usage statistics tracker
+- `a11612c` - feat(museum): add shareable view links with S key
+- `356b718` - feat(museum): add quick day selector with G key
+- `1533e28` - feat(museum): add achievements system with badges
 
 **Next session**:
 - VR/WebXR integration
