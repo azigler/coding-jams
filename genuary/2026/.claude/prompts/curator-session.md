@@ -75,7 +75,7 @@ const browser = await chromium.launch({
   args: ['--use-gl=angle', '--use-angle=swiftshader']
 });
 const page = await browser.newPage();
-await page.goto('http://localhost:3000/coding-jams/genuary-2026/#museum');
+await page.goto('http://localhost:6009/coding-jams/genuary-2026/#museum');
 await page.waitForTimeout(2000); // Let scene load
 ```
 
@@ -242,16 +242,18 @@ src/museum/
 ## Time-Saving Tips (Avoid Common Traps)
 
 ### Dev Server Management
+**ALWAYS use port 6009** to avoid conflicts with other processes on port 3000:
 ```bash
 # Simple and reliable - just use this pattern:
-pkill -f "bun.*dev" 2>/dev/null; sleep 1
-bun run dev &
+pkill -f "vite.*6009" 2>/dev/null; sleep 1
+bun run dev -- --port 6009 &
 sleep 3  # Wait for server to be ready
+# Server will be at http://localhost:6009/coding-jams/genuary-2026/#museum
 ```
-Don't use complex one-liners with pipes and xargs. They fail with weird exit codes.
+Don't use port 3000. Don't use complex one-liners with pipes and xargs.
 
 ### Use Existing Scripts
-- `scripts/museum-explore.ts` already exists for navigation/screenshots
+- `scripts/museum-explore.ts` already exists for navigation/screenshots (uses port 6009)
 - Don't create new scripts like `quick-wing-shot.ts` - modify the existing one
 - Run with: `timeout 90s xvfb-run --auto-servernum bun run scripts/museum-explore.ts`
 
@@ -265,13 +267,6 @@ xvfb-run --auto-servernum bun run scripts/museum-explore.ts
 Don't run things in background then struggle to get output. Just run with timeout:
 ```bash
 timeout 90s xvfb-run --auto-servernum bun run scripts/museum-explore.ts 2>&1
-```
-
-### Port Conflicts
-If port 3000 is in use, just kill everything and restart:
-```bash
-pkill -f "bun.*dev" 2>/dev/null; pkill -f vite 2>/dev/null; sleep 2
-bun run dev &
 ```
 
 ### When Stuck

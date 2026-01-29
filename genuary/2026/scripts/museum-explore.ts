@@ -9,7 +9,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 import { mkdir } from 'node:fs/promises';
 
-const BASE_URL = 'http://localhost:3000/coding-jams/genuary-2026/#museum';
+const BASE_URL = 'http://localhost:6009/coding-jams/genuary-2026/#museum';
 const OUTPUT_DIR = path.join(import.meta.dir, '..', 'outputs');
 
 async function sleep(ms: number): Promise<void> {
