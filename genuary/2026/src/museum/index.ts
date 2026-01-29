@@ -311,6 +311,12 @@ import {
   disposeComparatorSystem,
   type ComparatorSystem,
 } from './comparator';
+import {
+  createSocialSystem,
+  openSharePopup,
+  disposeSocialSystem,
+  type SocialSystem,
+} from './social';
 
 // ============================================================================
 // Types
@@ -362,6 +368,7 @@ export interface MuseumContext {
   history: HistorySystem;
   dailyChallenge: ChallengeSystem;
   comparator: ComparatorSystem;
+  social: SocialSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1269,6 +1276,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create exhibit comparator (Shift+X to compare)
   const comparator = createComparatorSystem(container);
 
+  // Create social share system (Shift+S when viewing exhibit)
+  const social = createSocialSystem(container);
+
   // Wire up history navigation
   history.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1581,6 +1591,21 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', journalHandler);
 
+  // Enhanced social share with Shift+S (only when viewing an exhibit)
+  const socialShareHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyS' && event.shiftKey && interaction.currentDayNumber > 0) {
+      event.preventDefault();
+      openSharePopup(social, scene.renderer.domElement, {
+        dayNumber: interaction.currentDayNumber,
+        promptTitle: '', // Will use built-in lookup
+        exhibitsViewed: sessionSummary.exhibitsViewed.size,
+        favoritesCount: getFavorites(favorites).length,
+        timeSpent: stats.stats.totalTimeSpent,
+      });
+    }
+  };
+  document.addEventListener('keydown', socialShareHandler);
+
   // Rate exhibits with +/- keys (only when zoomed)
   const ratingHandler = (event: KeyboardEvent) => {
     if (!interaction.isZoomed || interaction.currentDayNumber < 1) return;
@@ -1801,6 +1826,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     history,
     dailyChallenge,
     comparator,
+    social,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2030,6 +2056,7 @@ export function disposeMuseum(): void {
   disposeHistorySystem(context.history);
   disposeChallengeSystem(context.dailyChallenge);
   disposeComparatorSystem(context.comparator);
+  disposeSocialSystem(context.social);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
