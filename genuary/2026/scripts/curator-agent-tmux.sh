@@ -9,6 +9,10 @@
 # - Each run sends a new prompt to continue the work
 # - Agent stays interactive between runs for human follow-up
 #
+# Key behavior:
+# - If Claude is already running: send a continuation message
+# - If at shell prompt: start a new Claude session with the full prompt
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -75,13 +79,41 @@ create_window() {
   sleep 1
 }
 
-send_prompt() {
-  log "Sending prompt to curator window..."
+claude_is_running() {
+  # Check if claude process is running in the pane
+  local pane_pid
+  pane_pid=$(/usr/bin/tmux display-message -t "$TMUX_SESSION:$WINDOW_NAME" -p '#{pane_pid}' 2>/dev/null)
+  if [[ -n "$pane_pid" ]]; then
+    pgrep -P "$pane_pid" -f "claude" >/dev/null 2>&1
+    return $?
+  fi
+  return 1
+}
 
-  # First, send the claude command with the prompt
-  /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" \
-    "cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 100"
-  /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
+send_prompt() {
+  if claude_is_running; then
+    log "Claude is running, sending continuation prompt..."
+    # Send a continuation message to the active Claude session
+    local msg="[SCHEDULED TRIGGER - $(date +%Y-%m-%d\ %H:%M)]
+
+Time for your next iteration! Check PR #32 for any new feedback, then continue building the museum.
+
+Quick checklist:
+1. Check PR comments for human feedback
+2. Review your last screenshots - what needs fixing?
+3. Make improvements
+4. Take new screenshots and post to PR
+5. Output TASK COMPLETE: <summary> when done with this cycle"
+
+    /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" "$msg"
+    /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
+  else
+    log "Starting fresh Claude session..."
+    # Start a new Claude session with the full prompt
+    /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" \
+      "cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 100"
+    /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
+  fi
 }
 
 # =============================================================================
@@ -109,7 +141,7 @@ main() {
   ensure_session
 
   if window_exists; then
-    log "Curator window exists, sending prompt to resume..."
+    log "Curator window exists, checking state..."
   else
     log "Curator window not found, creating..."
     create_window
