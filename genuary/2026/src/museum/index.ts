@@ -212,6 +212,12 @@ import {
   getTimePeriodDescription,
   type TimeLighting,
 } from './time-lighting';
+import {
+  createCollectionsSystem,
+  openCollectionsWithContext,
+  disposeCollectionsSystem,
+  type CollectionsSystem,
+} from './collections';
 
 // ============================================================================
 // Types
@@ -247,6 +253,7 @@ export interface MuseumContext {
   sessionSummary: SessionSummary;
   curatorNotes: CuratorNoteSystem;
   timeLighting: TimeLighting;
+  collections: CollectionsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1012,6 +1019,45 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create time-of-day lighting system
   const timeLighting = createTimeLighting(scene.scene);
 
+  // Create collections system (C key to browse themed collections)
+  const collections = createCollectionsSystem(container);
+
+  // Wire up collections to use session summary for viewed days
+  collections.onNavigate = (dayNumber: number) => {
+    // Same navigation logic as search
+    const mesh = interaction.exhibitMeshes.find(
+      m => m.userData.dayNumber === dayNumber
+    );
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+    }
+  };
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1447,6 +1493,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     sessionSummary,
     curatorNotes,
     timeLighting,
+    collections,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1625,6 +1672,7 @@ export function disposeMuseum(): void {
   disposeSessionSummary(context.sessionSummary);
   disposeCuratorNoteSystem(context.curatorNotes);
   disposeTimeLighting(context.timeLighting);
+  disposeCollectionsSystem(context.collections);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
