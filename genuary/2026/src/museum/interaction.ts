@@ -352,6 +352,10 @@ function playNavigateSound(): void {
   osc.stop(ctx.currentTime + 0.1);
 }
 
+// Throttle state for hover detection
+let lastHoverCheck = 0;
+const HOVER_CHECK_INTERVAL = 100; // Only check hover every 100ms
+
 /**
  * Handle mouse move for hover detection
  */
@@ -361,6 +365,13 @@ function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): voi
     interaction.element.style.cursor = 'zoom-in';
     return;
   }
+
+  // Throttle hover checks for performance
+  const now = performance.now();
+  if (now - lastHoverCheck < HOVER_CHECK_INTERVAL) {
+    return;
+  }
+  lastHoverCheck = now;
 
   // Calculate mouse position in normalized device coordinates
   const rect = interaction.element.getBoundingClientRect();

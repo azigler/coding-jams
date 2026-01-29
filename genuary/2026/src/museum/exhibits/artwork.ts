@@ -190,6 +190,13 @@ export async function createLiveArtwork(dayNumber: number): Promise<LiveArtwork 
     // Ensure texture is updated with rendered content
     texture.needsUpdate = true;
 
+    // PERFORMANCE: Stop the p5 loop after capturing initial frames
+    // The texture is already captured, no need to keep animating
+    if (artwork.p5Instance) {
+      artwork.p5Instance.noLoop();
+      artwork.isRunning = false;
+    }
+
     // Cache the artwork
     artworkCache.set(dayNumber, artwork);
 

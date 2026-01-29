@@ -142,14 +142,12 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   floorFill.position.set(0, 1.5, 0);
   group.add(floorFill);
 
-  // Wall wash lights - positioned near walls to illuminate them
+  // Wall wash lights - reduced to 4 for performance (exhibit walls only)
   const wallWashRadius = cfg.radius * 0.85;
-  for (let i = 0; i < 8; i++) {
+  const exhibitWallIndices = [1, 3, 5, 7]; // Only exhibit walls
+  for (const i of exhibitWallIndices) {
     const angle = (i * Math.PI * 2) / 8;
-    // Warm accent on exhibit walls (odd indices), cool on doorway walls (even)
-    const isExhibitWall = i % 2 === 1;
-    const lightColor = isExhibitWall ? 0xffeedd : 0x8090b0;
-    const wallLight = new THREE.PointLight(lightColor, isExhibitWall ? 5 : 3, 12, 1.5);
+    const wallLight = new THREE.PointLight(0xffeedd, 6, 15, 1.5);
     wallLight.position.set(
       Math.cos(angle) * wallWashRadius,
       cfg.height - 1.5,
@@ -194,7 +192,7 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
  * Create dust motes floating in the skylight beam
  */
 function createDustParticles(cfg: GalleryConfig): THREE.Points {
-  const particleCount = 200;
+  const particleCount = 80; // Reduced from 200 for performance
   const positions = new Float32Array(particleCount * 3);
   const velocities = new Float32Array(particleCount * 3);
 
@@ -446,19 +444,10 @@ function createDoorways(group: THREE.Group, cfg: GalleryConfig): void {
     topBeam.rotation.y = angle;
     group.add(topBeam);
 
-    // Bright warm light above doorway - beckoning into the void
-    const doorLight = new THREE.PointLight(0xffddaa, 4, 12, 1.5);
+    // Single warm light above doorway - simplified for performance
+    const doorLight = new THREE.PointLight(0xffddaa, 5, 15, 1.5);
     doorLight.position.set(frameX, doorHeight - 0.3, frameZ);
     group.add(doorLight);
-
-    // Add subtle glow on floor in front of doorway
-    const floorGlow = new THREE.PointLight(0xffeedd, 2, 6, 2);
-    floorGlow.position.set(
-      frameX * 0.8, // Slightly toward center
-      0.5,
-      frameZ * 0.8
-    );
-    group.add(floorGlow);
 
     // Add signage above doorway
     if (i > 0) { // Skip entrance (i=0)
@@ -558,17 +547,10 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): { orb: THREE.Me
   group.add(spotlight);
   group.add(spotlight.target);
 
-  // Ring of subtle lights around pedestal base
-  for (let i = 0; i < 4; i++) {
-    const angle = (i * Math.PI * 2) / 4;
-    const baseLight = new THREE.PointLight(0x8090a0, 2, 5, 2);
-    baseLight.position.set(
-      Math.cos(angle) * (pedestalRadius * 1.5),
-      0.3,
-      Math.sin(angle) * (pedestalRadius * 1.5)
-    );
-    group.add(baseLight);
-  }
+  // Single accent light at pedestal base (reduced from 4 for performance)
+  const baseLight = new THREE.PointLight(0x8090a0, 4, 8, 2);
+  baseLight.position.set(0, 0.5, 0);
+  group.add(baseLight);
 
   // Glowing orb on top - focal point of the gallery
   const orbRadius = 0.3;
@@ -680,27 +662,14 @@ function createExhibits(
     group.add(placard.group);
     placards.push(placard);
 
-    // Add bright spotlight for this exhibit - warm gallery lighting
-    const spotlight = new THREE.SpotLight(0xfffaf0, 12, 15, Math.PI / 5, 0.2, 1);
-    // Position spotlight closer to the exhibit for better illumination
-    spotlight.position.set(
-      Math.sin(angle) * (wallDist - 3),
-      cfg.height - 0.8,
-      -Math.cos(angle) * (wallDist - 3)
+    // Single point light per exhibit (combined spotlight + fill for performance)
+    const exhibitLight = new THREE.PointLight(0xfff8f0, 6, 10, 1.5);
+    exhibitLight.position.set(
+      Math.sin(angle) * (wallDist - 2),
+      cfg.height - 1,
+      -Math.cos(angle) * (wallDist - 2)
     );
-    spotlight.target.position.set(x, y, z);
-    spotlight.castShadow = false;
-    group.add(spotlight);
-    group.add(spotlight.target);
-
-    // Add a fill light near each exhibit for better visibility
-    const fillLight = new THREE.PointLight(0xffeedd, 3, 8, 1.5);
-    fillLight.position.set(
-      Math.sin(angle) * (wallDist - 1.5),
-      y,
-      -Math.cos(angle) * (wallDist - 1.5)
-    );
-    group.add(fillLight);
+    group.add(exhibitLight);
 
     group.add(frame.group);
     exhibits.push(frame);
@@ -725,23 +694,24 @@ export function updateGalleryZone(zone: GalleryZone, deltaTime: number, cameraPo
   const shift = Math.sin(zone.time * 0.1) * 0.05;
   skylightMat.emissiveIntensity = 0.3 + shift;
 
-  // Animate dust particles
-  if (zone.dustParticles) {
+  // Animate dust particles - only update every 3rd frame for performance
+  if (zone.dustParticles && Math.floor(zone.time * 20) % 3 === 0) {
     const positions = zone.dustParticles.geometry.getAttribute('position') as THREE.BufferAttribute;
     const velocities = zone.dustParticles.geometry.getAttribute('velocity') as THREE.BufferAttribute;
     const height = 6; // Gallery height
     const skyRadius = 4; // Skylight radius
+    const dt = deltaTime * 3; // Compensate for skipped frames
 
     for (let i = 0; i < positions.count; i++) {
       const i3 = i * 3;
 
       // Update position
-      positions.array[i3] += velocities.array[i3] * deltaTime * 60;
-      positions.array[i3 + 1] += velocities.array[i3 + 1] * deltaTime * 60;
-      positions.array[i3 + 2] += velocities.array[i3 + 2] * deltaTime * 60;
+      positions.array[i3] += velocities.array[i3] * dt * 60;
+      positions.array[i3 + 1] += velocities.array[i3 + 1] * dt * 60;
+      positions.array[i3 + 2] += velocities.array[i3 + 2] * dt * 60;
 
       // Gentle upward drift in the light beam
-      positions.array[i3 + 1] += 0.005 * deltaTime * 60;
+      positions.array[i3 + 1] += 0.005 * dt * 60;
 
       // Wrap around at boundaries
       if (positions.array[i3 + 1] > height) {

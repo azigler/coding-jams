@@ -143,14 +143,14 @@ export function createWingZone(
   endWall.receiveShadow = true;
   group.add(endWall);
 
-  // Ceiling lights along corridor
-  const numLights = Math.ceil(cfg.length / 5);
-  for (let i = 0; i < numLights; i++) {
-    const z = -(i + 0.5) * (cfg.length / numLights);
-    const ceilingLight = new THREE.PointLight(0xffeedd, 3, 10, 1.5);
-    ceilingLight.position.set(0, cfg.height - 0.3, z);
-    group.add(ceilingLight);
-  }
+  // Ceiling lights along corridor - reduced for performance (2 lights per wing)
+  const ceilingLight1 = new THREE.PointLight(0xffeedd, 5, 15, 1.5);
+  ceilingLight1.position.set(0, cfg.height - 0.3, -cfg.length * 0.33);
+  group.add(ceilingLight1);
+
+  const ceilingLight2 = new THREE.PointLight(0xffeedd, 5, 15, 1.5);
+  ceilingLight2.position.set(0, cfg.height - 0.3, -cfg.length * 0.67);
+  group.add(ceilingLight2);
 
   // Create exhibits on both walls
   const { exhibits, placards } = createWingExhibits(group, cfg, startDay);
@@ -240,13 +240,7 @@ function createWingExhibits(
     group.add(placard.group);
     placards.push(placard);
 
-    // Spotlight for this exhibit
-    const spotlight = new THREE.SpotLight(0xfffaf0, 8, 8, Math.PI / 5, 0.3, 1);
-    spotlight.position.set(-cfg.width / 2 + 2, cfg.height - 0.5, z);
-    spotlight.target.position.set(-cfg.width / 2 + wallOffset, exhibitY, z);
-    spotlight.castShadow = false;
-    group.add(spotlight);
-    group.add(spotlight.target);
+    // Note: Removed individual spotlights for performance - ceiling lights provide ambient
 
     dayNumber++;
   }
@@ -278,13 +272,7 @@ function createWingExhibits(
     group.add(placard.group);
     placards.push(placard);
 
-    // Spotlight for this exhibit
-    const spotlight = new THREE.SpotLight(0xfffaf0, 8, 8, Math.PI / 5, 0.3, 1);
-    spotlight.position.set(cfg.width / 2 - 2, cfg.height - 0.5, z);
-    spotlight.target.position.set(cfg.width / 2 - wallOffset, exhibitY, z);
-    spotlight.castShadow = false;
-    group.add(spotlight);
-    group.add(spotlight.target);
+    // Note: Removed individual spotlights for performance - ceiling lights provide ambient
 
     dayNumber++;
   }
