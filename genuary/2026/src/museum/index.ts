@@ -40,6 +40,93 @@ export interface MuseumContext {
 let context: MuseumContext | null = null;
 
 // ============================================================================
+// Loading Indicator
+// ============================================================================
+
+/**
+ * Show loading overlay while museum initializes
+ */
+function showLoadingOverlay(container: HTMLElement): HTMLElement {
+  const overlay = document.createElement('div');
+  overlay.id = 'museum-loading';
+  overlay.innerHTML = `
+    <div style="
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+      color: white;
+      font-family: system-ui, sans-serif;
+      z-index: 1000;
+      transition: opacity 0.5s;
+    ">
+      <div style="font-size: 28px; font-weight: bold; margin-bottom: 8px;">
+        GENUARY 2026
+      </div>
+      <div style="font-size: 16px; color: #888; margin-bottom: 24px;">
+        Virtual Museum
+      </div>
+      <div style="
+        width: 200px;
+        height: 4px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 2px;
+        overflow: hidden;
+      ">
+        <div id="loading-bar" style="
+          width: 0%;
+          height: 100%;
+          background: linear-gradient(90deg, #4a9eff, #a855f7);
+          border-radius: 2px;
+          transition: width 0.3s;
+          animation: loading-pulse 1.5s ease-in-out infinite;
+        "></div>
+      </div>
+      <div id="loading-text" style="
+        margin-top: 12px;
+        font-size: 12px;
+        color: #666;
+      ">Loading...</div>
+      <style>
+        @keyframes loading-pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+      </style>
+    </div>
+  `;
+  container.appendChild(overlay);
+  return overlay;
+}
+
+/**
+ * Update loading progress
+ */
+function updateLoadingProgress(percent: number, status: string): void {
+  const bar = document.getElementById('loading-bar');
+  const text = document.getElementById('loading-text');
+  if (bar) bar.style.width = `${percent}%`;
+  if (text) text.textContent = status;
+}
+
+/**
+ * Hide loading overlay with fade out
+ */
+function hideLoadingOverlay(): void {
+  const overlay = document.getElementById('museum-loading');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 500);
+  }
+}
+
+// ============================================================================
 // Museum Lifecycle
 // ============================================================================
 
@@ -171,11 +258,17 @@ function toggleHelpOverlay(container: HTMLElement): void {
  * Initialize the museum
  */
 export function initMuseum(container: HTMLElement): MuseumContext {
+  // Show loading overlay
+  showLoadingOverlay(container);
+  updateLoadingProgress(10, 'Initializing scene...');
+
   // Create Three.js scene
   const scene = createScene(container);
+  updateLoadingProgress(40, 'Setting up navigation...');
 
   // Create navigation system
   const navigation = createNavigation(scene.camera, scene.renderer.domElement);
+  updateLoadingProgress(60, 'Registering exhibits...');
 
   // Create interaction system for click-to-zoom
   const interaction = createInteraction(scene.camera, scene.scene, scene.renderer.domElement);
@@ -190,10 +283,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Sort exhibits by day number for logical browsing
   sortExhibitsByDay(interaction);
+  updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator
   createHelpOverlay(container);
   createLocationIndicator(container);
+  updateLoadingProgress(100, 'Welcome!');
 
   // Initialize audio on first user interaction (browser autoplay policy)
   const startAudioOnInteraction = () => {
@@ -245,6 +340,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
       return 0;
     };
   }
+
+  // Hide loading overlay after a short delay
+  setTimeout(() => {
+    hideLoadingOverlay();
+    console.log('Museum loaded. Use WASD to move, click and drag to look around.');
+  }, 500);
 
   return context;
 }
