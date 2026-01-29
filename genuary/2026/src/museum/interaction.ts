@@ -32,6 +32,9 @@ export interface InteractionSystem {
   // Animation
   animating: boolean;
 
+  // Hover state for cursor
+  hoveredExhibit: THREE.Mesh | null;
+
   // Cleanup
   cleanup: () => void;
 }
@@ -70,18 +73,25 @@ export function createInteraction(
     originalQuaternion: new THREE.Quaternion(),
     zoomProgress: 0,
     animating: false,
+    hoveredExhibit: null,
     cleanup: () => {},
   };
 
   // Event handlers
   const onClick = (event: MouseEvent) => handleClick(interaction, event);
   const onKeyDown = (event: KeyboardEvent) => handleKeyDown(interaction, event);
+  const onMouseMove = (event: MouseEvent) => handleMouseMove(interaction, event);
 
   element.addEventListener('click', onClick);
+  element.addEventListener('mousemove', onMouseMove);
   document.addEventListener('keydown', onKeyDown);
+
+  // Set initial cursor
+  element.style.cursor = 'grab';
 
   interaction.cleanup = () => {
     element.removeEventListener('click', onClick);
+    element.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('keydown', onKeyDown);
   };
 
@@ -149,6 +159,39 @@ function handleClick(interaction: InteractionSystem, event: MouseEvent): void {
 function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): void {
   if (interaction.isZoomed && event.code === 'Escape') {
     exitZoom(interaction);
+  }
+}
+
+/**
+ * Handle mouse move for hover detection
+ */
+function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): void {
+  // Don't check hover when zoomed
+  if (interaction.isZoomed) {
+    interaction.element.style.cursor = 'pointer';
+    return;
+  }
+
+  // Calculate mouse position in normalized device coordinates
+  const rect = interaction.element.getBoundingClientRect();
+  interaction.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  interaction.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  // Raycast to find intersected exhibits
+  interaction.raycaster.setFromCamera(interaction.mouse, interaction.camera);
+  const intersects = interaction.raycaster.intersectObjects(interaction.exhibitMeshes, false);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0].object as THREE.Mesh;
+    if (interaction.hoveredExhibit !== hit) {
+      interaction.hoveredExhibit = hit;
+      interaction.element.style.cursor = 'pointer';
+    }
+  } else {
+    if (interaction.hoveredExhibit !== null) {
+      interaction.hoveredExhibit = null;
+      interaction.element.style.cursor = 'grab';
+    }
   }
 }
 
