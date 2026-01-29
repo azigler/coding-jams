@@ -187,6 +187,19 @@ export function registerExhibits(interaction: InteractionSystem, frames: Exhibit
   frames.forEach(frame => registerExhibit(interaction, frame));
 }
 
+/**
+ * Sort exhibits by day number for logical browsing order
+ * Call after all exhibits have been registered
+ */
+export function sortExhibitsByDay(interaction: InteractionSystem): void {
+  interaction.exhibitMeshes.sort((a, b) => {
+    const dayA = a.userData.dayNumber ?? 999;
+    const dayB = b.userData.dayNumber ?? 999;
+    return dayA - dayB;
+  });
+  console.log(`Sorted ${interaction.exhibitMeshes.length} exhibits by day number`);
+}
+
 // ============================================================================
 // Event Handlers
 // ============================================================================

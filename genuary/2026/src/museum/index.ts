@@ -15,6 +15,7 @@ import {
   updateInteraction,
   disposeInteraction,
   registerExhibits,
+  sortExhibitsByDay,
   type InteractionSystem,
 } from './interaction';
 
@@ -186,6 +187,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   scene.wingZones.forEach(wing => {
     registerExhibits(interaction, wing.exhibits);
   });
+
+  // Sort exhibits by day number for logical browsing
+  sortExhibitsByDay(interaction);
 
   // Show help overlay and location indicator
   createHelpOverlay(container);
