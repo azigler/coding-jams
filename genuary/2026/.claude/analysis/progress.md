@@ -283,14 +283,19 @@ Each session entry should include:
 - `d83e55a` - feat: add atmospheric dust particles in gallery skylight
 - `ed5b1d1` - feat: add teleport navigation with number keys 1-5
 - `a52f8b9` - docs: add north wing screenshot showing live artwork
+- `11b1b2e` - fix: adjust teleport positions to be inside wing corridors
+- `71c705f` - feat: add controls help overlay on startup
+- `cc27ed5` - feat: add glowing orb on central pedestal
 
 **Blockers**: None
+
+**Session Complete**: Posted summary to PR #32
 
 **Next session**:
 - Consider adding interactive elements (click to zoom)
 - Add ambient sound/music
-- Fix west wing teleport position (currently facing wall)
 - Investigate loading GLSL shader days as static images
+- Performance optimization (LOD system)
 
 ---
 
