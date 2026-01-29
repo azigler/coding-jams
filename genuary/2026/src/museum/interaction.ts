@@ -100,6 +100,9 @@ export interface InteractionSystem {
   // Current exhibit index for keyboard navigation
   currentExhibitIndex: number;
 
+  // Callback when exhibit is viewed
+  onExhibitViewed: ((dayNumber: number) => void) | null;
+
   // Cleanup
   cleanup: () => void;
 }
@@ -140,6 +143,7 @@ export function createInteraction(
     animating: false,
     hoveredExhibit: null,
     currentExhibitIndex: -1,
+    onExhibitViewed: null,
     cleanup: () => {},
   };
 
@@ -444,6 +448,9 @@ function zoomToExhibitMesh(interaction: InteractionSystem, mesh: THREE.Mesh, day
   interaction.zoomProgress = 0;
 
   console.log(`Zooming to Day ${dayNumber}`);
+
+  // Notify that exhibit was viewed
+  interaction.onExhibitViewed?.(dayNumber);
 
   // Show vignette and info panel
   showVignette();

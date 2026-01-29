@@ -46,6 +46,12 @@ import {
   type SettingsPanel,
   type Settings,
 } from './settings';
+import {
+  createDiscoveryTracker,
+  markDayDiscovered,
+  disposeDiscoveryTracker,
+  type DiscoveryTracker,
+} from './discovery';
 
 // ============================================================================
 // Types
@@ -59,6 +65,7 @@ export interface MuseumContext {
   touch: TouchControls | null;
   minimap: Minimap;
   settings: SettingsPanel;
+  discovery: DiscoveryTracker;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -413,6 +420,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     setAudioMuted(true);
   }
 
+  // Create discovery tracker
+  const discovery = createDiscoveryTracker(container);
+
+  // Wire up interaction to track discoveries
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    markDayDiscovered(discovery, dayNumber);
+  };
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -465,6 +480,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     touch,
     minimap,
     settings,
+    discovery,
     container,
     isRunning: false,
     lastTime: 0,
@@ -577,6 +593,7 @@ export function disposeMuseum(): void {
   }
   disposeMinimap(context.minimap);
   disposeSettingsPanel(context.settings);
+  disposeDiscoveryTracker(context.discovery);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
