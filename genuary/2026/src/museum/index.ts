@@ -662,6 +662,21 @@ import {
   disposeBadgesSystem,
   type BadgesSystem,
 } from './badges';
+import {
+  createLeaderboardSystem,
+  updateLeaderboardStats,
+  toggleLeaderboardPanel,
+  disposeLeaderboardSystem,
+  type LeaderboardSystem,
+} from './leaderboard';
+import {
+  createTutorialsSystem,
+  shouldShowFirstTimeTutorial,
+  startTutorial,
+  openTutorialPanel,
+  disposeTutorialsSystem,
+  type TutorialsSystem,
+} from './tutorials';
 
 // ============================================================================
 // Types
@@ -765,6 +780,8 @@ export interface MuseumContext {
   visitTimeline: TimelineSystem;
   uiThemes: ThemesSystem;
   visitorBadges: BadgesSystem;
+  leaderboard: LeaderboardSystem;
+  tutorials: TutorialsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -2082,6 +2099,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create badges system (collectible badges)
   const visitorBadges = createBadgesSystem(container);
 
+  // Create leaderboard system (rankings)
+  const leaderboard = createLeaderboardSystem(container);
+
+  // Create tutorials system (guided tours for new users)
+  const tutorials = createTutorialsSystem(container);
+
   // Wire up playlist navigation
   exhibitPlaylist.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -3226,6 +3249,42 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
 
+  // Leaderboard with Shift+L key
+  const leaderboardHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyL' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      toggleLeaderboardPanel(leaderboard);
+    }
+  };
+  document.addEventListener('keydown', leaderboardHandler);
+
+  // Wire up leaderboard to track stats
+  const leaderboardViewHandler = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    leaderboardViewHandler?.(dayNumber);
+    updateLeaderboardStats(leaderboard, {
+      exhibitsViewed: sessionSummary.exhibitsViewed.size,
+      favoritesCount: getFavorites(favorites).length,
+      timeSpentMinutes: Math.floor((Date.now() - sessionSummary.sessionStart) / 60000),
+    });
+  };
+
+  // Tutorials with Shift+? (Shift+/)
+  const tutorialHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Slash' && event.shiftKey && event.ctrlKey) {
+      event.preventDefault();
+      openTutorialPanel(tutorials);
+    }
+  };
+  document.addEventListener('keydown', tutorialHandler);
+
+  // Check if should show first-time tutorial
+  if (shouldShowFirstTimeTutorial(tutorials)) {
+    setTimeout(() => {
+      startTutorial(tutorials, 'basics');
+    }, 2000);
+  }
+
   // Wire up memory lane to track discoveries
   const memoryViewHandler = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -3448,6 +3507,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     visitTimeline,
     uiThemes,
     visitorBadges,
+    leaderboard,
+    tutorials,
     container,
     isRunning: false,
     lastTime: 0,
@@ -3741,6 +3802,8 @@ export function disposeMuseum(): void {
   disposeTimelineSystem(context.visitTimeline);
   disposeThemesSystem(context.uiThemes);
   disposeBadgesSystem(context.visitorBadges);
+  disposeLeaderboardSystem(context.leaderboard);
+  disposeTutorialsSystem(context.tutorials);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
