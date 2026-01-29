@@ -61,6 +61,12 @@ import {
   disposeFavoritesSystem,
   type FavoritesSystem,
 } from './favorites';
+import {
+  createTipsSystem,
+  markTipShown,
+  disposeTipsSystem,
+  type TipsSystem,
+} from './tips';
 
 // ============================================================================
 // Types
@@ -76,6 +82,7 @@ export interface MuseumContext {
   settings: SettingsPanel;
   discovery: DiscoveryTracker;
   favorites: FavoritesSystem;
+  tips: TipsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -475,6 +482,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     return getFavorites(favorites);
   };
 
+  // Create tips system for contextual help
+  const tips = createTipsSystem(container);
+
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -529,6 +539,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     settings,
     discovery,
     favorites,
+    tips,
     container,
     isRunning: false,
     lastTime: 0,
@@ -643,6 +654,7 @@ export function disposeMuseum(): void {
   disposeSettingsPanel(context.settings);
   disposeDiscoveryTracker(context.discovery);
   disposeFavoritesSystem(context.favorites);
+  disposeTipsSystem(context.tips);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
