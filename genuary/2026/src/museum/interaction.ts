@@ -383,7 +383,11 @@ function zoomToExhibitMesh(interaction: InteractionSystem, mesh: THREE.Mesh, day
 
   // Show vignette and info panel
   showVignette();
-  showZoomIndicator(dayNumber);
+  showZoomIndicator(
+    dayNumber,
+    interaction.currentExhibitIndex,
+    interaction.exhibitMeshes.length
+  );
 }
 
 /**
@@ -417,7 +421,7 @@ function exitZoom(interaction: InteractionSystem): void {
 /**
  * Show zoom indicator overlay with exhibit details
  */
-function showZoomIndicator(dayNumber: number): void {
+function showZoomIndicator(dayNumber: number, currentIndex?: number, totalCount?: number): void {
   // Remove existing indicator
   hideZoomIndicator();
 
@@ -425,6 +429,11 @@ function showZoomIndicator(dayNumber: number): void {
   const title = info?.title || `Day ${dayNumber}`;
   const description = info?.description || '';
   const credit = info?.credit ? `Prompt by ${info.credit}` : '';
+
+  // Progress indicator (e.g., "12 of 34")
+  const progressText = (currentIndex !== undefined && totalCount !== undefined)
+    ? `${currentIndex + 1} of ${totalCount}`
+    : '';
 
   const indicator = document.createElement('div');
   indicator.id = 'zoom-indicator';
@@ -446,12 +455,25 @@ function showZoomIndicator(dayNumber: number): void {
       border: 1px solid rgba(255, 255, 255, 0.1);
     ">
       <div style="
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #888;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 4px;
-      ">Genuary 2026</div>
+      ">
+        <div style="
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #888;
+        ">Genuary 2026</div>
+        ${progressText ? `<div style="
+          font-size: 11px;
+          color: #666;
+          background: rgba(255,255,255,0.1);
+          padding: 2px 8px;
+          border-radius: 10px;
+        ">${progressText}</div>` : ''}
+      </div>
       <div style="
         font-size: 20px;
         font-weight: bold;
