@@ -34,6 +34,50 @@ let context: MuseumContext | null = null;
 // ============================================================================
 
 /**
+ * Create the help overlay showing controls
+ */
+function createHelpOverlay(container: HTMLElement): HTMLElement {
+  const overlay = document.createElement('div');
+  overlay.id = 'museum-help';
+  overlay.innerHTML = `
+    <div style="
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: #b0b0c0;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      pointer-events: none;
+      transition: opacity 0.5s;
+      z-index: 100;
+    ">
+      <div style="text-align: center; margin-bottom: 8px; color: #fff; font-weight: bold;">
+        Controls
+      </div>
+      <div style="display: flex; gap: 20px;">
+        <div><b>WASD</b> Move</div>
+        <div><b>Drag</b> Look</div>
+        <div><b>1-5</b> Teleport</div>
+      </div>
+    </div>
+  `;
+  container.style.position = 'relative';
+  container.appendChild(overlay);
+
+  // Fade out after 5 seconds
+  setTimeout(() => {
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 500);
+  }, 5000);
+
+  return overlay;
+}
+
+/**
  * Initialize the museum
  */
 export function initMuseum(container: HTMLElement): MuseumContext {
@@ -42,6 +86,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Create navigation system
   const navigation = createNavigation(scene.camera, scene.renderer.domElement);
+
+  // Show help overlay
+  createHelpOverlay(container);
 
   context = {
     scene,
