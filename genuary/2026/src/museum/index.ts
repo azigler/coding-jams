@@ -264,6 +264,28 @@ import {
   disposeFootstepSystem,
   type FootstepSystem,
 } from './footsteps';
+import {
+  createSpeedRunSystem,
+  recordSpeedRunExhibit,
+  disposeSpeedRunSystem,
+  type SpeedRunSystem,
+} from './speedrun';
+import {
+  createJournalSystem,
+  openJournalEntry,
+  disposeJournalSystem,
+  type JournalSystem,
+} from './journal';
+import {
+  createMoodSystem,
+  disposeMoodSystem,
+  type MoodSystem,
+} from './mood';
+import {
+  createQuizSystem,
+  disposeQuizSystem,
+  type QuizSystem,
+} from './quiz';
 
 // ============================================================================
 // Types
@@ -307,6 +329,10 @@ export interface MuseumContext {
   postcards: PostcardSystem;
   landmarks: LandmarkSystem;
   footsteps: FootstepSystem;
+  speedrun: SpeedRunSystem;
+  journal: JournalSystem;
+  mood: MoodSystem;
+  quiz: QuizSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1190,6 +1216,18 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create footsteps sound system
   const footsteps = createFootstepSystem();
 
+  // Create speed run challenge system (Shift+R to start)
+  const speedrun = createSpeedRunSystem(container);
+
+  // Create visitor journal system (Ctrl+J to write, Shift+J to browse)
+  const journal = createJournalSystem(container);
+
+  // Create mood filter system (Shift+M to change atmosphere)
+  const mood = createMoodSystem(container, scene.scene);
+
+  // Create quiz system (Shift+Q to start quiz)
+  const quiz = createQuizSystem(container);
+
   // Wire up search to zoom to exhibits
   search.onSelect = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1299,6 +1337,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
     // Track in session summary
     recordSessionExhibit(sessionSummary, dayNumber);
+    // Track in speed run challenge if active
+    recordSpeedRunExhibit(speedrun, dayNumber);
 
     // Check for curator notes
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1453,6 +1493,15 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', postcardHandler);
+
+  // Journal entry with Ctrl+J (only when viewing an exhibit)
+  const journalHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyJ' && event.ctrlKey && interaction.currentDayNumber > 0) {
+      event.preventDefault();
+      openJournalEntry(journal, interaction.currentDayNumber);
+    }
+  };
+  document.addEventListener('keydown', journalHandler);
 
   // Rate exhibits with +/- keys (only when zoomed)
   const ratingHandler = (event: KeyboardEvent) => {
@@ -1666,6 +1715,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     postcards,
     landmarks,
     footsteps,
+    speedrun,
+    journal,
+    mood,
+    quiz,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1877,6 +1930,10 @@ export function disposeMuseum(): void {
   disposePostcardSystem(context.postcards);
   disposeLandmarkSystem(context.landmarks);
   disposeFootstepSystem(context.footsteps);
+  disposeSpeedRunSystem(context.speedrun);
+  disposeJournalSystem(context.journal);
+  disposeMoodSystem(context.mood);
+  disposeQuizSystem(context.quiz);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
