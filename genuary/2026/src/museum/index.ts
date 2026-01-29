@@ -230,7 +230,7 @@ function hideLoadingOverlay(): void {
 // ============================================================================
 
 /**
- * Create the location indicator showing current area
+ * Create the location indicator showing current area and session timer
  */
 function createLocationIndicator(container: HTMLElement): HTMLElement {
   const indicator = document.createElement('div');
@@ -250,9 +250,26 @@ function createLocationIndicator(container: HTMLElement): HTMLElement {
       z-index: 100;
     ">
       <span id="location-text">Entrance</span>
+      <span style="margin-left: 12px; opacity: 0.7;" id="session-timer">0:00</span>
     </div>
   `;
   container.appendChild(indicator);
+
+  // Update session timer every second
+  const startTime = Date.now();
+  const timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    const timerEl = document.getElementById('session-timer');
+    if (timerEl) {
+      timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+  }, 1000);
+
+  // Store interval for cleanup
+  (indicator as unknown as Record<string, unknown>).timerInterval = timerInterval;
+
   return indicator;
 }
 
@@ -1048,6 +1065,13 @@ export function disposeMuseum(): void {
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
   disposeScene(context.scene);
+
+  // Clean up location indicator timer
+  const locationEl = document.getElementById('museum-location');
+  if (locationEl) {
+    const interval = (locationEl as unknown as Record<string, unknown>).timerInterval as number | undefined;
+    if (interval) clearInterval(interval);
+  }
 
   // Remove debug API
   if (typeof window !== 'undefined') {
