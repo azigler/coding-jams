@@ -469,6 +469,16 @@ import {
   disposeAudioGuideSystem,
   type AudioGuideSystem,
 } from './audioguide';
+import {
+  createPhotoFiltersSystem,
+  disposePhotoFiltersSystem,
+  type PhotoFiltersSystem,
+} from './photofilters';
+import {
+  createPresenceSystem,
+  disposePresenceSystem,
+  type PresenceSystem,
+} from './presence';
 
 // ============================================================================
 // Types
@@ -545,6 +555,8 @@ export interface MuseumContext {
   exhibitLabels: LabelsSystem;
   visitorTrail: TrailSystem;
   audioGuide: AudioGuideSystem;
+  photoFilters: PhotoFiltersSystem;
+  virtualPresence: PresenceSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1628,6 +1640,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create audio guide system (Shift+A to toggle)
   const audioGuide = createAudioGuideSystem(container);
 
+  // Create photo filters system
+  const photoFilters = createPhotoFiltersSystem(container);
+
+  // Create virtual presence system (shows simulated visitors)
+  const virtualPresence = createPresenceSystem(container);
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2397,6 +2415,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     exhibitLabels,
     visitorTrail,
     audioGuide,
+    photoFilters,
+    virtualPresence,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2663,6 +2683,8 @@ export function disposeMuseum(): void {
   disposeLabelsSystem(context.exhibitLabels);
   disposeTrailSystem(context.visitorTrail);
   disposeAudioGuideSystem(context.audioGuide);
+  disposePhotoFiltersSystem(context.photoFilters);
+  disposePresenceSystem(context.virtualPresence);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
