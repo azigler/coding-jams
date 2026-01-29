@@ -49,6 +49,7 @@ const TIPS: Tip[] = [
   { id: 'mute', text: 'Press M to quickly mute or unmute all sounds' },
   { id: 'dblclick', text: 'Double-click anywhere on the floor to teleport there instantly' },
   { id: 'credits', text: 'Press C to view the credits and about information' },
+  { id: 'unvisited', text: 'Press U to jump to a random unvisited exhibit' },
 ];
 
 // ============================================================================
