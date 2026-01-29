@@ -94,14 +94,7 @@ send_prompt() {
   if claude_is_running; then
     log "Claude is running, sending continuation prompt..."
     # Send a continuation message to the active Claude session
-    local msg="[$(date +%H:%M)] Keep going!
-
-Reminders:
-- Check PR #32 for human feedback
-- Navigate the museum with Puppeteer, see what you're building
-- Post screenshots to PR so humans can see progress
-- Update .claude/analysis/progress.md with notes for yourself
-- Re-read your prompt (.claude/prompts/curator-session.md) if you need direction"
+    local msg="[$(date +%H:%M)] Keep going! Don't post to PR unless you have significant progress (1 update per hour max)."
 
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" "$msg"
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
