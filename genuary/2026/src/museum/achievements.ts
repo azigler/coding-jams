@@ -347,6 +347,126 @@ function saveAchievements(achievements: Set<string>): void {
 }
 
 // ============================================================================
+// Achievements Viewer
+// ============================================================================
+
+/**
+ * Show achievements popup
+ */
+export function showAchievementsPopup(system: AchievementsSystem, container: HTMLElement): void {
+  // Remove existing popup
+  const existing = document.getElementById('achievements-popup');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const { unlocked, total } = getUnlockedCount(system);
+
+  const popup = document.createElement('div');
+  popup.id = 'achievements-popup';
+  popup.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(20, 20, 30, 0.95);
+    border: 1px solid rgba(100, 150, 255, 0.3);
+    border-radius: 12px;
+    padding: 25px;
+    font-family: system-ui, sans-serif;
+    color: white;
+    z-index: 300;
+    max-width: 450px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: achievements-fade-in 0.2s ease-out;
+  `;
+
+  let achievementsHtml = '';
+  for (const achievement of ACHIEVEMENTS) {
+    const isUnlocked = system.unlocked.has(achievement.id);
+    const isSecret = achievement.secret && !isUnlocked;
+
+    achievementsHtml += `
+      <div style="
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: ${isUnlocked ? 'rgba(74, 158, 255, 0.1)' : 'rgba(60, 60, 70, 0.3)'};
+        border-radius: 8px;
+        margin-bottom: 8px;
+        opacity: ${isUnlocked ? '1' : '0.6'};
+      ">
+        <div style="font-size: 24px;">${isSecret ? '❓' : achievement.icon}</div>
+        <div>
+          <div style="font-weight: bold; color: ${isUnlocked ? '#fff' : '#888'};">
+            ${isSecret ? '???' : achievement.name}
+          </div>
+          <div style="font-size: 11px; color: #888;">
+            ${isSecret ? 'Secret achievement' : achievement.description}
+          </div>
+        </div>
+        ${isUnlocked ? '<div style="margin-left: auto; color: #4a9eff;">✓</div>' : ''}
+      </div>
+    `;
+  }
+
+  popup.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div style="font-size: 18px; font-weight: bold;">Achievements</div>
+      <div style="color: #4a9eff; font-size: 14px;">${unlocked}/${total}</div>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <div style="
+        height: 6px;
+        background: rgba(60, 60, 70, 0.5);
+        border-radius: 3px;
+        overflow: hidden;
+      ">
+        <div style="
+          width: ${(unlocked / total) * 100}%;
+          height: 100%;
+          background: linear-gradient(90deg, #4a9eff, #a855f7);
+          border-radius: 3px;
+        "></div>
+      </div>
+    </div>
+    ${achievementsHtml}
+    <div style="color: #666; font-size: 11px; text-align: center; margin-top: 15px;">
+      Press A or click outside to close
+    </div>
+    <style>
+      @keyframes achievements-fade-in {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      }
+    </style>
+  `;
+
+  container.appendChild(popup);
+
+  // Close on outside click
+  const closeHandler = (e: MouseEvent) => {
+    if (!popup.contains(e.target as Node)) {
+      popup.remove();
+      document.removeEventListener('click', closeHandler);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closeHandler), 0);
+
+  // Close on A key
+  const keyHandler = (e: KeyboardEvent) => {
+    if (e.code === 'KeyA' || e.code === 'Escape') {
+      popup.remove();
+      document.removeEventListener('keydown', keyHandler);
+    }
+  };
+  document.addEventListener('keydown', keyHandler);
+}
+
+// ============================================================================
 // Cleanup
 // ============================================================================
 

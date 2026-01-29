@@ -87,6 +87,7 @@ import {
   createAchievementsSystem,
   checkAchievements,
   showAchievementNotification,
+  showAchievementsPopup,
   disposeAchievementsSystem,
   type AchievementsSystem,
 } from './achievements';
