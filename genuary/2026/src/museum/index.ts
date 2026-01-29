@@ -907,22 +907,48 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', fullscreenHandler);
 
-  // Matrix mode Easter egg - press backtick for green tint
-  let matrixModeActive = false;
-  const matrixHandler = (event: KeyboardEvent) => {
+  // Visual filter Easter eggs
+  let activeFilter: 'none' | 'matrix' | 'invert' | 'grayscale' = 'none';
+
+  const filterHandler = (event: KeyboardEvent) => {
+    const canvas = scene.renderer.domElement;
+
     if (event.code === 'Backquote') {
-      matrixModeActive = !matrixModeActive;
-      const canvas = scene.renderer.domElement;
-      if (matrixModeActive) {
-        canvas.style.filter = 'sepia(100%) hue-rotate(70deg) saturate(150%)';
-        showNotification('Matrix mode activated');
-      } else {
+      // Matrix mode
+      if (activeFilter === 'matrix') {
+        activeFilter = 'none';
         canvas.style.filter = '';
-        showNotification('Matrix mode deactivated');
+        showNotification('Matrix mode off');
+      } else {
+        activeFilter = 'matrix';
+        canvas.style.filter = 'sepia(100%) hue-rotate(70deg) saturate(150%)';
+        showNotification('Matrix mode on');
+      }
+    } else if (event.code === 'KeyN' && !interaction.isZoomed) {
+      // Negative/Invert mode
+      if (activeFilter === 'invert') {
+        activeFilter = 'none';
+        canvas.style.filter = '';
+        showNotification('Normal colors');
+      } else {
+        activeFilter = 'invert';
+        canvas.style.filter = 'invert(1) hue-rotate(180deg)';
+        showNotification('Inverted colors');
+      }
+    } else if (event.code === 'KeyB' && event.shiftKey) {
+      // Grayscale/B&W mode
+      if (activeFilter === 'grayscale') {
+        activeFilter = 'none';
+        canvas.style.filter = '';
+        showNotification('Color mode');
+      } else {
+        activeFilter = 'grayscale';
+        canvas.style.filter = 'grayscale(100%)';
+        showNotification('Black & white mode');
       }
     }
   };
-  document.addEventListener('keydown', matrixHandler);
+  document.addEventListener('keydown', filterHandler);
 
   // Konami code Easter egg: up up down down left right left right b a
   const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
