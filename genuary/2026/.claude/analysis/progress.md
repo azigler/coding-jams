@@ -400,7 +400,38 @@ Each session entry should include:
 
 **Total Feature Count**: 19 features!
 
+**More features added in continued session:**
+- `734e87e` - feat: sort exhibits by day for logical browsing
+- `16a3587` - feat: add 0/Home key to return to spawn point
+- `3665909` - feat: add whoosh sound effect when teleporting
+
+**Total Feature Count**: 22 features!
+
 **Screenshots Note**: WebGL screenshot capture in headless mode continues to timeout. The museum renders correctly but Playwright screenshots hang. This is a known limitation with software WebGL rendering.
+
+**Full Feature List**:
+1. Live Artwork (27+ days)
+2. Dust Particles
+3. Teleport Navigation (0-5, Home)
+4. Help Overlay (H toggle)
+5. Glowing Orb Animation
+6. Welcome Sign
+7. Ambient Audio
+8. Location Indicator
+9. Footstep Sounds
+10. Click-to-Zoom
+11. Hover Cursor
+12. Info Panel with Prompt Details
+13. View Day Link
+14. Zoom Sound Effects
+15. Vignette Focus Effect
+16. Keyboard Exhibit Navigation ([ ])
+17. Progress Indicator (X of Y)
+18. Random Exhibit (R key)
+19. Exhibit Day Sorting
+20. Return Home (0/Home)
+21. Teleport Whoosh Sound
+22. Interactive help overlay
 
 **Next session**:
 - VR/WebXR integration
