@@ -932,7 +932,15 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   document.addEventListener('keydown', fullscreenHandler);
 
   // Visual filter Easter eggs
-  let activeFilter: 'none' | 'matrix' | 'invert' | 'grayscale' = 'none';
+  let activeFilter: 'none' | 'matrix' | 'invert' | 'grayscale' | 'random' = 'none';
+  const randomFilters = [
+    { filter: 'sepia(80%)', name: 'Vintage' },
+    { filter: 'saturate(200%)', name: 'Vivid' },
+    { filter: 'contrast(150%)', name: 'High Contrast' },
+    { filter: 'hue-rotate(90deg)', name: 'Shifted Hues' },
+    { filter: 'brightness(120%) contrast(110%)', name: 'Bright' },
+    { filter: 'blur(1px)', name: 'Dreamy' },
+  ];
 
   const filterHandler = (event: KeyboardEvent) => {
     const canvas = scene.renderer.domElement;
@@ -970,6 +978,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
         canvas.style.filter = 'grayscale(100%)';
         showNotification('Black & white mode');
       }
+    } else if (event.code === 'KeyX' && !interaction.isZoomed) {
+      // Random filter mode - cycles through fun filters
+      const randomChoice = randomFilters[Math.floor(Math.random() * randomFilters.length)];
+      activeFilter = 'random';
+      canvas.style.filter = randomChoice.filter;
+      showNotification(`${randomChoice.name} filter`);
     }
   };
   document.addEventListener('keydown', filterHandler);
