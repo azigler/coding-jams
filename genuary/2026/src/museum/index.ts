@@ -479,6 +479,40 @@ import {
   disposePresenceSystem,
   type PresenceSystem,
 } from './presence';
+import {
+  createVisitLogSystem,
+  logExhibitView,
+  logFavorite,
+  logScreenshot,
+  logAchievement,
+  toggleVisitLog,
+  disposeVisitLogSystem,
+  type VisitLogSystem,
+} from './visitlog';
+import {
+  createRandomWalkSystem,
+  selectRandom,
+  disposeRandomWalkSystem,
+  type RandomWalkSystem,
+} from './randomwalk';
+import {
+  createShareCardSystem,
+  showShareCard,
+  disposeShareCardSystem,
+  type ShareCardSystem,
+} from './sharecard';
+import {
+  createStreaksSystem,
+  disposeStreaksSystem,
+  type StreaksSystem,
+} from './streaks';
+import {
+  createAmbientPresetsSystem,
+  togglePresetsPanel,
+  getCurrentPreset,
+  disposeAmbientPresetsSystem,
+  type AmbientPresetsSystem,
+} from './ambientpresets';
 
 // ============================================================================
 // Types
@@ -557,6 +591,11 @@ export interface MuseumContext {
   audioGuide: AudioGuideSystem;
   photoFilters: PhotoFiltersSystem;
   virtualPresence: PresenceSystem;
+  visitLog: VisitLogSystem;
+  randomWalk: RandomWalkSystem;
+  shareCard: ShareCardSystem;
+  streaks: StreaksSystem;
+  ambientPresets: AmbientPresetsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1646,6 +1685,62 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create virtual presence system (shows simulated visitors)
   const virtualPresence = createPresenceSystem(container);
 
+  // Create visit log system (L key to view session activity)
+  const visitLog = createVisitLogSystem(container);
+
+  // Create random walk system (R key to jump to random exhibit)
+  const randomWalk = createRandomWalkSystem(container);
+
+  // Wire up random walk navigation
+  randomWalk.onRandomSelect = (dayNumber: number) => {
+    const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
+    if (mesh) {
+      const meshIndex = interaction.exhibitMeshes.indexOf(mesh);
+      interaction.currentExhibitIndex = meshIndex;
+
+      if (!interaction.isZoomed) {
+        interaction.originalPosition.copy(scene.camera.position);
+        interaction.originalQuaternion.copy(scene.camera.quaternion);
+      }
+
+      const worldPos = new THREE.Vector3();
+      mesh.getWorldPosition(worldPos);
+      const normal = new THREE.Vector3(0, 0, 1);
+      if (mesh.parent) {
+        normal.applyQuaternion(mesh.parent.quaternion);
+      }
+
+      interaction.zoomTarget.copy(worldPos).addScaledVector(normal, 1.2);
+      interaction.zoomTarget.y = scene.camera.position.y;
+      interaction.zoomLookAt.copy(worldPos);
+      interaction.zoomLookAt.y = scene.camera.position.y;
+
+      interaction.isZoomed = true;
+      interaction.animating = true;
+      interaction.zoomProgress = 0;
+      interaction.currentDayNumber = dayNumber;
+      interaction.onExhibitViewed?.(dayNumber);
+      interaction.onZoomIn?.(dayNumber);
+
+      showNotification(`🎲 Random jump to Day ${dayNumber}!`);
+    }
+  };
+
+  // Create share card system (generates social share cards)
+  const shareCard = createShareCardSystem(container);
+
+  // Create streaks system (tracks consecutive daily visits)
+  const streaks = createStreaksSystem(container);
+
+  // Create ambient presets system (A key to change ambient lighting)
+  const ambientPresets = createAmbientPresetsSystem(container);
+
+  // Wire up ambient presets to apply filter to canvas
+  ambientPresets.onPresetChange = (preset) => {
+    scene.renderer.domElement.style.filter = preset.filter;
+    showNotification(`Ambient: ${preset.name}`);
+  };
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -2287,6 +2382,71 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', filterHandler);
 
+  // Visit log with L key (when not zoomed)
+  const visitLogHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyL' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      toggleVisitLog(visitLog);
+    }
+  };
+  document.addEventListener('keydown', visitLogHandler);
+
+  // Random walk with R key (surprise me button also works)
+  const randomWalkHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyR' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      selectRandom(randomWalk);
+    }
+  };
+  document.addEventListener('keydown', randomWalkHandler);
+
+  // Share card with Shift+C (when viewing exhibit)
+  const shareCardHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyC' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      showShareCard(shareCard, {
+        exhibitsViewed: sessionSummary.exhibitsViewed.size,
+        favoritesCount: getFavorites(favorites).length,
+        timeSpent: Math.floor((Date.now() - sessionSummary.sessionStart) / 1000),
+        topExhibit: interaction.currentDayNumber > 0 ? interaction.currentDayNumber : undefined,
+        screenshotsTaken: stats.stats.screenshotsTaken,
+      });
+    }
+  };
+  document.addEventListener('keydown', shareCardHandler);
+
+  // Ambient presets with A key (when not viewing exhibit)
+  const ambientPresetsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyA' && !event.shiftKey && !event.ctrlKey && !interaction.isZoomed) {
+      event.preventDefault();
+      togglePresetsPanel(ambientPresets);
+    }
+  };
+  document.addEventListener('keydown', ambientPresetsHandler);
+
+  // Wire up visit log to track activities
+  const prevOnExhibitViewed = interaction.onExhibitViewed;
+  interaction.onExhibitViewed = (dayNumber: number) => {
+    prevOnExhibitViewed?.(dayNumber);
+    logExhibitView(visitLog, dayNumber);
+  };
+
+  const prevOnFavoriteToggle = interaction.onFavoriteToggle;
+  interaction.onFavoriteToggle = (dayNumber: number) => {
+    const wasFavorite = isFavorite(favorites, dayNumber);
+    prevOnFavoriteToggle?.(dayNumber);
+    if (!wasFavorite) {
+      logFavorite(visitLog, dayNumber);
+    }
+  };
+
+  // Wire up achievement logging to visit log
+  const prevOnAchievementUnlocked = achievements.onAchievementUnlocked;
+  achievements.onAchievementUnlocked = (achievement) => {
+    prevOnAchievementUnlocked?.(achievement);
+    logAchievement(visitLog, achievement.name);
+  };
+
   // Konami code Easter egg: up up down down left right left right b a
   const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
   let konamiIndex = 0;
@@ -2417,6 +2577,11 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     audioGuide,
     photoFilters,
     virtualPresence,
+    visitLog,
+    randomWalk,
+    shareCard,
+    streaks,
+    ambientPresets,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2685,6 +2850,11 @@ export function disposeMuseum(): void {
   disposeAudioGuideSystem(context.audioGuide);
   disposePhotoFiltersSystem(context.photoFilters);
   disposePresenceSystem(context.virtualPresence);
+  disposeVisitLogSystem(context.visitLog);
+  disposeRandomWalkSystem(context.randomWalk);
+  disposeShareCardSystem(context.shareCard);
+  disposeStreaksSystem(context.streaks);
+  disposeAmbientPresetsSystem(context.ambientPresets);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
