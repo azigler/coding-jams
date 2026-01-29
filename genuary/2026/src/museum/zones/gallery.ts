@@ -72,26 +72,28 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   const galleryZ = -20 - cfg.radius;
   group.position.set(0, 0, galleryZ);
 
-  // Floor - octagonal with polished look (brighter for visibility)
+  // Floor - octagonal with polished reflective look
   const floorGeom = createOctagonGeometry(cfg.radius, cfg.numSides);
   const floorMaterial = new THREE.MeshStandardMaterial({
-    color: 0x252530,
-    roughness: 0.15,
-    metalness: 0.4,
-    emissive: 0x151520,
-    emissiveIntensity: 0.3,
+    color: 0x3a3a45,
+    roughness: 0.1,
+    metalness: 0.6,
+    emissive: 0x252535,
+    emissiveIntensity: 0.5,
   });
   const floor = new THREE.Mesh(floorGeom, floorMaterial);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   group.add(floor);
 
-  // Ceiling with skylight hole
+  // Ceiling with skylight hole - slightly visible
   const ceilingGeom = createOctagonWithHoleGeometry(cfg.radius, cfg.skylightRadius, cfg.numSides);
   const ceilingMaterial = new THREE.MeshStandardMaterial({
-    color: 0x1f1f24,
-    roughness: 0.9,
-    metalness: 0.0,
+    color: 0x2a2a35,
+    roughness: 0.8,
+    metalness: 0.1,
+    emissive: 0x151520,
+    emissiveIntensity: 0.3,
     side: THREE.DoubleSide,
   });
   const ceiling = new THREE.Mesh(ceilingGeom, ceilingMaterial);
@@ -99,16 +101,16 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   ceiling.position.y = cfg.height;
   group.add(ceiling);
 
-  // Skylight (glass dome effect) - brighter glow for better ambience
+  // Skylight (glass dome effect) - bright glowing portal
   const skylightGeom = new THREE.CircleGeometry(cfg.skylightRadius, 32);
   const skylightMaterial = new THREE.MeshStandardMaterial({
-    color: 0x6080b0,
-    roughness: 0.1,
-    metalness: 0.2,
-    emissive: 0x4060a0,
-    emissiveIntensity: 0.6,
+    color: 0x7090c0,
+    roughness: 0.05,
+    metalness: 0.1,
+    emissive: 0x5080c0,
+    emissiveIntensity: 1.0,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.9,
     side: THREE.DoubleSide,
   });
   const skylightMesh = new THREE.Mesh(skylightGeom, skylightMaterial);
@@ -116,35 +118,38 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   skylightMesh.position.y = cfg.height + 0.1;
   group.add(skylightMesh);
 
-  // Skylight light source - main illumination from above (brighter for visibility)
-  const skylightLight = new THREE.PointLight(0xa0b0d0, 8, 50, 1);
+  // Skylight light source - MUCH brighter main illumination
+  const skylightLight = new THREE.PointLight(0xb0c0e0, 15, 60, 1);
   skylightLight.position.set(0, cfg.height - 0.5, 0);
   skylightLight.castShadow = true;
   skylightLight.shadow.mapSize.width = 1024;
   skylightLight.shadow.mapSize.height = 1024;
   group.add(skylightLight);
 
-  // Ambient fill light - fills in the shadows (stronger)
-  const ambientFill = new THREE.PointLight(0x8090a0, 3, 45, 1.5);
+  // Strong ambient fill light - fills the whole room
+  const ambientFill = new THREE.PointLight(0xa0b0c0, 6, 50, 1);
   ambientFill.position.set(0, cfg.height / 2, 0);
   group.add(ambientFill);
 
-  // Additional ambient at floor level (stronger for better floor visibility)
-  const floorFill = new THREE.PointLight(0x505060, 2, 30, 1.5);
-  floorFill.position.set(0, 1, 0);
+  // Floor level ambient - makes floor visible
+  const floorFill = new THREE.PointLight(0x7080a0, 4, 40, 1);
+  floorFill.position.set(0, 1.5, 0);
   group.add(floorFill);
 
-  // Secondary overhead lights in a ring pattern for better coverage
-  const ringRadius = cfg.radius * 0.6;
-  for (let i = 0; i < 4; i++) {
-    const angle = (i * Math.PI * 2) / 4 + Math.PI / 4; // Offset to be between walls
-    const ringLight = new THREE.PointLight(0x9090a0, 2, 15, 2);
-    ringLight.position.set(
-      Math.cos(angle) * ringRadius,
-      cfg.height - 1,
-      Math.sin(angle) * ringRadius
+  // Wall wash lights - positioned near walls to illuminate them
+  const wallWashRadius = cfg.radius * 0.85;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i * Math.PI * 2) / 8;
+    // Warm accent on exhibit walls (odd indices), cool on doorway walls (even)
+    const isExhibitWall = i % 2 === 1;
+    const lightColor = isExhibitWall ? 0xffeedd : 0x8090b0;
+    const wallLight = new THREE.PointLight(lightColor, isExhibitWall ? 5 : 3, 12, 1.5);
+    wallLight.position.set(
+      Math.cos(angle) * wallWashRadius,
+      cfg.height - 1.5,
+      Math.sin(angle) * wallWashRadius
     );
-    group.add(ringLight);
+    group.add(wallLight);
   }
 
   // Walls
@@ -241,12 +246,13 @@ function createWalls(group: THREE.Group, cfg: GalleryConfig): void {
   const angleStep = (Math.PI * 2) / cfg.numSides;
   const wallWidth = 2 * cfg.radius * Math.sin(angleStep / 2);
 
+  // Walls with subtle teal tint - liminal space aesthetic
   const wallMaterial = new THREE.MeshStandardMaterial({
-    color: cfg.wallColor,
-    roughness: 0.85,
-    metalness: 0.05,
-    emissive: 0x202030,
-    emissiveIntensity: 0.4,
+    color: 0x3a4550,
+    roughness: 0.7,
+    metalness: 0.15,
+    emissive: 0x253540,
+    emissiveIntensity: 0.6,
   });
 
   for (let i = 0; i < cfg.numSides; i++) {
@@ -338,10 +344,13 @@ function createDoorways(group: THREE.Group, cfg: GalleryConfig): void {
   const doorHeight = 3;
   const angleStep = (Math.PI * 2) / cfg.numSides;
 
+  // Doorway frames with visible metallic finish
   const frameMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3a3a40,
-    roughness: 0.5,
-    metalness: 0.3,
+    color: 0x505560,
+    roughness: 0.3,
+    metalness: 0.5,
+    emissive: 0x252530,
+    emissiveIntensity: 0.3,
   });
 
   // Doorway indices: 0 (entrance/south), 2 (west), 4 (north), 6 (east)
@@ -380,10 +389,19 @@ function createDoorways(group: THREE.Group, cfg: GalleryConfig): void {
     topBeam.rotation.y = angle;
     group.add(topBeam);
 
-    // Light above doorway
-    const doorLight = new THREE.PointLight(0xffddaa, 0.8, 8, 2);
+    // Bright warm light above doorway - beckoning into the void
+    const doorLight = new THREE.PointLight(0xffddaa, 4, 12, 1.5);
     doorLight.position.set(frameX, doorHeight - 0.3, frameZ);
     group.add(doorLight);
+
+    // Add subtle glow on floor in front of doorway
+    const floorGlow = new THREE.PointLight(0xffeedd, 2, 6, 2);
+    floorGlow.position.set(
+      frameX * 0.8, // Slightly toward center
+      0.5,
+      frameZ * 0.8
+    );
+    group.add(floorGlow);
 
     // TODO: Add signage for wing names
     void doorNames[i]; // Placeholder for future signage
@@ -397,12 +415,14 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
   const pedestalRadius = 1;
   const pedestalHeight = 1.2;
 
-  // Base
+  // Base - polished stone look with subtle glow
   const baseGeom = new THREE.CylinderGeometry(pedestalRadius * 1.2, pedestalRadius * 1.3, 0.15, 32);
   const baseMaterial = new THREE.MeshStandardMaterial({
-    color: 0x2a2a30,
-    roughness: 0.4,
-    metalness: 0.2,
+    color: 0x404550,
+    roughness: 0.3,
+    metalness: 0.4,
+    emissive: 0x202530,
+    emissiveIntensity: 0.4,
   });
   const base = new THREE.Mesh(baseGeom, baseMaterial);
   base.position.y = 0.075;
@@ -410,12 +430,14 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
   base.castShadow = true;
   group.add(base);
 
-  // Column
+  // Column - slightly glowing pillar
   const columnGeom = new THREE.CylinderGeometry(pedestalRadius, pedestalRadius, pedestalHeight, 32);
   const columnMaterial = new THREE.MeshStandardMaterial({
-    color: 0x3a3a40,
-    roughness: 0.6,
-    metalness: 0.1,
+    color: 0x4a4a55,
+    roughness: 0.4,
+    metalness: 0.3,
+    emissive: 0x252535,
+    emissiveIntensity: 0.5,
   });
   const column = new THREE.Mesh(columnGeom, columnMaterial);
   column.position.y = 0.15 + pedestalHeight / 2;
@@ -429,13 +451,25 @@ function createPedestal(group: THREE.Group, cfg: GalleryConfig): void {
   top.receiveShadow = true;
   group.add(top);
 
-  // Spotlight on pedestal (brighter, no shadow to reduce texture units)
-  const spotlight = new THREE.SpotLight(0xffffff, 5, 12, Math.PI / 5, 0.4, 1);
+  // Bright spotlight on pedestal
+  const spotlight = new THREE.SpotLight(0xffffff, 10, 15, Math.PI / 4, 0.3, 1);
   spotlight.position.set(0, cfg.height - 0.5, 0);
   spotlight.target.position.set(0, pedestalHeight + 0.15, 0);
-  spotlight.castShadow = false; // Disabled to reduce texture unit usage
+  spotlight.castShadow = false;
   group.add(spotlight);
   group.add(spotlight.target);
+
+  // Ring of subtle lights around pedestal base
+  for (let i = 0; i < 4; i++) {
+    const angle = (i * Math.PI * 2) / 4;
+    const baseLight = new THREE.PointLight(0x8090a0, 2, 5, 2);
+    baseLight.position.set(
+      Math.cos(angle) * (pedestalRadius * 1.5),
+      0.3,
+      Math.sin(angle) * (pedestalRadius * 1.5)
+    );
+    group.add(baseLight);
+  }
 }
 
 // ============================================================================
@@ -498,17 +532,27 @@ function createExhibits(
     group.add(placard.group);
     placards.push(placard);
 
-    // Add spotlight for this exhibit (brighter, no shadows to reduce texture units)
-    const spotlight = new THREE.SpotLight(0xffffff, 4, 12, Math.PI / 6, 0.3, 1);
+    // Add bright spotlight for this exhibit - warm gallery lighting
+    const spotlight = new THREE.SpotLight(0xfffaf0, 12, 15, Math.PI / 5, 0.2, 1);
+    // Position spotlight closer to the exhibit for better illumination
     spotlight.position.set(
-      Math.sin(angle) * (wallDist - 2),
-      cfg.height - 0.5,
-      -Math.cos(angle) * (wallDist - 2)
+      Math.sin(angle) * (wallDist - 3),
+      cfg.height - 0.8,
+      -Math.cos(angle) * (wallDist - 3)
     );
     spotlight.target.position.set(x, y, z);
-    spotlight.castShadow = false; // Disabled to reduce texture unit usage
+    spotlight.castShadow = false;
     group.add(spotlight);
     group.add(spotlight.target);
+
+    // Add a fill light near each exhibit for better visibility
+    const fillLight = new THREE.PointLight(0xffeedd, 3, 8, 1.5);
+    fillLight.position.set(
+      Math.sin(angle) * (wallDist - 1.5),
+      y,
+      -Math.cos(angle) * (wallDist - 1.5)
+    );
+    group.add(fillLight);
 
     group.add(frame.group);
     exhibits.push(frame);
