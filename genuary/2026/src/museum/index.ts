@@ -9,7 +9,7 @@
 
 import { createScene, updateScene, disposeScene, type MuseumScene } from './scene';
 import { createNavigation, updateNavigation, disposeNavigation, type Navigation } from './navigation';
-import { initAudio, startAmbient, disposeAudio } from './audio';
+import { initAudio, startAmbient, disposeAudio, setAudioMuted } from './audio';
 import {
   createInteraction,
   updateInteraction,
@@ -399,13 +399,18 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     // Toggle minimap visibility
     minimap.canvas.style.display = newSettings.minimapVisible ? 'block' : 'none';
 
-    // Sound is handled by audio system (controlled on next sound trigger)
+    // Toggle sound
+    setAudioMuted(!newSettings.soundEnabled);
+
     // Quality would require renderer changes (not implemented yet)
   };
 
   // Apply initial settings
   if (!settings.settings.minimapVisible) {
     minimap.canvas.style.display = 'none';
+  }
+  if (!settings.settings.soundEnabled) {
+    setAudioMuted(true);
   }
 
   updateLoadingProgress(80, 'Preparing gallery...');

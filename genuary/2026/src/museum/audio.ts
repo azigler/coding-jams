@@ -60,6 +60,30 @@ export function initAudio(): AudioSystem {
 }
 
 // ============================================================================
+// Volume Control
+// ============================================================================
+
+let isMuted = false;
+const MASTER_VOLUME = 0.15;
+
+/**
+ * Set whether audio is muted
+ */
+export function setAudioMuted(muted: boolean): void {
+  isMuted = muted;
+  if (audioSystem?.masterGain) {
+    audioSystem.masterGain.gain.value = muted ? 0 : MASTER_VOLUME;
+  }
+}
+
+/**
+ * Check if audio is muted
+ */
+export function isAudioMuted(): boolean {
+  return isMuted;
+}
+
+// ============================================================================
 // Ambient Sound
 // ============================================================================
 
