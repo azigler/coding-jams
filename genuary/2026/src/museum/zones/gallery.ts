@@ -32,6 +32,7 @@ import {
 export interface GalleryZone {
   group: THREE.Group;
   skylightMesh: THREE.Mesh;
+  dustParticles: THREE.Points | null;
   exhibits: ExhibitFrame[];
   placards: Placard[];
   time: number;
@@ -167,13 +168,62 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
   // Exhibit frames on non-doorway walls (walls 1, 3, 5, 7)
   const { exhibits, placards } = createExhibits(group, cfg);
 
+  // Dust motes floating in the skylight beam
+  const dustParticles = createDustParticles(cfg);
+  group.add(dustParticles);
+
   return {
     group,
     skylightMesh,
+    dustParticles,
     exhibits,
     placards,
     time: 0,
   };
+}
+
+// ============================================================================
+// Atmosphere Effects
+// ============================================================================
+
+/**
+ * Create dust motes floating in the skylight beam
+ */
+function createDustParticles(cfg: GalleryConfig): THREE.Points {
+  const particleCount = 200;
+  const positions = new Float32Array(particleCount * 3);
+  const velocities = new Float32Array(particleCount * 3);
+
+  // Initialize particles in a cylinder under the skylight
+  for (let i = 0; i < particleCount; i++) {
+    const i3 = i * 3;
+    // Random position in a cylinder
+    const angle = Math.random() * Math.PI * 2;
+    const radius = Math.random() * cfg.skylightRadius * 0.9;
+    positions[i3] = Math.cos(angle) * radius;
+    positions[i3 + 1] = Math.random() * cfg.height; // Full height
+    positions[i3 + 2] = Math.sin(angle) * radius;
+
+    // Slow random velocities
+    velocities[i3] = (Math.random() - 0.5) * 0.02;
+    velocities[i3 + 1] = (Math.random() - 0.5) * 0.01;
+    velocities[i3 + 2] = (Math.random() - 0.5) * 0.02;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  // Store velocities as custom attribute for animation
+  geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+
+  const material = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 0.03,
+    transparent: true,
+    opacity: 0.4,
+    sizeAttenuation: true,
+  });
+
+  return new THREE.Points(geometry, material);
 }
 
 // ============================================================================
@@ -641,9 +691,44 @@ export function updateGalleryZone(zone: GalleryZone, deltaTime: number): void {
   zone.time += deltaTime;
 
   // Subtle skylight color shift (simulating clouds passing)
-  const material = zone.skylightMesh.material as THREE.MeshStandardMaterial;
+  const skylightMat = zone.skylightMesh.material as THREE.MeshStandardMaterial;
   const shift = Math.sin(zone.time * 0.1) * 0.05;
-  material.emissiveIntensity = 0.3 + shift;
+  skylightMat.emissiveIntensity = 0.3 + shift;
+
+  // Animate dust particles
+  if (zone.dustParticles) {
+    const positions = zone.dustParticles.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const velocities = zone.dustParticles.geometry.getAttribute('velocity') as THREE.BufferAttribute;
+    const height = 6; // Gallery height
+    const skyRadius = 4; // Skylight radius
+
+    for (let i = 0; i < positions.count; i++) {
+      const i3 = i * 3;
+
+      // Update position
+      positions.array[i3] += velocities.array[i3] * deltaTime * 60;
+      positions.array[i3 + 1] += velocities.array[i3 + 1] * deltaTime * 60;
+      positions.array[i3 + 2] += velocities.array[i3 + 2] * deltaTime * 60;
+
+      // Gentle upward drift in the light beam
+      positions.array[i3 + 1] += 0.005 * deltaTime * 60;
+
+      // Wrap around at boundaries
+      if (positions.array[i3 + 1] > height) {
+        positions.array[i3 + 1] = 0;
+      }
+
+      // Keep within skylight cylinder
+      const dist = Math.sqrt(positions.array[i3] ** 2 + positions.array[i3 + 2] ** 2);
+      if (dist > skyRadius) {
+        const scale = skyRadius / dist * 0.9;
+        positions.array[i3] *= scale;
+        positions.array[i3 + 2] *= scale;
+      }
+    }
+
+    positions.needsUpdate = true;
+  }
 }
 
 // ============================================================================
@@ -656,6 +741,12 @@ export function updateGalleryZone(zone: GalleryZone, deltaTime: number): void {
 export function disposeGalleryZone(zone: GalleryZone): void {
   // Dispose all live artwork first
   disposeAllArtwork();
+
+  // Dispose dust particles
+  if (zone.dustParticles) {
+    zone.dustParticles.geometry.dispose();
+    (zone.dustParticles.material as THREE.PointsMaterial).dispose();
+  }
 
   // Dispose exhibits
   zone.exhibits.forEach((exhibit) => {

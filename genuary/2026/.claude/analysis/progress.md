@@ -263,10 +263,15 @@ Each session entry should include:
 - `museum-north-wing-corridor.png` - View into north wing with exhibits
 - `museum-gallery-with-artwork.png` - Gallery approach showing live exhibit
 
+**Additional work in this session**:
+- **Added dust motes floating in skylight beam**:
+  - 200 particles slowly drifting upward in the gallery
+  - Creates ethereal, liminal atmosphere
+  - Particles contained within skylight cylinder area
+
 **Blockers**: None
 
 **Next session**:
-- Add more camera positions to capture all wing exhibits
 - Consider adding interactive elements (click to zoom)
 - Add ambient sound/music
 - Investigate loading GLSL shader days as static images
