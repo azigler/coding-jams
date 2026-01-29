@@ -47,6 +47,8 @@ const TIPS: Tip[] = [
   { id: 'discovery', text: 'Click the progress badge to see which exhibits you\'ve visited' },
   { id: 'fullscreen', text: 'Press F when walking around to toggle fullscreen mode' },
   { id: 'mute', text: 'Press M to quickly mute or unmute all sounds' },
+  { id: 'dblclick', text: 'Double-click anywhere on the floor to teleport there instantly' },
+  { id: 'credits', text: 'Press C to view the credits and about information' },
 ];
 
 // ============================================================================

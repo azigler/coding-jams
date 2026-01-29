@@ -907,6 +907,23 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', fullscreenHandler);
 
+  // Matrix mode Easter egg - press backtick for green tint
+  let matrixModeActive = false;
+  const matrixHandler = (event: KeyboardEvent) => {
+    if (event.code === 'Backquote') {
+      matrixModeActive = !matrixModeActive;
+      const canvas = scene.renderer.domElement;
+      if (matrixModeActive) {
+        canvas.style.filter = 'sepia(100%) hue-rotate(70deg) saturate(150%)';
+        showNotification('Matrix mode activated');
+      } else {
+        canvas.style.filter = '';
+        showNotification('Matrix mode deactivated');
+      }
+    }
+  };
+  document.addEventListener('keydown', matrixHandler);
+
   // Konami code Easter egg: up up down down left right left right b a
   const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
   let konamiIndex = 0;
