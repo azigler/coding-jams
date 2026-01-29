@@ -192,7 +192,7 @@ export function createGalleryZone(config: Partial<GalleryConfig> = {}): GalleryZ
  * Create dust motes floating in the skylight beam
  */
 function createDustParticles(cfg: GalleryConfig): THREE.Points {
-  const particleCount = 80; // Reduced from 200 for performance
+  const particleCount = 40; // Reduced from 200 → 80 → 40 for performance
   const positions = new Float32Array(particleCount * 3);
   const velocities = new Float32Array(particleCount * 3);
 
@@ -444,10 +444,7 @@ function createDoorways(group: THREE.Group, cfg: GalleryConfig): void {
     topBeam.rotation.y = angle;
     group.add(topBeam);
 
-    // Single warm light above doorway - simplified for performance
-    const doorLight = new THREE.PointLight(0xffddaa, 5, 15, 1.5);
-    doorLight.position.set(frameX, doorHeight - 0.3, frameZ);
-    group.add(doorLight);
+    // Door lights removed for performance - ambient lighting is sufficient
 
     // Add signage above doorway
     if (i > 0) { // Skip entrance (i=0)

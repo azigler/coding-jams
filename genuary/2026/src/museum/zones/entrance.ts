@@ -248,9 +248,9 @@ export function createEntranceZone(config: Partial<EntranceConfig> = {}): Entran
   entryWall.position.set(0, cfg.hallHeight / 2, 1);
   group.add(entryWall);
 
-  // Wall sconces with point lights
+  // Wall sconces with point lights - reduced for performance
   const sconceLights: THREE.PointLight[] = [];
-  const numSconces = Math.floor(cfg.hallLength / 5);
+  const numSconces = 2; // Reduced from Math.floor(cfg.hallLength / 5) = 4
 
   for (let i = 0; i < numSconces; i++) {
     const z = -2 - i * 5;
