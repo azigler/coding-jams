@@ -832,17 +832,24 @@ All three issues addressed in this session.
 - Tooltip follows mouse cursor
 - Auto-hides when zooming or moving away
 
-**Full Feature List** (38 features):
+**Stats Tracker** (`d31f7b0`):
+- Tracks total time, visits, exhibits viewed, distance walked
+- Persists to localStorage across sessions
+- Logs stats on session start
+
+**Full Feature List** (39 features):
 1-35. (previous features)
 36. **NEW: Discovery Chime**
 37. **NEW: Contextual Tips System**
 38. **NEW: Hover Tooltip**
+39. **NEW: Usage Statistics Tracker**
 
 **Commits**:
 - `24a8f93` - feat(museum): add discovery chime for new exhibits
 - `f882dab` - feat(museum): add contextual tips system for feature discovery
 - `7762bbc` - feat(museum): mark favorite tip as used when favoriting
 - `b07df16` - feat(museum): add hover tooltip showing exhibit info
+- `d31f7b0` - feat(museum): add usage statistics tracker
 
 **Next session**:
 - VR/WebXR integration
