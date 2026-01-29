@@ -49,6 +49,7 @@ import {
 import {
   createDiscoveryTracker,
   markDayDiscovered,
+  refreshDiscoveryBadge,
   disposeDiscoveryTracker,
   type DiscoveryTracker,
 } from './discovery';
@@ -436,21 +437,27 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     setQuality(scene, settings.settings.qualityLevel);
   }
 
+  // Create favorites system (before discovery, so we can wire them up)
+  const favorites = createFavoritesSystem();
+
   // Create discovery tracker
   const discovery = createDiscoveryTracker(container);
+
+  // Wire up discovery to access favorites
+  discovery.getFavoritesCount = () => getFavorites(favorites).length;
+  discovery.isFavorite = (dayNumber: number) => isFavorite(favorites, dayNumber);
 
   // Wire up interaction to track discoveries
   interaction.onExhibitViewed = (dayNumber: number) => {
     markDayDiscovered(discovery, dayNumber);
   };
 
-  // Create favorites system
-  const favorites = createFavoritesSystem();
-
   // Wire up interaction to toggle favorites
   interaction.onFavoriteToggle = (dayNumber: number) => {
     const nowFavorite = toggleFavorite(favorites, dayNumber);
     showNotification(nowFavorite ? `Day ${dayNumber} added to favorites` : `Day ${dayNumber} removed from favorites`);
+    // Update discovery badge to show new favorites count
+    refreshDiscoveryBadge(discovery);
   };
 
   // Wire up interaction to check favorite status

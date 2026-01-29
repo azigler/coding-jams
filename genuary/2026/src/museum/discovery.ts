@@ -13,6 +13,8 @@ export interface DiscoveryTracker {
   badge: HTMLElement;
   viewedDays: Set<number>;
   totalDays: number;
+  getFavoritesCount: (() => number) | null;
+  isFavorite: ((dayNumber: number) => boolean) | null;
   cleanup: () => void;
 }
 
@@ -60,6 +62,8 @@ export function createDiscoveryTracker(container: HTMLElement): DiscoveryTracker
     badge,
     viewedDays,
     totalDays: TOTAL_DAYS,
+    getFavoritesCount: null,
+    isFavorite: null,
     cleanup: () => badge.remove(),
   };
 
@@ -91,6 +95,7 @@ export function createDiscoveryTracker(container: HTMLElement): DiscoveryTracker
 function updateDiscoveryBadge(tracker: DiscoveryTracker): void {
   const count = tracker.viewedDays.size;
   const percent = Math.round((count / tracker.totalDays) * 100);
+  const favCount = tracker.getFavoritesCount?.() ?? 0;
 
   // Choose icon based on progress
   let icon = '🔍';
@@ -99,7 +104,9 @@ function updateDiscoveryBadge(tracker: DiscoveryTracker): void {
   else if (percent >= 50) icon = '🎨';
   else if (percent >= 25) icon = '👁️';
 
-  tracker.badge.innerHTML = `${icon} ${count}/${tracker.totalDays}`;
+  // Show favorites count if any
+  const favText = favCount > 0 ? ` | ❤️ ${favCount}` : '';
+  tracker.badge.innerHTML = `${icon} ${count}/${tracker.totalDays}${favText}`;
 }
 
 /**
@@ -132,14 +139,19 @@ function showDiscoveryDetails(tracker: DiscoveryTracker): void {
 
   const count = tracker.viewedDays.size;
   const percent = Math.round((count / tracker.totalDays) * 100);
+  const favCount = tracker.getFavoritesCount?.() ?? 0;
 
   // Create day grid
   let daysHtml = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 10px;">';
   for (let day = 1; day <= tracker.totalDays; day++) {
     const viewed = tracker.viewedDays.has(day);
-    const style = viewed
-      ? 'background: rgba(74, 158, 255, 0.5); color: white;'
-      : 'background: rgba(60, 60, 70, 0.5); color: #666;';
+    const favorited = tracker.isFavorite?.(day) ?? false;
+    let style = 'background: rgba(60, 60, 70, 0.5); color: #666;';
+    if (favorited) {
+      style = 'background: rgba(220, 50, 90, 0.6); color: white; border: 1px solid rgba(255, 100, 150, 0.5);';
+    } else if (viewed) {
+      style = 'background: rgba(74, 158, 255, 0.5); color: white;';
+    }
     daysHtml += `<div style="
       width: 24px;
       height: 24px;
@@ -153,9 +165,23 @@ function showDiscoveryDetails(tracker: DiscoveryTracker): void {
   }
   daysHtml += '</div>';
 
+  // Legend
+  const legendHtml = `
+    <div style="display: flex; gap: 12px; margin-top: 10px; font-size: 10px;">
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <div style="width: 12px; height: 12px; background: rgba(74, 158, 255, 0.5); border-radius: 2px;"></div>
+        <span>Viewed</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <div style="width: 12px; height: 12px; background: rgba(220, 50, 90, 0.6); border-radius: 2px;"></div>
+        <span>Favorite</span>
+      </div>
+    </div>
+  `;
+
   popup.innerHTML = `
     <div style="font-weight: bold; color: white; margin-bottom: 8px;">
-      Discovery Progress
+      Museum Progress
     </div>
     <div style="margin-bottom: 8px;">
       <div style="
@@ -172,10 +198,12 @@ function showDiscoveryDetails(tracker: DiscoveryTracker): void {
         "></div>
       </div>
     </div>
-    <div style="font-size: 11px; color: #888;">
-      ${count} of ${tracker.totalDays} exhibits viewed (${percent}%)
+    <div style="font-size: 11px; color: #888; display: flex; justify-content: space-between;">
+      <span>Viewed: ${count}/${tracker.totalDays} (${percent}%)</span>
+      ${favCount > 0 ? `<span>❤️ ${favCount}</span>` : ''}
     </div>
     ${daysHtml}
+    ${legendHtml}
   `;
 
   tracker.container.appendChild(popup);
@@ -193,6 +221,13 @@ function showDiscoveryDetails(tracker: DiscoveryTracker): void {
 // ============================================================================
 // Discovery Tracking
 // ============================================================================
+
+/**
+ * Refresh the badge display (call when favorites change)
+ */
+export function refreshDiscoveryBadge(tracker: DiscoveryTracker): void {
+  updateDiscoveryBadge(tracker);
+}
 
 /**
  * Mark a day as discovered
