@@ -454,6 +454,21 @@ import {
   disposeLabelsSystem,
   type LabelsSystem,
 } from './labels';
+import {
+  createTrailSystem,
+  recordTrailPosition,
+  toggleTrail,
+  updateTrail,
+  disposeTrailSystem,
+  type TrailSystem,
+} from './trail';
+import {
+  createAudioGuideSystem,
+  speakNarration,
+  stopNarration,
+  disposeAudioGuideSystem,
+  type AudioGuideSystem,
+} from './audioguide';
 
 // ============================================================================
 // Types
@@ -528,6 +543,8 @@ export interface MuseumContext {
   floorPlan: FloorPlanSystem;
   nightMode: NightModeSystem;
   exhibitLabels: LabelsSystem;
+  visitorTrail: TrailSystem;
+  audioGuide: AudioGuideSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1605,6 +1622,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   const exhibitLabels = createLabelsSystem(container);
   registerExhibitsForLabels(exhibitLabels, interaction.exhibitMeshes);
 
+  // Create visitor trail system (Shift+T to toggle)
+  const visitorTrail = createTrailSystem(scene.scene);
+
+  // Create audio guide system (Shift+A to toggle)
+  const audioGuide = createAudioGuideSystem(container);
+
   // Wire up floor plan navigation
   floorPlan.onNavigate = (dayNumber: number) => {
     const mesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
@@ -1769,6 +1792,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     // Show related exhibits after a short delay
     setTimeout(() => showRelated(related, dayNumber), 1500);
 
+    // Start audio guide narration after a brief pause
+    setTimeout(() => speakNarration(audioGuide, dayNumber), 2000);
+
     // Activate spotlight on the exhibit
     const exhibitMesh = interaction.exhibitMeshes.find(m => m.userData.dayNumber === dayNumber);
     if (exhibitMesh) {
@@ -1784,6 +1810,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     deactivateSpotlight(spotlight);
     recordHistoryExit(history);
     hideRelated(related);
+    stopNarration(audioGuide);
     endViewing(exhibitTimer);
     hideAnnotations(annotations);
     closeStyleGuide(artStyles);
@@ -2142,6 +2169,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', labelsHandler);
 
+  // Visitor trail with Shift+V (View trail)
+  const trailHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyV' && event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      toggleTrail(visitorTrail);
+      showNotification(visitorTrail.isVisible ? 'Trail visible' : 'Trail hidden');
+    }
+  };
+  document.addEventListener('keydown', trailHandler);
+
   // Auto-walk mode with B key (Browse/wander)
   const autoWalkHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
@@ -2358,6 +2395,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     floorPlan,
     nightMode,
     exhibitLabels,
+    visitorTrail,
+    audioGuide,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2449,6 +2488,10 @@ export function startMuseum(): void {
 
     // Track movement distance for stats
     recordMovement(context.stats, pos.x, pos.z);
+
+    // Record trail position
+    recordTrailPosition(context.visitorTrail, pos);
+    updateTrail(context.visitorTrail);
 
     // Update minimap
     updateMinimap(context.minimap, context.scene.camera);
@@ -2618,6 +2661,8 @@ export function disposeMuseum(): void {
   disposeFloorPlanSystem(context.floorPlan);
   disposeNightModeSystem(context.nightMode);
   disposeLabelsSystem(context.exhibitLabels);
+  disposeTrailSystem(context.visitorTrail);
+  disposeAudioGuideSystem(context.audioGuide);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
