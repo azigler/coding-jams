@@ -147,6 +147,12 @@ import {
   disposeBreadcrumbTrail,
   type BreadcrumbTrail,
 } from './breadcrumbs';
+import {
+  createParticleSystem,
+  updateParticles,
+  disposeParticleSystem,
+  type ParticleSystem,
+} from './particles';
 
 // ============================================================================
 // Types
@@ -172,6 +178,7 @@ export interface MuseumContext {
   exhibitInfo: ExhibitInfoPanel;
   photoGallery: PhotoGallery;
   breadcrumbs: BreadcrumbTrail;
+  particles: ParticleSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -896,6 +903,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create breadcrumb trail
   const breadcrumbs = createBreadcrumbTrail(container);
 
+  // Create ambient particles
+  const particles = createParticleSystem(scene.scene);
+
   // Wire up breadcrumb navigation to zoom to exhibits
   breadcrumbs.onNavigate = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1202,6 +1212,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     exhibitInfo,
     photoGallery,
     breadcrumbs,
+    particles,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1267,6 +1278,9 @@ export function startMuseum(): void {
 
     // Update scene (animations, etc.)
     updateScene(context.scene, deltaTime);
+
+    // Update ambient particles
+    updateParticles(context.particles, deltaTime);
 
     // Update artwork visibility (animate only visible exhibits)
     updateArtworkVisibility(context.scene.camera, context.interaction.exhibitMeshes);
@@ -1364,6 +1378,7 @@ export function disposeMuseum(): void {
   disposeExhibitInfoPanel(context.exhibitInfo);
   disposePhotoGallery(context.photoGallery);
   disposeBreadcrumbTrail(context.breadcrumbs);
+  disposeParticleSystem(context.particles);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
