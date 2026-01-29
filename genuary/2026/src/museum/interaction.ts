@@ -299,7 +299,8 @@ function zoomToExhibit(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumb
   console.log(`Zooming to Day ${dayNumber}`);
   playZoomInSound();
 
-  // Show zoom indicator
+  // Show vignette and info panel
+  showVignette();
   showZoomIndicator(dayNumber);
 }
 
@@ -415,11 +416,56 @@ function showZoomIndicator(dayNumber: number): void {
 }
 
 /**
- * Hide zoom indicator
+ * Hide zoom indicator and vignette
  */
 function hideZoomIndicator(): void {
   const existing = document.getElementById('zoom-indicator');
   if (existing) existing.remove();
+  const vignette = document.getElementById('zoom-vignette');
+  if (vignette) vignette.remove();
+}
+
+/**
+ * Show vignette overlay for focus
+ */
+function showVignette(): void {
+  hideVignette();
+  const vignette = document.createElement('div');
+  vignette.id = 'zoom-vignette';
+  vignette.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 30%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 150;
+    animation: vignette-fade-in 0.3s ease-out;
+  `;
+
+  // Add keyframe animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes vignette-fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(vignette);
+}
+
+/**
+ * Hide vignette overlay
+ */
+function hideVignette(): void {
+  const vignette = document.getElementById('zoom-vignette');
+  if (vignette) vignette.remove();
 }
 
 // ============================================================================
