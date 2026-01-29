@@ -343,11 +343,11 @@ Each session entry should include:
 - `76daeb2` - feat: show prompt details when zooming exhibits
 - `1c96918` - feat: add link to view full interactive day from zoom
 
-**Current Feature Count**: 13 features!
+**Current Feature Count**: 16 features!
 - Live Artwork (27+ days)
 - Dust Particles
 - Teleport Navigation (1-5)
-- Help Overlay
+- Help Overlay (toggle with H key)
 - Glowing Orb Animation
 - Welcome Sign
 - Ambient Audio
@@ -357,10 +357,20 @@ Each session entry should include:
 - Hover Cursor
 - Info Panel with Prompt Details
 - View Day Link
+- Zoom Sound Effects
+- Vignette Focus Effect
+- Help Toggle (H key)
+
+**Additional commits this session**:
+- `1c96918` - feat: add link to view full interactive day from zoom
+- `f92acfd` - feat: add zoom sound effects for interaction feedback
+- `dc98232` - feat: add vignette overlay when viewing exhibits
+- `8f5adcc` - feat: add H key to toggle help overlay
 
 **Next session**:
 - VR/WebXR integration
 - Performance profiling and optimization
+- Mobile touch controls
 - Consider minimap for navigation
 
 ---
