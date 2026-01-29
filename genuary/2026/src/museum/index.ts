@@ -415,6 +415,18 @@ import {
   disposeAnnotationsSystem,
   type AnnotationsSystem,
 } from './annotations';
+import {
+  createDailyQuoteSystem,
+  disposeDailyQuoteSystem,
+  type DailyQuoteSystem,
+} from './dailyquote';
+import {
+  createReactionsSystem,
+  showReactionsPanel,
+  hideReactionsPanel,
+  disposeReactionsSystem,
+  type ReactionsSystem,
+} from './reactions';
 
 // ============================================================================
 // Types
@@ -483,6 +495,8 @@ export interface MuseumContext {
   timeCapsule: TimeCapsuleSystem;
   artStyles: ArtStylesSystem;
   annotations: AnnotationsSystem;
+  dailyQuote: DailyQuoteSystem;
+  reactions: ReactionsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -1541,6 +1555,12 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create annotations system (Shift+N to add annotations)
   const annotations = createAnnotationsSystem(container);
 
+  // Create daily quote system (inspirational quotes)
+  const dailyQuote = createDailyQuoteSystem(container);
+
+  // Create reactions system (R key when viewing)
+  const reactions = createReactionsSystem(container);
+
   // Wire up bookmark navigation
   bookmarks.onNavigate = (bookmark: Bookmark) => {
     scene.camera.position.set(bookmark.position.x, bookmark.position.y, bookmark.position.z);
@@ -1690,6 +1710,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     endViewing(exhibitTimer);
     hideAnnotations(annotations);
     closeStyleGuide(artStyles);
+    hideReactionsPanel(reactions);
   };
 
   // Override onExhibitViewed to also check speed run and track session
@@ -1980,6 +2001,21 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', annotationsHandler);
 
+  // Reactions with Shift+R (when viewing exhibit)
+  const reactionsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyR' && event.shiftKey && !event.ctrlKey) {
+      if (interaction.currentDayNumber > 0) {
+        event.preventDefault();
+        if (reactions.currentDay === interaction.currentDayNumber) {
+          hideReactionsPanel(reactions);
+        } else {
+          showReactionsPanel(reactions, interaction.currentDayNumber);
+        }
+      }
+    }
+  };
+  document.addEventListener('keydown', reactionsHandler);
+
   // Auto-walk mode with B key (Browse/wander)
   const autoWalkHandler = (event: KeyboardEvent) => {
     if (event.code === 'KeyB' && !event.shiftKey && !interaction.isZoomed) {
@@ -2190,6 +2226,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     timeCapsule,
     artStyles,
     annotations,
+    dailyQuote,
+    reactions,
     container,
     isRunning: false,
     lastTime: 0,
@@ -2436,6 +2474,8 @@ export function disposeMuseum(): void {
   disposeTimeCapsuleSystem(context.timeCapsule);
   disposeArtStylesSystem(context.artStyles);
   disposeAnnotationsSystem(context.annotations);
+  disposeDailyQuoteSystem(context.dailyQuote);
+  disposeReactionsSystem(context.reactions);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
