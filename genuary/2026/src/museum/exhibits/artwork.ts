@@ -99,12 +99,13 @@ export async function createLiveArtwork(dayNumber: number): Promise<LiveArtwork 
     }
 
     // Create a hidden container for the p5 canvas
+    // Using 256x256 for better performance (reduced from 400x400)
     const container = document.createElement('div');
     container.style.position = 'absolute';
     container.style.left = '-9999px';
     container.style.top = '-9999px';
-    container.style.width = '400px';
-    container.style.height = '400px';
+    container.style.width = '256px';
+    container.style.height = '256px';
     container.style.overflow = 'hidden';
     document.body.appendChild(container);
 
@@ -139,9 +140,11 @@ export async function createLiveArtwork(dayNumber: number): Promise<LiveArtwork 
       (p as unknown as Record<string, unknown>)._controls = { ...defaultControls };
 
       p.setup = () => {
-        // Create canvas at exhibit size
-        const c = p.createCanvas(400, 400);
+        // Create canvas at exhibit size (256x256 for performance)
+        const c = p.createCanvas(256, 256);
         p.pixelDensity(1);
+        // Limit frame rate to 20fps for better performance
+        p.frameRate(20);
 
         // Get the actual canvas element
         p5Canvas = (c as unknown as { elt: HTMLCanvasElement }).elt;
