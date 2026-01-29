@@ -1,16 +1,18 @@
-# Genuary Curator Agent Timer (Year-Agnostic)
+# Genuary Curator Agent Timer
 #
-# Nudges the curator agent every 30 minutes to keep it going.
-# Simple "keep going" message if already running.
+# Runs every 30 mins from 7pm-7am PT (03:00-15:00 UTC) through Jan 30th
+# Final run at 7am PT (15:00 UTC) on January 31st, then stops.
 #
 
 [Unit]
-Description=Nudge Genuary Curator Agent every 30 min (January only)
+Description=Genuary Curator Agent (nights only through Jan 31)
 Documentation=https://github.com/azigler/coding-jams
 
 [Timer]
-# Every 30 minutes, January only
-OnCalendar=*-01-* *:20,50:00
+# Every 30 min from 7pm-6:30am PT (03:00-14:50 UTC) on Jan 30-31
+OnCalendar=*-01-30..31 03..14:20,50:00
+# Final run at 7am PT (15:00 UTC) on Jan 31st
+OnCalendar=*-01-31 15:00:00
 AccuracySec=1min
 Persistent=false
 
