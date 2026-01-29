@@ -470,6 +470,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showNotification(nowFavorite ? `Day ${dayNumber} added to favorites` : `Day ${dayNumber} removed from favorites`);
     // Update discovery badge to show new favorites count
     refreshDiscoveryBadge(discovery);
+    // Mark tip as used
+    markTipShown(tips, 'favorite');
   };
 
   // Wire up interaction to check favorite status
