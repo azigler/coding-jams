@@ -851,7 +851,16 @@ All three issues addressed in this session.
 - 2 secret achievements to discover
 - Animated unlock notifications
 
-**Full Feature List** (42 features):
+**Stats Popup** (`a39eb7d`):
+- Press I to view detailed statistics popup
+- Shows visits, time, exhibits, distance, favorites, screenshots
+
+**Achievements Viewer** (`a21bdd8`):
+- Scrollable popup showing all 16 achievements
+- Progress bar and unlocked count
+- Secret achievements hidden until unlocked
+
+**Full Feature List** (44 features):
 1-35. (previous features)
 36. **NEW: Discovery Chime**
 37. **NEW: Contextual Tips System**
@@ -860,6 +869,8 @@ All three issues addressed in this session.
 40. **NEW: Share View (S key)**
 41. **NEW: Day Selector (G key)**
 42. **NEW: Achievements System**
+43. **NEW: Stats Popup (I key)**
+44. **NEW: Achievements Viewer**
 
 **Commits**:
 - `24a8f93` - feat(museum): add discovery chime for new exhibits
@@ -870,6 +881,8 @@ All three issues addressed in this session.
 - `a11612c` - feat(museum): add shareable view links with S key
 - `356b718` - feat(museum): add quick day selector with G key
 - `1533e28` - feat(museum): add achievements system with badges
+- `a39eb7d` - feat(museum): add stats popup with I key
+- `a21bdd8` - feat(museum): add achievements viewer popup
 
 **Next session**:
 - VR/WebXR integration
