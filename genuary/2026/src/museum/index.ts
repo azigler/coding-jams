@@ -132,7 +132,8 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>WASD</b> Move</div>
         <div><b>Drag</b> Look</div>
         <div><b>1-5</b> Teleport</div>
-        <div><b>Click</b> Zoom Exhibit</div>
+        <div><b>Click</b> Zoom</div>
+        <div><b>[ ]</b> Prev/Next</div>
         <div><b>H</b> Help</div>
       </div>
     </div>

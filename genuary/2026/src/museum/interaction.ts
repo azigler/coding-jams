@@ -97,6 +97,9 @@ export interface InteractionSystem {
   // Hover state for cursor
   hoveredExhibit: THREE.Mesh | null;
 
+  // Current exhibit index for keyboard navigation
+  currentExhibitIndex: number;
+
   // Cleanup
   cleanup: () => void;
 }
@@ -136,6 +139,7 @@ export function createInteraction(
     zoomProgress: 0,
     animating: false,
     hoveredExhibit: null,
+    currentExhibitIndex: -1,
     cleanup: () => {},
   };
 
@@ -224,9 +228,75 @@ function handleClick(interaction: InteractionSystem, event: MouseEvent): void {
  * Handle keyboard events
  */
 function handleKeyDown(interaction: InteractionSystem, event: KeyboardEvent): void {
-  if (interaction.isZoomed && event.code === 'Escape') {
+  if (!interaction.isZoomed) return;
+
+  if (event.code === 'Escape') {
     exitZoom(interaction);
+    return;
   }
+
+  // Navigate between exhibits with [ and ] or arrow keys
+  if (event.code === 'BracketLeft' || event.code === 'ArrowLeft') {
+    navigateExhibit(interaction, -1);
+    event.preventDefault();
+  } else if (event.code === 'BracketRight' || event.code === 'ArrowRight') {
+    navigateExhibit(interaction, 1);
+    event.preventDefault();
+  }
+}
+
+/**
+ * Navigate to previous/next exhibit while zoomed
+ */
+function navigateExhibit(interaction: InteractionSystem, direction: number): void {
+  if (!interaction.isZoomed || interaction.exhibitMeshes.length === 0) return;
+
+  // Calculate new index
+  let newIndex = interaction.currentExhibitIndex + direction;
+
+  // Wrap around
+  if (newIndex < 0) {
+    newIndex = interaction.exhibitMeshes.length - 1;
+  } else if (newIndex >= interaction.exhibitMeshes.length) {
+    newIndex = 0;
+  }
+
+  // Get the new exhibit
+  const newMesh = interaction.exhibitMeshes[newIndex];
+  const dayNumber = newMesh.userData.dayNumber;
+
+  if (dayNumber !== undefined) {
+    // Update current index
+    interaction.currentExhibitIndex = newIndex;
+
+    // Zoom to new exhibit (reuses zoom logic)
+    zoomToExhibitMesh(interaction, newMesh, dayNumber);
+
+    // Play navigation sound
+    playNavigateSound();
+  }
+}
+
+/**
+ * Play a subtle navigation sound
+ */
+function playNavigateSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(400, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.08);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.05, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.1);
 }
 
 /**
@@ -267,12 +337,25 @@ function handleMouseMove(interaction: InteractionSystem, event: MouseEvent): voi
 // ============================================================================
 
 /**
- * Zoom to an exhibit
+ * Zoom to an exhibit (initial zoom from click)
  */
 function zoomToExhibit(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumber: number): void {
-  // Store original camera state
+  // Store original camera state (only on initial zoom, not navigation)
   interaction.originalPosition.copy(interaction.camera.position);
   interaction.originalQuaternion.copy(interaction.camera.quaternion);
+
+  // Find and store the exhibit index
+  interaction.currentExhibitIndex = interaction.exhibitMeshes.indexOf(mesh);
+
+  // Use shared zoom logic
+  zoomToExhibitMesh(interaction, mesh, dayNumber);
+  playZoomInSound();
+}
+
+/**
+ * Zoom to exhibit mesh (shared logic for click and keyboard navigation)
+ */
+function zoomToExhibitMesh(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumber: number): void {
 
   // Get the world position and normal of the exhibit
   const worldPos = new THREE.Vector3();
@@ -297,7 +380,6 @@ function zoomToExhibit(interaction: InteractionSystem, mesh: THREE.Mesh, dayNumb
   interaction.zoomProgress = 0;
 
   console.log(`Zooming to Day ${dayNumber}`);
-  playZoomInSound();
 
   // Show vignette and info panel
   showVignette();
@@ -409,7 +491,7 @@ function showZoomIndicator(dayNumber: number): void {
         color: #666;
         margin-top: 8px;
         text-align: center;
-      ">Click elsewhere or ESC to exit</div>
+      ">[ ] or ←→ to browse • ESC to exit</div>
     </div>
   `;
   document.body.appendChild(indicator);
