@@ -869,6 +869,18 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showNotification('Loaded shared view');
   }
 
+  // Check for auto-tour URL parameter
+  const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const autoTour = urlParams.get('tour') === '1' || urlParams.get('autoTour') === 'true';
+  if (autoTour) {
+    // Start tour after a brief delay to allow scene to load
+    setTimeout(() => {
+      startTour(tour);
+      recordTourStarted(stats);
+      showNotification('Tour starting...');
+    }, 2000);
+  }
+
   context = {
     scene,
     navigation,
