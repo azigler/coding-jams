@@ -6,7 +6,7 @@
  */
 
 import * as THREE from 'three';
-import { playFootstep } from './audio';
+import { playFootstep, playTeleport } from './audio';
 
 // ============================================================================
 // Types
@@ -211,6 +211,7 @@ function handleKeyDown(navigation: Navigation, event: KeyboardEvent): void {
     navigation.camera.lookAt(lookAt[0], lookAt[1], lookAt[2]);
     navigation.euler.setFromQuaternion(navigation.camera.quaternion);
     navigation.velocity.set(0, 0, 0);
+    playTeleport();
     console.log(`Teleported to ${name}`);
     return;
   }

@@ -164,6 +164,59 @@ export function playFootstep(): void {
   osc.stop(ctx.currentTime + 0.1);
 }
 
+/**
+ * Play a whoosh/teleport sound
+ */
+export function playTeleport(): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+
+  // Create a sweeping "whoosh" effect
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(200, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
+  osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.25);
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.1);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+
+  // Add some filtered noise for texture
+  const noiseLength = 0.3;
+  const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * noiseLength, ctx.sampleRate);
+  const noiseData = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < noiseData.length; i++) {
+    noiseData[i] = Math.random() * 2 - 1;
+  }
+
+  const noiseSource = ctx.createBufferSource();
+  noiseSource.buffer = noiseBuffer;
+
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.setValueAtTime(400, ctx.currentTime);
+  noiseFilter.frequency.exponentialRampToValueAtTime(2000, ctx.currentTime + 0.15);
+
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.03, ctx.currentTime);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+  osc.connect(gain);
+  gain.connect(audioSystem.masterGain);
+
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(audioSystem.masterGain);
+
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.3);
+  noiseSource.start(ctx.currentTime);
+  noiseSource.stop(ctx.currentTime + noiseLength);
+}
+
 // ============================================================================
 // Helpers
 // ============================================================================
