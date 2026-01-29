@@ -107,6 +107,11 @@ import {
   disposeAchievementsSystem,
   type AchievementsSystem,
 } from './achievements';
+import {
+  createCreditsSystem,
+  disposeCreditsSystem,
+  type CreditsSystem,
+} from './credits';
 
 // ============================================================================
 // Types
@@ -126,6 +131,7 @@ export interface MuseumContext {
   stats: StatsTracker;
   daySelector: DaySelector;
   achievements: AchievementsSystem;
+  credits: CreditsSystem;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -568,6 +574,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>I</b> Stats</div>
         <div><b>A</b> Awards</div>
         <div><b>M</b> Mute</div>
+        <div><b>C</b> Credits</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -782,6 +789,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showAchievementNotification(achievement);
   };
 
+  // Create credits system (C key to open)
+  const credits = createCreditsSystem(container);
+
   // Override onExhibitViewed to also check speed run (now that achievements exists)
   const originalOnExhibitViewed = interaction.onExhibitViewed;
   interaction.onExhibitViewed = (dayNumber: number) => {
@@ -951,6 +961,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     stats,
     daySelector,
     achievements,
+    credits,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1100,6 +1111,7 @@ export function disposeMuseum(): void {
   disposeStatsTracker(context.stats);
   disposeDaySelector(context.daySelector);
   disposeAchievementsSystem(context.achievements);
+  disposeCreditsSystem(context.credits);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
