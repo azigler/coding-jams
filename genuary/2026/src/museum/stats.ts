@@ -188,6 +188,108 @@ function formatTime(seconds: number): string {
   }
 }
 
+/**
+ * Show stats popup
+ */
+export function showStatsPopup(tracker: StatsTracker, container: HTMLElement): void {
+  // Remove existing popup
+  const existing = document.getElementById('stats-popup');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  // Update time spent before showing
+  const now = performance.now();
+  const sessionTime = (now - tracker.sessionStart) / 1000;
+  const totalTime = tracker.stats.totalTimeSpent + sessionTime;
+
+  const popup = document.createElement('div');
+  popup.id = 'stats-popup';
+  popup.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(20, 20, 30, 0.95);
+    border: 1px solid rgba(100, 150, 255, 0.3);
+    border-radius: 12px;
+    padding: 25px;
+    font-family: system-ui, sans-serif;
+    color: white;
+    z-index: 300;
+    min-width: 280px;
+    animation: stats-fade-in 0.2s ease-out;
+  `;
+
+  const stats = tracker.stats;
+
+  popup.innerHTML = `
+    <div style="font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center;">
+      Museum Statistics
+    </div>
+    <div style="display: grid; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <span style="color: #888;">Total Visits</span>
+        <span style="font-weight: bold;">${stats.sessionCount}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <span style="color: #888;">Time in Museum</span>
+        <span style="font-weight: bold;">${formatTime(totalTime)}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <span style="color: #888;">Exhibits Viewed</span>
+        <span style="font-weight: bold;">${stats.exhibitsViewed}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <span style="color: #888;">Distance Walked</span>
+        <span style="font-weight: bold;">${Math.round(stats.distanceWalked)}m</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <span style="color: #888;">Favorites Added</span>
+        <span style="font-weight: bold;">${stats.favoritesAdded}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <span style="color: #888;">Screenshots</span>
+        <span style="font-weight: bold;">${stats.screenshotsTaken}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span style="color: #888;">Tours Taken</span>
+        <span style="font-weight: bold;">${stats.toursTaken}</span>
+      </div>
+    </div>
+    <div style="color: #666; font-size: 11px; text-align: center; margin-top: 15px;">
+      Press I or click outside to close
+    </div>
+    <style>
+      @keyframes stats-fade-in {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      }
+    </style>
+  `;
+
+  container.appendChild(popup);
+
+  // Close on outside click
+  const closeHandler = (e: MouseEvent) => {
+    if (!popup.contains(e.target as Node)) {
+      popup.remove();
+      document.removeEventListener('click', closeHandler);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closeHandler), 0);
+
+  // Close on I key
+  const keyHandler = (e: KeyboardEvent) => {
+    if (e.code === 'KeyI' || e.code === 'Escape') {
+      popup.remove();
+      document.removeEventListener('keydown', keyHandler);
+    }
+  };
+  document.addEventListener('keydown', keyHandler);
+}
+
 // ============================================================================
 // Persistence
 // ============================================================================

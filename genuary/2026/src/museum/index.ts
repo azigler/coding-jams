@@ -74,6 +74,7 @@ import {
   recordFavoriteAdded,
   recordScreenshot,
   recordMovement,
+  showStatsPopup,
   disposeStatsTracker,
   type StatsTracker,
 } from './stats';
@@ -427,6 +428,7 @@ function createHelpOverlay(container: HTMLElement, permanent: boolean = false): 
         <div><b>J</b> Jump Fav</div>
         <div><b>P</b> Photo</div>
         <div><b>S</b> Share</div>
+        <div><b>I</b> Stats</div>
         <div><b>H</b> Help</div>
       </div>
     </div>
@@ -683,6 +685,14 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     }
   };
   document.addEventListener('keydown', shareHandler);
+
+  // Stats with I key (I for Info)
+  const statsHandler = (event: KeyboardEvent) => {
+    if (event.code === 'KeyI' && !interaction.isZoomed) {
+      showStatsPopup(stats, container);
+    }
+  };
+  document.addEventListener('keydown', statsHandler);
 
   // Apply shared view if present in URL
   const sharedView = parseSharedView();
