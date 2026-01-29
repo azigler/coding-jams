@@ -17,6 +17,7 @@ import {
   setAudioMuted,
   isAudioMuted,
   playDiscoveryChime,
+  playAchievementUnlock,
   playCameraShutter,
   playZoomIn,
   playZoomOut,
@@ -799,6 +800,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Show notification when achievement unlocks
   achievements.onAchievementUnlocked = (achievement) => {
+    playAchievementUnlock();
     showAchievementNotification(achievement);
   };
 

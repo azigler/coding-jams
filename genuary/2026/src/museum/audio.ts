@@ -220,6 +220,59 @@ export function playDiscoveryChime(): void {
 }
 
 /**
+ * Play an achievement unlock sound
+ */
+export function playAchievementUnlock(): void {
+  if (!audioSystem?.context || !audioSystem.masterGain) return;
+
+  const ctx = audioSystem.context;
+  const now = ctx.currentTime;
+
+  // Triumphant ascending fanfare
+  const notes = [
+    { freq: 392.00, delay: 0, duration: 0.15 },     // G4
+    { freq: 493.88, delay: 0.12, duration: 0.15 },  // B4
+    { freq: 587.33, delay: 0.24, duration: 0.15 },  // D5
+    { freq: 783.99, delay: 0.36, duration: 0.4 },   // G5 (hold)
+  ];
+
+  notes.forEach(({ freq, delay, duration }) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    const gain = ctx.createGain();
+    const startTime = now + delay;
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.08, startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioSystem!.masterGain!);
+
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.1);
+  });
+
+  // Add a subtle shimmer effect
+  const shimmer = ctx.createOscillator();
+  shimmer.type = 'sine';
+  shimmer.frequency.setValueAtTime(1200, now + 0.4);
+  shimmer.frequency.exponentialRampToValueAtTime(2000, now + 0.7);
+
+  const shimmerGain = ctx.createGain();
+  shimmerGain.gain.setValueAtTime(0, now + 0.4);
+  shimmerGain.gain.linearRampToValueAtTime(0.03, now + 0.5);
+  shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+  shimmer.connect(shimmerGain);
+  shimmerGain.connect(audioSystem.masterGain);
+
+  shimmer.start(now + 0.4);
+  shimmer.stop(now + 0.9);
+}
+
+/**
  * Play a camera shutter sound (for screenshots)
  */
 export function playCameraShutter(): void {
