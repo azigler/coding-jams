@@ -34,6 +34,12 @@ import {
   isTouchDevice,
   type TouchControls,
 } from './touch';
+import {
+  createMinimap,
+  updateMinimap,
+  disposeMinimap,
+  type Minimap,
+} from './minimap';
 
 // ============================================================================
 // Types
@@ -45,6 +51,7 @@ export interface MuseumContext {
   interaction: InteractionSystem;
   tour: TourSystem;
   touch: TouchControls | null;
+  minimap: Minimap;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -308,6 +315,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
 
   // Create touch controls for mobile devices
   const touch = isTouchDevice() ? createTouchControls(container, navigation) : null;
+
+  // Create minimap
+  const minimap = createMinimap(container);
   updateLoadingProgress(80, 'Preparing gallery...');
 
   // Show help overlay and location indicator (skip on touch devices - they get their own help)
@@ -350,6 +360,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     interaction,
     tour,
     touch,
+    minimap,
     container,
     isRunning: false,
     lastTime: 0,
@@ -423,6 +434,9 @@ export function startMuseum(): void {
     const pos = context.scene.camera.position;
     updateLocationIndicator(pos.z, pos.x);
 
+    // Update minimap
+    updateMinimap(context.minimap, context.scene.camera);
+
     // Render
     context.scene.renderer.render(context.scene.scene, context.scene.camera);
 
@@ -457,6 +471,7 @@ export function disposeMuseum(): void {
   if (context.touch) {
     disposeTouchControls(context.touch);
   }
+  disposeMinimap(context.minimap);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
