@@ -6,6 +6,7 @@
  */
 
 import * as THREE from 'three';
+import { playFootstep } from './audio';
 
 // ============================================================================
 // Types
@@ -40,6 +41,9 @@ export interface Navigation {
 
   // Collision boundaries
   collisionBoxes: CollisionBox[];
+
+  // Footstep timing
+  footstepTimer: number;
 
   // Cleanup handlers
   cleanup: () => void;
@@ -143,6 +147,7 @@ export function createNavigation(
     euler: new THREE.Euler(0, 0, 0, 'YXZ'),
     velocity: new THREE.Vector3(),
     collisionBoxes: createCollisionBoundaries(),
+    footstepTimer: 0,
     cleanup: () => {},
   };
 
@@ -416,6 +421,19 @@ export function updateNavigation(navigation: Navigation, deltaTime: number): voi
 
   // Keep camera at fixed height (no jumping/crouching for now)
   navigation.camera.position.y = 1.6;
+
+  // Footstep sounds when moving
+  const speed = navigation.velocity.length();
+  if (speed > 0.5) {
+    navigation.footstepTimer += deltaTime * speed;
+    // Play footstep every ~0.5 meters of movement
+    if (navigation.footstepTimer > 0.5) {
+      playFootstep();
+      navigation.footstepTimer = 0;
+    }
+  } else {
+    navigation.footstepTimer = 0;
+  }
 }
 
 // ============================================================================
