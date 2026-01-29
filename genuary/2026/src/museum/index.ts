@@ -176,6 +176,11 @@ import {
   disposeAutoWalk,
   type AutoWalk,
 } from './autowalk';
+import {
+  createGuestbook,
+  disposeGuestbook,
+  type Guestbook,
+} from './guestbook';
 
 // ============================================================================
 // Types
@@ -205,6 +210,7 @@ export interface MuseumContext {
   spotlight: Spotlight;
   ratings: RatingsSystem;
   autoWalk: AutoWalk;
+  guestbook: Guestbook;
   container: HTMLElement;
   isRunning: boolean;
   lastTime: number;
@@ -952,6 +958,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     interaction.onExhibitViewed?.(dayNumber);
   };
 
+  // Create guestbook (L key to open)
+  const guestbook = createGuestbook(container);
+
   // Wire up breadcrumb navigation to zoom to exhibits
   breadcrumbs.onNavigate = (dayNumber: number) => {
     // Find the exhibit mesh for this day
@@ -1313,6 +1322,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     spotlight,
     ratings,
     autoWalk,
+    guestbook,
     container,
     isRunning: false,
     lastTime: 0,
@@ -1485,6 +1495,7 @@ export function disposeMuseum(): void {
   disposeSpotlight(context.spotlight);
   disposeRatingsSystem(context.ratings);
   disposeAutoWalk(context.autoWalk);
+  disposeGuestbook(context.guestbook);
   disposeTour(context.tour);
   disposeInteraction(context.interaction);
   disposeNavigation(context.navigation);
