@@ -531,4 +531,87 @@ Both issues addressed in this session.
 
 ---
 
+### 2026-01-29 — Second Performance Round & Unit Tests
+
+**Beads worked**: None (responding to human feedback)
+
+**Accomplished**:
+
+**Unit Tests** (`cc1dc1e`):
+- Created 96 unit tests across 4 test files:
+  - `tour.test.ts` - 27 tests for guided tour system
+  - `interaction.test.ts` - 25 tests for click-to-zoom
+  - `artwork.test.ts` - 22 tests for p5 lifecycle
+  - `placard.test.ts` - 22 tests for day info
+- Added vitest configuration
+- All tests pass
+
+**More Performance Fixes** (`b8b42ae`):
+
+Responding to continued human feedback about performance and wall clipping:
+
+- **Visibility-based p5 animation**:
+  - Artworks now only animate when visible to the camera
+  - Uses frustum culling + distance check (15m threshold)
+  - Checks visibility every 500ms to minimize overhead
+  - Previously visible exhibits resume animation, newly hidden ones pause
+
+- **Collision detection rewrite**:
+  - Changed from "blocked boxes" to "allowed zones" approach
+  - Added corridor zones for all 4 wings
+  - Gallery uses circular boundary for octagonal approximation
+  - South wing handled with rectangular approximation
+
+- **Renderer optimizations**:
+  - Disabled antialiasing for faster rendering
+  - Fixed pixel ratio at 1 (no HiDPI scaling)
+  - Disabled shadow maps
+
+**Human Feedback Addressed**:
+> "p5js should animate when visible to the screen"
+> "performance is better but could still be improved greatly"
+> "I clipped through walls a lot"
+
+All three issues addressed in this session.
+
+**Commits**:
+- `cc1dc1e` - test(museum): add comprehensive unit tests (96 tests)
+- `b8b42ae` - feat(museum): visibility-based animation and collision fix
+
+**Full Feature List** (26 features):
+1. Live Artwork (27+ days, visibility-animated)
+2. Dust Particles (optimized)
+3. Teleport Navigation (0-5, Home)
+4. Help Overlay (H toggle)
+5. Glowing Orb Animation
+6. Welcome Sign
+7. Ambient Audio
+8. Location Indicator
+9. Footstep Sounds
+10. Click-to-Zoom
+11. Hover Cursor (throttled)
+12. Info Panel with Prompt Details
+13. View Day Link
+14. Zoom Sound Effects
+15. Vignette Focus Effect
+16. Keyboard Exhibit Navigation ([ ])
+17. Progress Indicator (X of Y)
+18. Random Exhibit (R key)
+19. Exhibit Day Sorting
+20. Return Home (0/Home)
+21. Teleport Whoosh Sound
+22. Interactive help overlay
+23. Proximity-based orb glow
+24. Loading screen with progress bar
+25. Guided Tour (T key)
+26. **NEW: Visibility-based animation**
+
+**Next session**:
+- Await human feedback on latest performance improvements
+- VR/WebXR integration
+- Mobile touch controls
+- Consider minimap for navigation
+
+---
+
 *Future sessions will be logged below by the Curator Agent.*
