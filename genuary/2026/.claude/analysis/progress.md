@@ -827,15 +827,22 @@ All three issues addressed in this session.
 - Non-intrusive design with fade in/out
 - Tips marked as used when user performs action
 
-**Full Feature List** (37 features):
+**Hover Tooltip** (`b07df16`):
+- Shows day number and title when hovering over exhibits
+- Tooltip follows mouse cursor
+- Auto-hides when zooming or moving away
+
+**Full Feature List** (38 features):
 1-35. (previous features)
 36. **NEW: Discovery Chime**
 37. **NEW: Contextual Tips System**
+38. **NEW: Hover Tooltip**
 
 **Commits**:
 - `24a8f93` - feat(museum): add discovery chime for new exhibits
 - `f882dab` - feat(museum): add contextual tips system for feature discovery
 - `7762bbc` - feat(museum): mark favorite tip as used when favoriting
+- `b07df16` - feat(museum): add hover tooltip showing exhibit info
 
 **Next session**:
 - VR/WebXR integration
