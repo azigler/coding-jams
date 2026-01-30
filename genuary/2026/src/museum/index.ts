@@ -334,12 +334,13 @@ import {
   disposeFocusSystem,
   type FocusSystem,
 } from './focus';
-import {
-  createVisitorSystem,
-  recordDayView,
-  disposeVisitorSystem,
-  type VisitorSystem,
-} from './visitors';
+// REMOVED: Visitor counter (social proof gamification)
+// import {
+//   createVisitorSystem,
+//   recordDayView,
+//   disposeVisitorSystem,
+//   type VisitorSystem,
+// } from './visitors';
 import {
   createSoundMixerSystem,
   initMixerAudio,
@@ -478,11 +479,12 @@ import {
   disposePhotoFiltersSystem,
   type PhotoFiltersSystem,
 } from './photofilters';
-import {
-  createPresenceSystem,
-  disposePresenceSystem,
-  type PresenceSystem,
-} from './presence';
+// REMOVED: Virtual presence (social proof gamification)
+// import {
+//   createPresenceSystem,
+//   disposePresenceSystem,
+//   type PresenceSystem,
+// } from './presence';
 import {
   createVisitLogSystem,
   logExhibitView,
@@ -752,7 +754,7 @@ export interface MuseumContext {
   social: SocialSystem;
   bookmarks: BookmarksSystem;
   focus: FocusSystem;
-  visitors: VisitorSystem;
+  // REMOVED: visitors: VisitorSystem;
   soundMixer: SoundMixerSystem;
   quickMenu: QuickMenuSystem;
   related: RelatedSystem;
@@ -775,7 +777,7 @@ export interface MuseumContext {
   visitorTrail: TrailSystem;
   audioGuide: AudioGuideSystem;
   photoFilters: PhotoFiltersSystem;
-  virtualPresence: PresenceSystem;
+  // REMOVED: virtualPresence: PresenceSystem;
   visitLog: VisitLogSystem;
   randomWalk: RandomWalkSystem;
   shareCard: ShareCardSystem;
@@ -1721,8 +1723,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create focus mode system (Shift+F to toggle)
   const focus = createFocusSystem(container);
 
-  // Create visitor counter system (simulated visitors)
-  const visitors = createVisitorSystem(container);
+  // REMOVED: Visitor counter (social proof gamification)
+  // const visitors = createVisitorSystem(container);
 
   // Create sound mixer system (Shift+A to open)
   const soundMixer = createSoundMixerSystem(container);
@@ -1891,8 +1893,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   // Create photo filters system
   const photoFilters = createPhotoFiltersSystem(container);
 
-  // Create virtual presence system (shows simulated visitors)
-  const virtualPresence = createPresenceSystem(container);
+  // REMOVED: Virtual presence (social proof gamification)
+  // const virtualPresence = createPresenceSystem(container);
 
   // Create visit log system (L key to view session activity)
   const visitLog = createVisitLogSystem(container);
@@ -2470,8 +2472,8 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     // recordSpeedRunExhibit(speedrun, dayNumber);
     // REMOVED: Scavenger hunt tracking (gamification)
     // checkScavengerProgress(scavenger, dayNumber);
-    // Record simulated view
-    recordDayView(visitors, dayNumber);
+    // REMOVED: Record simulated view (gamification)
+    // recordDayView(visitors, dayNumber);
     recordHotSpotView(hotSpots, dayNumber);
 
     // Check for curator notes
@@ -3444,7 +3446,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     social,
     bookmarks,
     focus,
-    visitors,
+    // REMOVED: visitors,
     soundMixer,
     quickMenu,
     related,
@@ -3467,7 +3469,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     visitorTrail,
     audioGuide,
     photoFilters,
-    virtualPresence,
+    // REMOVED: virtualPresence,
     visitLog,
     randomWalk,
     shareCard,
@@ -3741,7 +3743,7 @@ export function disposeMuseum(): void {
   disposeSocialSystem(context.social);
   disposeBookmarksSystem(context.bookmarks);
   disposeFocusSystem(context.focus);
-  disposeVisitorSystem(context.visitors);
+  // REMOVED: disposeVisitorSystem(context.visitors);
   disposeSoundMixerSystem(context.soundMixer);
   disposeQuickMenuSystem(context.quickMenu);
   disposeRelatedSystem(context.related);
@@ -3764,7 +3766,7 @@ export function disposeMuseum(): void {
   disposeTrailSystem(context.visitorTrail);
   disposeAudioGuideSystem(context.audioGuide);
   disposePhotoFiltersSystem(context.photoFilters);
-  disposePresenceSystem(context.virtualPresence);
+  // REMOVED: disposePresenceSystem(context.virtualPresence);
   disposeVisitLogSystem(context.visitLog);
   disposeRandomWalkSystem(context.randomWalk);
   disposeShareCardSystem(context.shareCard);
