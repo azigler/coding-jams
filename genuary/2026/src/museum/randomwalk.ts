@@ -69,10 +69,10 @@ function createIndicator(system: RandomWalkSystem): void {
     gap: 8px;
   `;
   indicator.innerHTML = `
-    <span style="font-size: 16px;">🎲</span>
-    <span>Surprise Me!</span>
+    <span style="font-size: 16px;">🧭</span>
+    <span>Discover</span>
   `;
-  indicator.title = 'Jump to a random exhibit (R key)';
+  indicator.title = 'Explore a random exhibit (R key)';
 
   indicator.onclick = () => selectRandom(system);
 
