@@ -1094,6 +1094,7 @@ function parseSharedView(): { x: number; y: number; z: number; rx: number; ry: n
  * Toggle photo mode (hides UI for clean screenshots)
  */
 let photoModeActive = false;
+let autoFadeCleanup: (() => void) | null = null;
 
 function togglePhotoMode(container: HTMLElement): void {
   photoModeActive = !photoModeActive;
@@ -1151,6 +1152,89 @@ function togglePhotoMode(container: HTMLElement): void {
   });
 
   showNotification(photoModeActive ? 'Photo mode ON - UI hidden' : 'Photo mode OFF');
+}
+
+/**
+ * Auto-fade UI system
+ * Hides UI after period of inactivity for a cleaner art experience
+ * UI reappears on mouse movement or keyboard input
+ */
+let autoFadeEnabled = true;
+let autoFadeTimeout: ReturnType<typeof setTimeout> | null = null;
+let uiFaded = false;
+const AUTO_FADE_DELAY = 5000; // 5 seconds of inactivity
+
+function initAutoFadeUI(container: HTMLElement): () => void {
+  const fadeableElements = [
+    'museum-location',
+    'suggested-next',
+    'quote-indicator',
+    'randomwalk-indicator',
+    'audioguide-indicator',
+    'mood-indicator',
+  ];
+
+  function fadeUI(): void {
+    if (!autoFadeEnabled || photoModeActive || uiFaded) return;
+
+    fadeableElements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.transition = 'opacity 0.5s ease-out';
+        el.style.opacity = '0';
+        el.style.pointerEvents = 'none';
+      }
+    });
+    uiFaded = true;
+  }
+
+  function showUI(): void {
+    if (!uiFaded) return;
+
+    fadeableElements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.transition = 'opacity 0.3s ease-in';
+        el.style.opacity = '1';
+        el.style.pointerEvents = '';
+      }
+    });
+    uiFaded = false;
+
+    // Reset the fade timer
+    resetFadeTimer();
+  }
+
+  function resetFadeTimer(): void {
+    if (autoFadeTimeout) {
+      clearTimeout(autoFadeTimeout);
+    }
+    autoFadeTimeout = setTimeout(fadeUI, AUTO_FADE_DELAY);
+  }
+
+  // Show UI on any interaction
+  const interactionHandler = (): void => {
+    if (photoModeActive) return;
+    showUI();
+  };
+
+  // Listen for mouse movement and keyboard input
+  document.addEventListener('mousemove', interactionHandler);
+  document.addEventListener('keydown', interactionHandler);
+  container.addEventListener('click', interactionHandler);
+
+  // Start the initial fade timer
+  resetFadeTimer();
+
+  // Return cleanup function
+  return () => {
+    if (autoFadeTimeout) {
+      clearTimeout(autoFadeTimeout);
+    }
+    document.removeEventListener('mousemove', interactionHandler);
+    document.removeEventListener('keydown', interactionHandler);
+    container.removeEventListener('click', interactionHandler);
+  };
 }
 
 /**
@@ -3654,6 +3738,9 @@ export function startMuseum(): void {
 
   context.animationId = requestAnimationFrame(animate);
 
+  // Initialize auto-fade UI system for cleaner art experience
+  autoFadeCleanup = initAutoFadeUI(context.container);
+
   // Periodically check achievements
   const achievementCheckInterval = setInterval(() => {
     if (!context) return;
@@ -3714,6 +3801,10 @@ export function disposeMuseum(): void {
   if (!context) return;
 
   stopMuseum();
+  if (autoFadeCleanup) {
+    autoFadeCleanup();
+    autoFadeCleanup = null;
+  }
   disposeAudio();
   if (context.touch) {
     disposeTouchControls(context.touch);
