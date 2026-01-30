@@ -61,13 +61,14 @@ import {
   type SettingsPanel,
   type Settings,
 } from './settings';
-import {
-  createDiscoveryTracker,
-  markDayDiscovered,
-  refreshDiscoveryBadge,
-  disposeDiscoveryTracker,
-  type DiscoveryTracker,
-} from './discovery';
+// REMOVED: Discovery tracker (gamification - progress tracking)
+// import {
+//   createDiscoveryTracker,
+//   markDayDiscovered,
+//   refreshDiscoveryBadge,
+//   disposeDiscoveryTracker,
+//   type DiscoveryTracker,
+// } from './discovery';
 import {
   createFavoritesSystem,
   toggleFavorite,
@@ -713,7 +714,7 @@ export interface MuseumContext {
   touch: TouchControls | null;
   minimap: Minimap;
   settings: SettingsPanel;
-  discovery: DiscoveryTracker;
+  // REMOVED: discovery: DiscoveryTracker; (gamification - progress tracking)
   favorites: FavoritesSystem;
   tips: TipsSystem;
   stats: StatsTracker;
@@ -1385,24 +1386,16 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     setQuality(scene, settings.settings.qualityLevel);
   }
 
-  // Create favorites system (before discovery, so we can wire them up)
+  // Create favorites system
   const favorites = createFavoritesSystem();
 
-  // Create discovery tracker
-  const discovery = createDiscoveryTracker(container);
+  // REMOVED: Discovery tracker (gamification - progress tracking)
+  // const discovery = createDiscoveryTracker(container);
+  // discovery.getFavoritesCount = () => getFavorites(favorites).length;
+  // discovery.isFavorite = (dayNumber: number) => isFavorite(favorites, dayNumber);
 
-  // Wire up discovery to access favorites
-  discovery.getFavoritesCount = () => getFavorites(favorites).length;
-  discovery.isFavorite = (dayNumber: number) => isFavorite(favorites, dayNumber);
-
-  // Wire up interaction to track discoveries
-  interaction.onExhibitViewed = (dayNumber: number) => {
-    const wasNew = !discovery.viewedDays.has(dayNumber);
-    markDayDiscovered(discovery, dayNumber);
-    // Play discovery chime for new exhibits
-    if (wasNew) {
-      playDiscoveryChime();
-    }
+  // Wire up interaction to track exhibit views (without gamified discovery tracking)
+  interaction.onExhibitViewed = (_dayNumber: number) => {
     // Record stat
     recordExhibitView(stats);
   };
@@ -1412,8 +1405,6 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     const nowFavorite = toggleFavorite(favorites, dayNumber);
     playFavoriteToggle(nowFavorite);
     showNotification(nowFavorite ? `Day ${dayNumber} added to favorites` : `Day ${dayNumber} removed from favorites`);
-    // Update discovery badge to show new favorites count
-    refreshDiscoveryBadge(discovery);
     // Mark tip as used
     markTipShown(tips, 'favorite');
     // Record stat if adding
@@ -1438,10 +1429,10 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     showNotification('Teleported!');
   };
 
-  // Wire up visited check for "next unvisited" feature
-  interaction.isVisited = (dayNumber: number) => {
-    return discovery.viewedDays.has(dayNumber);
-  };
+  // REMOVED: Visited check for "next unvisited" feature (requires discovery tracker)
+  // interaction.isVisited = (dayNumber: number) => {
+  //   return discovery.viewedDays.has(dayNumber);
+  // };
 
   // Create tips system for contextual help
   const tips = createTipsSystem(container);
@@ -1503,8 +1494,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
       interaction.zoomProgress = 0;
       interaction.currentDayNumber = dayNumber;
 
-      // Mark as discovered
-      markDayDiscovered(discovery, dayNumber);
+      // REMOVED: markDayDiscovered (gamification)
       recordExhibitView(stats);
 
       showNotification(`Viewing Day ${dayNumber}`);
@@ -3405,7 +3395,7 @@ export function initMuseum(container: HTMLElement): MuseumContext {
     touch,
     minimap,
     settings,
-    discovery,
+    // REMOVED: discovery (gamification - progress tracking)
     favorites,
     tips,
     stats,
@@ -3640,7 +3630,7 @@ export function startMuseum(): void {
   const achievementCheckInterval = setInterval(() => {
     if (!context) return;
     checkAchievements(context.achievements, {
-      exhibitsViewed: context.discovery.viewedDays.size,
+      exhibitsViewed: context.stats.stats.exhibitsViewed, // Use stats instead of discovery
       favoritesCount: getFavorites(context.favorites).length,
       screenshotsTaken: context.stats.stats.screenshotsTaken,
       toursTaken: context.stats.stats.toursTaken,
@@ -3702,7 +3692,7 @@ export function disposeMuseum(): void {
   }
   disposeMinimap(context.minimap);
   disposeSettingsPanel(context.settings);
-  disposeDiscoveryTracker(context.discovery);
+  // REMOVED: disposeDiscoveryTracker (gamification)
   disposeFavoritesSystem(context.favorites);
   disposeTipsSystem(context.tips);
   disposeStatsTracker(context.stats);
