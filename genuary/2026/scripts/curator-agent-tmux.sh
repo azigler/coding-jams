@@ -97,12 +97,14 @@ send_prompt() {
     local msg="[$(date +%H:%M)] Reminder: If 2+ hours since last PR update, take fresh screenshots, LOOK at them critically, then post with images. Ask: does this make visitors FEEL something? Is it artful or just gamified? Make it evoke emotion, not feel like a thin video game."
 
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" "$msg"
+    sleep 0.5
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
   else
     log "Starting fresh Claude session..."
     # Start a new Claude session with the full prompt
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" \
       "cat '$PROMPT_FILE' | claude --dangerously-skip-permissions --max-turns 100"
+    sleep 0.5
     /usr/bin/tmux send-keys -t "$TMUX_SESSION:$WINDOW_NAME" Enter
   fi
 }
