@@ -1098,15 +1098,36 @@ let photoModeActive = false;
 function togglePhotoMode(container: HTMLElement): void {
   photoModeActive = !photoModeActive;
 
-  // List of UI element IDs to hide/show
+  // List of ALL UI element IDs to hide/show for clean screenshots
   const uiElements = [
+    // Core navigation
     'museum-location',
     'minimap-canvas',
+    'museum-compass',
     'museum-help',
-    'discovery-badge',
     'settings-button',
+
+    // Indicators and prompts
     'museum-tip',
     'tour-progress',
+    'tour-indicator',
+    'suggested-next',
+    'focus-indicator',
+    'discovery-badge',
+
+    // Audio and atmosphere
+    'quote-indicator',
+    'audioguide-indicator',
+    'ambient-indicator',
+    'atmospheric-indicator',
+    'mood-indicator',
+
+    // Other persistent UI
+    'trivia-indicator',
+    'timer-indicator',
+    'hotspots-indicator',
+    'streak-indicator',
+    'randomwalk-indicator',
   ];
 
   uiElements.forEach(id => {
@@ -1116,11 +1137,18 @@ function togglePhotoMode(container: HTMLElement): void {
     }
   });
 
-  // Also hide any div with settings-panel class
-  const settingsPanel = container.querySelector('[id^="settings-panel"]');
-  if (settingsPanel) {
-    (settingsPanel as HTMLElement).style.display = photoModeActive ? 'none' : '';
-  }
+  // Also hide elements by class or partial ID match
+  const selectorsToHide = [
+    '[id^="settings-panel"]',
+    '[id*="-button"]',
+    '[id*="-indicator"]',
+  ];
+
+  selectorsToHide.forEach(selector => {
+    container.querySelectorAll(selector).forEach(el => {
+      (el as HTMLElement).style.display = photoModeActive ? 'none' : '';
+    });
+  });
 
   showNotification(photoModeActive ? 'Photo mode ON - UI hidden' : 'Photo mode OFF');
 }
@@ -3120,9 +3148,9 @@ export function initMuseum(container: HTMLElement): MuseumContext {
   };
   document.addEventListener('keydown', zoomKeyHandler);
 
-  // Playlist with Shift+P
+  // Playlist with Shift+L (changed from Shift+P to avoid conflict with photo mode)
   const playlistHandler = (event: KeyboardEvent) => {
-    if (event.code === 'KeyP' && event.shiftKey && !event.ctrlKey) {
+    if (event.code === 'KeyL' && event.shiftKey && !event.ctrlKey) {
       event.preventDefault();
       togglePlaylistPanel(exhibitPlaylist);
     }
