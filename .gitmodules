@@ -13,3 +13,4 @@
 [submodule "the-atlantic/hackathon-infactory"]
 	path = the-atlantic/hackathon-infactory
 	url = https://github.com/azigler/hackathon-infactory
+	branch = main

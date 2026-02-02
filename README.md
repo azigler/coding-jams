@@ -4,7 +4,7 @@
 
 ## Projects
 
-### [Building future AI news experiences with The Atlantic and Infactory](https://github.com/azigler/coding-jams/tree/main/the-atlantic/hackathon-infactory/README.md)
+### [Building future AI news experiences with The Atlantic and Infactory](https://github.com/azigler/hackathon-infactory/blob/main/README.md)
 
 > January 31, 2026 (1 day)
 
