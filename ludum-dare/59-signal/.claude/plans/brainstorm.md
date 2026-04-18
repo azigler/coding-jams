@@ -1,7 +1,7 @@
 # Brainstorm — LD59 "Signal"
 
 Status: **OPEN — no direction locked.** We are still diverging. Do not start
-writing code against any of these. When Andrew picks, we collapse this into a
+writing code against any of these. When Zig picks, we collapse this into a
 spec in `specs/` and close the rest.
 
 ## Theme parse
@@ -9,7 +9,7 @@ spec in `specs/` and close the rest.
 "Signal" is a loaded word. Useful readings:
 
 1. **Electromagnetic signal** — radio waves, SETI, deep-space probes, Morse,
-   jamming, tuning, frequency. Andrew is leaning this way.
+   jamming, tuning, frequency. Zig is leaning this way.
 2. **Information signal** — signal vs noise, pattern-matching under static,
    a hidden message in a crowd of garbage.
 3. **Social signal** — costly signaling, gesture, flag, semaphore. What you
@@ -25,7 +25,7 @@ has to show up in the verb, not just the skin.
 
 ## Directions under consideration
 
-### A. **Deep-space listener** (radio / space — Andrew's current lean)
+### A. **Deep-space listener** (radio / space — Zig's current lean)
 
 You run a one-person listening post on the edge of known space. Signals come
 in from distant sources — you tune, filter, decode, and triage them. Some are
@@ -37,7 +37,7 @@ real. Most are noise. One, if you find it in time, changes everything.
   a ghost/misread.
 - **Tension:** more signals arrive than you can process. You choose what to
   chase. You will miss things.
-- **Ending:** probably 1-3 "resolutions" where Andrew's one-weekend taste
+- **Ending:** probably 1-3 "resolutions" where Zig's one-weekend taste
   gets to shine. A final signal that recontextualizes everything.
 - **Why it works for Signal:** the verb IS the theme. Perfect alignment.
 - **Risk:** spectrogram visuals are easy to make look like every other
@@ -84,7 +84,7 @@ different times.
 - **Core mechanic:** walk around a small 2D map, hold tuner, hunt for clear
   audio in a sea of static.
 - **Why Signal:** literal signal as the core verb, but turned social.
-- **Risk:** needs writing. A lot of writing. Andrew is a strong writer (see
+- **Risk:** needs writing. A lot of writing. Zig is a strong writer (see
   zig-voice skill) but dialogue at scale takes days.
 
 ### E. **One-way conversation**
@@ -114,7 +114,7 @@ back once sent and can never react in time to surprises.
 
 ## Selection criteria
 
-When Andrew picks, the filter is:
+When Zig picks, the filter is:
 1. **Is the verb the theme?** Signal should be a thing you _do_, not a thing
    you're _near_.
 2. **Can a solo human ship this in 72h with taste intact?** Content scope vs
@@ -129,5 +129,5 @@ When Andrew picks, the filter is:
 
 ## Decision capture
 
-When Andrew picks a direction, add a `## Locked direction` section here with
+When Zig picks a direction, add a `## Locked direction` section here with
 the date and one-paragraph summary, then start `specs/overview.md`.

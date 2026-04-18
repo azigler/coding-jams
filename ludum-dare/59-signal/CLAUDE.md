@@ -10,7 +10,7 @@ Theme locked **Apr 2026**: **Signal**. Weekend scope (~72h).
 
 ## What we're building
 
-**TBD — we are in concept lock.** Andrew is brainstorming radio/space directions
+**TBD — we are in concept lock.** Zig is brainstorming radio/space directions
 but hasn't committed. See `.claude/plans/brainstorm.md` for current options.
 
 Hard constraints, regardless of direction:
@@ -23,7 +23,7 @@ Hard constraints, regardless of direction:
 
 ## Roles
 
-- **Andrew (human):** director, designer, reviewer. Brainstorms, picks the
+- **Zig (human):** director, designer, reviewer. Brainstorms, picks the
   direction, writes micro-blog devlog posts, plays and critiques each build.
   Runs dev servers. Makes taste calls.
 - **Claude (orchestrator, this session):** scaffolds, dispatches subagents, owns
@@ -33,15 +33,15 @@ Hard constraints, regardless of direction:
 
 ## Working style
 
-- **Andrew runs dev servers.** Never start a long-running `bun dev` / `vite` from
-  here — ask Andrew to run it and open it.
+- **Zig runs dev servers.** Never start a long-running `bun dev` / `vite` from
+  here — ask Zig to run it and open it.
 - **Read before writing.** Orient yourself with the existing `specs/` and
   `devlog/` before modifying.
 - **One mechanic at a time.** If a build has a bug, fix it before adding the next
   thing. No half-finished features.
 - **Taste over features.** A smaller, tighter, weirder game beats a bigger
   generic one.
-- **Commit after every merge.** Push only when Andrew asks.
+- **Commit after every merge.** Push only when Zig asks.
 
 ## Pipeline (skills)
 
@@ -63,14 +63,14 @@ brainstorm → spec → (review) → test → impl → branch → release
 - `/commit` — gitmoji + bead trailer
 - `/beads` — task tracking reference
 - `/lint` — linter policy
-- `/zig-voice` — Andrew's voice for devlog posts
+- `/zig-voice` — Zig's voice for devlog posts
 
 Skills are local copies in `.claude/skills/` — customize freely, the originals
 are in `~/lb-skills`.
 
 ## Devlog workflow
 
-Ludum Dare submissions benefit from a visible devlog on the jam site. Andrew will
+Ludum Dare submissions benefit from a visible devlog on the jam site. Zig will
 want to post short updates (with screenshots) over the 72 hours.
 
 - Drafts land in `devlog/YYYY-MM-DD-HHmm-slug.md` (local + committed).
@@ -103,7 +103,7 @@ want to post short updates (with screenshots) over the 72 hours.
 
 ## Tech stack options (not yet locked)
 
-Andrew will choose after brainstorm. Likely candidates:
+Zig will choose after brainstorm. Likely candidates:
 - **Phaser 3 + Bun + Vite** — what LD57 used; fast start, arcade-friendly
 - **PixiJS + Bun + Vite** — more flexible rendering, better for weird visuals
 - **Plain Canvas + Bun + Vite** — lightest, best for handcrafted visual identity
@@ -115,7 +115,7 @@ a single URL with no backend. Rule out anything that requires a server.
 ## Jam logistics
 
 - **Event page:** https://ldjam.com/events/ludum-dare/59
-- **Andrew's profile:** https://ldjam.com/users/zigtalk
+- **Zig's profile:** https://ldjam.com/users/zigtalk
 - **Theme:** Signal (locked)
 - **Category:** Jam (not Compo — AI assistance allowed)
 - **Submission:** single URL to the playable build + source repo + short writeup
