@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+.env
+.env.local
+
+# Claude session scratch
+.claude/.ldjam-session
+.claude/.ldjam-credentials
+.claude/analysis/
+.claude/prompts/
+.claude/*.local.*
+
+# OS / editor
+.vscode/
+.idea/
+*.swp
