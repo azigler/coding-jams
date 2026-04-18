@@ -5,6 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "ludum-dare/57-depths/**"
+      - "ludum-dare/59-signal/prototypes/**"
       - "genuary/2026/**"
       - "README.md"
       - ".github/workflows/deploy.yml"
@@ -48,6 +49,12 @@ jobs:
           npm install
           npm run build
 
+      - name: Build LD59 Phase Chorus prototype
+        working-directory: ludum-dare/59-signal/prototypes/phase-chorus
+        run: |
+          bun install
+          bun run build
+
       - name: Create Landing Page
         run: |
           node .github/scripts/generate-landing-page.js
@@ -61,6 +68,10 @@ jobs:
           # Copy genuary build to _site/genuary-2026
           mkdir -p _site/genuary-2026
           cp -r genuary/2026/dist/* _site/genuary-2026/
+
+          # Copy LD59 Phase Chorus prototype to _site/ld59/prototypes/phase-chorus
+          mkdir -p _site/ld59/prototypes/phase-chorus
+          cp -r ludum-dare/59-signal/prototypes/phase-chorus/dist/* _site/ld59/prototypes/phase-chorus/
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
