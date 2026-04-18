@@ -4,6 +4,22 @@
 
 ## Projects
 
+### [Building future AI news experiences with The Atlantic and Infactory](https://github.com/azigler/hackathon-infactory/blob/main/README.md)
+
+> January 31, 2026 (1 day)
+
+![The Beat](https://i.ibb.co/YBXqYbZF/1769961851282.jpg)
+
+**The Beat** is an educational platform that transforms The Atlantic's 167-year archive into bounded research environments for classrooms. Teachers curate article collections where students develop critical thinking skills through guided journalism exploration—no shortcuts, no copy-paste answers.
+
+The platform features teacher dashboards for classroom setup, student research workspaces with highlighting and note-taking, a writing station with a Socratic AI tutor that asks questions only, and citation validation.
+
+- **Demo:** [Try The Beat](https://hackathon-infactory.vercel.app)
+- **Source:** [Read the source code](https://github.com/azigler/hackathon-infactory)
+- **Hackathon:** [View the hackathon event](https://luma.com/hh-future-ai-news-theatlantic-infactory?tk=1ZD0cT)
+
+---
+
 ### [Genuary 2026](https://github.com/azigler/coding-jams/tree/main/genuary/2026/README.md)
 
 > January 1-31, 2026 (31 days)

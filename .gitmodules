@@ -10,3 +10,7 @@
 [submodule "theory-ventures/antm-hackathon/antm"]
 	path = theory-ventures/antm-hackathon/antm
 	url = https://github.com/TheoryVentures/antm
+[submodule "the-atlantic/hackathon-infactory"]
+	path = the-atlantic/hackathon-infactory
+	url = https://github.com/azigler/hackathon-infactory
+	branch = main

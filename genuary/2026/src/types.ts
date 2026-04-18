@@ -24,6 +24,7 @@ export interface ControlConfig {
   defaultValue: number;
   step?: number;
   format?: (value: number) => string;  // Custom display formatting
+  hidden?: boolean;  // Hide from UI but still track value
 }
 
 /**
@@ -99,6 +100,9 @@ export interface DayConfig {
   htmlSetup?: (container: HTMLElement, controls: ControlState) => HtmlContext;
   htmlUpdate?: (ctx: HtmlContext, controls: ControlState) => void;
   htmlCleanup?: (ctx: HtmlContext) => void;
+
+  // Keyboard interaction (for days that need keyboard navigation)
+  onKeyDown?: (key: string, controls: ControlState) => Partial<ControlState> | null;
 }
 
 /**
