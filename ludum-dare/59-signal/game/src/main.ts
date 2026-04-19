@@ -52,14 +52,30 @@ function connect() {
   for (const line of level.lines) {
     if (state.assignments.get(line.id) !== line.owner) wrong.push(line.id);
   }
-  if (wrong.length === 0) {
-    state.solved = true;
-    audio.play('right');
-    paint();
-  } else {
+  if (wrong.length > 0) {
     audio.play('wrong');
     flashWrongLines(root, wrong);
+    return;
   }
+
+  // Zip flourish: each line flies off toward its owner's side, then
+  // the grouped view drops in. Stagger so they leave in sequence, not
+  // all at once — feels like routing calls one by one.
+  audio.play('right');
+  const items = Array.from(root.querySelectorAll<HTMLElement>('.line-item'));
+  items.forEach((el, i) => {
+    const id = Number(el.dataset.lineId);
+    const line = level.lines.find((l) => l.id === id);
+    if (!line) return;
+    el.style.animationDelay = `${i * 45}ms`;
+    el.classList.add(`line-item--zip-${line.owner.toLowerCase()}`);
+  });
+
+  const totalDelay = 45 * (items.length - 1) + 500;
+  window.setTimeout(() => {
+    state.solved = true;
+    paint();
+  }, totalDelay);
 }
 
 function advance() {

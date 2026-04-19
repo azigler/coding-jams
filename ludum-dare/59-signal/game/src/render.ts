@@ -352,9 +352,12 @@ function renderTranscript(
     });
     for (const conv of level.conversations) {
       const isOn = assigned === conv.id;
+      const iconPath = conv.icon
+        ? `assets/speaker-${conv.icon}-mask.png`
+        : null;
+      const useIcon = iconPath && hasAsset(iconPath);
       const pick = h('button', {
-        class: `pick pick--${conv.id.toLowerCase()}${isOn ? ' is-on' : ''}`,
-        text: conv.id,
+        class: `pick pick--${conv.id.toLowerCase()}${isOn ? ' is-on' : ''}${useIcon ? ' pick--icon' : ''}`,
         attrs: {
           type: 'button',
           'aria-pressed': isOn ? 'true' : 'false',
@@ -367,6 +370,20 @@ function renderTranscript(
         '--pick-color',
         `var(--conv-${conv.id.toLowerCase()})`,
       );
+      if (useIcon && iconPath) {
+        const iconSpan = h('span', {
+          class: 'pick-icon',
+          attrs: { 'aria-hidden': 'true' },
+        });
+        iconSpan.style.setProperty(
+          '--icon-url',
+          `url('${withBase(iconPath)}')`,
+        );
+        pick.appendChild(iconSpan);
+        pick.appendChild(h('span', { class: 'sr-only', text: conv.id }));
+      } else {
+        pick.textContent = conv.id;
+      }
       pick.addEventListener('click', () => {
         handlers.onAssign(line.id, isOn ? null : conv.id);
       });
