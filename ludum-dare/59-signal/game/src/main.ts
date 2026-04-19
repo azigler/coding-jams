@@ -25,17 +25,6 @@ function currentLevel() {
   return LEVELS[state.levelIndex];
 }
 
-function nextAssignment(
-  current: ConversationId | null,
-  convs: { id: ConversationId }[],
-): ConversationId | null {
-  const order = convs.map((c) => c.id);
-  if (current == null) return order[0] ?? null;
-  const idx = order.indexOf(current);
-  if (idx === -1 || idx === order.length - 1) return null;
-  return order[idx + 1] ?? null;
-}
-
 function resetAssignments() {
   state.assignments = new Map();
   for (const l of currentLevel().lines) state.assignments.set(l.id, null);
@@ -50,12 +39,9 @@ function startShift() {
   paint();
 }
 
-function cycleLine(lineId: number) {
+function assignLine(lineId: number, conv: ConversationId | null) {
   if (state.solved) return;
-  const level = currentLevel();
-  const current = state.assignments.get(lineId) ?? null;
-  const next = nextAssignment(current, level.conversations);
-  state.assignments.set(lineId, next);
+  state.assignments.set(lineId, conv);
   audio.play('click');
   paint();
 }
@@ -104,7 +90,7 @@ function paint() {
     renderMenu(root, state, { onStart: startShift, onMuteToggle: toggleMute });
   } else if (screen === 'level') {
     renderLevel(root, currentLevel(), state, {
-      onCycle: cycleLine,
+      onAssign: assignLine,
       onConnect: connect,
       onAdvance: advance,
       onMuteToggle: toggleMute,

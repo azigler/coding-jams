@@ -1,260 +1,144 @@
 import type { Level } from './types';
 
-// Palette references (also defined in CSS custom props). Kept as strings so
-// TypeScript can hand them to canvas/inline styles when needed. Values match
-// specs/overview.md verbatim.
-const COLOR_A = 'oklch(62% 0.17 45)';
-const COLOR_B = 'oklch(52% 0.15 240)';
-const COLOR_C = 'oklch(60% 0.09 140)';
+const COLOR_A = 'oklch(58% 0.14 40)';
+const COLOR_B = 'oklch(48% 0.12 235)';
+const COLOR_C = 'oklch(55% 0.08 135)';
 
 export const LEVELS: Level[] = [
   {
     id: 1,
     slug: 'hello',
     title: 'Hello?',
-    epigraph: 'Every shift begins with the same crossed line.',
     conversations: [
-      { id: 'A', label: 'the mother', color: COLOR_A, icon: 'mother' },
+      { id: 'A', label: 'the goat lady', color: COLOR_A, icon: 'neighbor' },
       { id: 'B', label: 'the office', color: COLOR_B, icon: 'office' },
     ],
     lines: [
-      { id: 1, text: 'Hello? Are you there?', owner: 'A' },
-      { id: 2, text: 'The meeting is at three, not four.', owner: 'B' },
-      {
-        id: 3,
-        text: 'I was hoping to catch you before you went out.',
-        owner: 'A',
-      },
-      { id: 4, text: 'Did you bring the contracts?', owner: 'B' },
-      {
-        id: 5,
-        text: 'The forecast says rain — remember the umbrella.',
-        owner: 'A',
-      },
-      {
-        id: 6,
-        text: "Put them on my desk. I'll sign after lunch.",
-        owner: 'B',
-      },
-      { id: 7, text: 'I love you, dear.', owner: 'A' },
-      { id: 8, text: 'Everyone in the room needs to hear this.', owner: 'B' },
+      { id: 1, text: 'There is a goat on my lawn.', owner: 'A' },
+      { id: 2, text: "Where's the Brighton shipment?", owner: 'B' },
+      { id: 3, text: "No, it's not MY goat.", owner: 'A' },
+      { id: 4, text: 'Nobody signed for it.', owner: 'B' },
+      { id: 5, text: "It's eating the rhododendrons.", owner: 'A' },
+      { id: 6, text: 'Check the loading dock, not receiving.', owner: 'B' },
+      { id: 7, text: 'Just send someone, please.', owner: 'A' },
+      { id: 8, text: "Fine. I'll hold.", owner: 'B' },
     ],
-    postamble:
-      'The mother hangs up first. The office talks to itself for another twenty minutes. The operator listens and doesn\u2019t say a word.',
   },
   {
     id: 2,
     slug: 'wednesday',
     title: 'Wednesday',
-    epigraph: 'Some calls sound the same. They aren\u2019t.',
     conversations: [
-      {
-        id: 'A',
-        label: 'the insurance office',
-        color: COLOR_A,
-        icon: 'insurance',
-      },
-      { id: 'B', label: 'the law office', color: COLOR_B, icon: 'law' },
+      { id: 'A', label: 'the theater', color: COLOR_A, icon: 'letter' },
+      { id: 'B', label: 'the taxidermist', color: COLOR_B, icon: 'grocer' },
     ],
     lines: [
-      {
-        id: 1,
-        text: "The adjuster's report came through this morning.",
-        owner: 'A',
-      },
-      {
-        id: 2,
-        text: 'Mrs. Whitaker wants the signing moved to Friday.',
-        owner: 'B',
-      },
-      {
-        id: 3,
-        text: "The damage exceeds the policy's limit by four hundred.",
-        owner: 'A',
-      },
-      {
-        id: 4,
-        text: "She's been widowed six months. Be gentle.",
-        owner: 'B',
-      },
-      {
-        id: 5,
-        text: 'Can we split the payout across two quarters?',
-        owner: 'A',
-      },
+      { id: 1, text: 'I need the chimpanzee for Saturday.', owner: 'A' },
+      { id: 2, text: 'The moose came in Thursday.', owner: 'B' },
+      { id: 3, text: 'Tails, yes. With a bow tie.', owner: 'A' },
+      { id: 4, text: 'No, the hunter lost the antlers.', owner: 'B' },
+      { id: 5, text: "He doesn't have to talk. Just sit.", owner: 'A' },
       {
         id: 6,
-        text: 'The estate is small — mostly the house on Maple.',
+        text: 'We can mount it with a surprised expression.',
         owner: 'B',
       },
-      {
-        id: 7,
-        text: "I'll need the signature by end of day Thursday.",
-        owner: 'A',
-      },
-      { id: 8, text: 'Her sister is contesting the second page.', owner: 'B' },
-      {
-        id: 9,
-        text: "Tell the client we'll cover half in good faith.",
-        owner: 'A',
-      },
-      {
-        id: 10,
-        text: "Friday at ten. Don't let her bring the sister.",
-        owner: 'B',
-      },
+      { id: 7, text: 'Tell Boris: still no makeup.', owner: 'A' },
+      { id: 8, text: 'Pickup is cash only.', owner: 'B' },
+      { id: 9, text: "And he's allergic to bananas now.", owner: 'A' },
+      { id: 10, text: "Don't ask about the raccoon again.", owner: 'B' },
     ],
-    postamble:
-      'Two voices, two desks, one name between them. The operator makes a small note and sets it aside.',
   },
   {
     id: 3,
     slug: 'the-shift',
     title: 'The Shift',
-    epigraph: 'Three lines, all ringing at once. All of them matter.',
     conversations: [
-      { id: 'A', label: "the doctor's office", color: COLOR_A, icon: 'doctor' },
-      { id: 'B', label: 'the school', color: COLOR_B, icon: 'school' },
-      { id: 'C', label: 'the neighbor', color: COLOR_C, icon: 'neighbor' },
+      {
+        id: 'A',
+        label: 'the radio producer',
+        color: COLOR_A,
+        icon: 'dispatcher',
+      },
+      { id: 'B', label: 'the parakeet', color: COLOR_B, icon: 'mother' },
+      { id: 'C', label: 'the laundry', color: COLOR_C, icon: 'neighbor' },
     ],
     lines: [
-      {
-        id: 1,
-        text: "The results came back this morning. I'm afraid —",
-        owner: 'A',
-      },
-      { id: 2, text: "He's been distracted in class all week.", owner: 'B' },
-      {
-        id: 3,
-        text: '— it\u2019s not what we hoped. Can you come in tomorrow?',
-        owner: 'A',
-      },
-      {
-        id: 4,
-        text: 'There\u2019s been shouting, late. After ten.',
-        owner: 'C',
-      },
-      {
-        id: 5,
-        text: "I'd rather discuss it in person. Both of you, if possible.",
-        owner: 'B',
-      },
-      {
-        id: 6,
-        text: "The Whitaker place. I've called them twice.",
-        owner: 'C',
-      },
-      { id: 7, text: "Ten in the morning. Don't bring him.", owner: 'A' },
-      {
-        id: 8,
-        text: "He's a bright child. We don't want to label anything.",
-        owner: 'B',
-      },
-      {
-        id: 9,
-        text: "I don't want trouble. I just want to sleep.",
-        owner: 'C',
-      },
-      { id: 10, text: "I know. I know. I'll tell her tonight.", owner: 'A' },
+      { id: 1, text: 'Cue the gunshot at scene two.', owner: 'A' },
+      { id: 2, text: 'Since Tuesday. Non-stop.', owner: 'B' },
+      { id: 3, text: "I didn't even EAT beets that week.", owner: 'C' },
+      { id: 4, text: 'Not during the kiss. Please.', owner: 'A' },
+      { id: 5, text: "No, it doesn't speak words.", owner: 'B' },
+      { id: 6, text: 'The shirt was navy when it came in.', owner: 'C' },
+      { id: 7, text: 'Villain gets shot, falls, THEN door slams.', owner: 'A' },
+      { id: 8, text: 'It just whistles the same tune.', owner: 'B' },
+      { id: 9, text: 'Are you saying the stain is structural?', owner: 'C' },
+      { id: 10, text: 'Try to sound more surprised this time.', owner: 'A' },
+      { id: 11, text: "I think it's \u201CClair de Lune.\u201D", owner: 'B' },
+      { id: 12, text: 'Forget it. Keep the shirt.', owner: 'C' },
     ],
-    postamble:
-      'The doctor, the teacher, and the neighbor. Three different rooms in the same town — and the operator hears them layered like a chord.',
   },
   {
     id: 4,
-    slug: 'dearest',
-    title: 'Dearest',
-    epigraph: 'One voice knows it\u2019s being overheard.',
+    slug: 'thursday',
+    title: 'Thursday',
     conversations: [
-      { id: 'A', label: 'the grocer', color: COLOR_A, icon: 'grocer' },
-      { id: 'B', label: 'the letter', color: COLOR_B, icon: 'letter' },
+      { id: 'A', label: 'the goat refund', color: COLOR_A, icon: 'insurance' },
+      { id: 'B', label: 'the ferret pamphlet', color: COLOR_B, icon: 'letter' },
     ],
     lines: [
-      {
-        id: 1,
-        text: 'Two pounds of flour and a tin of coffee, yes.',
-        owner: 'A',
-      },
-      { id: 2, text: 'The geraniums are blooming by the shed.', owner: 'B' },
-      { id: 3, text: 'Can you send it around after four?', owner: 'A' },
-      {
-        id: 4,
-        text: "She said she'd come once the ice breaks.",
-        owner: 'B',
-      },
+      { id: 1, text: "The fainting goat didn't faint.", owner: 'A' },
+      { id: 2, text: 'I never signed up for the ferret series.', owner: 'B' },
+      { id: 3, text: 'We startled it three separate times.', owner: 'A' },
+      { id: 4, text: 'Volumes one THROUGH eleven.', owner: 'B' },
       {
         id: 5,
-        text: 'The bill with the others — Mrs. Harrow pays monthly.',
-        owner: 'A',
-      },
-      { id: 6, text: "I'll leave the kitchen door unlatched.", owner: 'B' },
-      { id: 7, text: "And a pound of sugar if there's any left.", owner: 'A' },
-      {
-        id: 8,
-        text: "The husband travels Thursdays. He's always gone by eight.",
-        owner: 'B',
-      },
-      { id: 9, text: 'Thank you. Tell your wife hello.', owner: 'A' },
-      { id: 10, text: "Burn this when you're done.", owner: 'B' },
-    ],
-    postamble:
-      'The grocer orders two pounds of flour. The letter burns in a different fireplace. Ellen Whitaker\u2019s kitchen door will not be locked tonight.',
-  },
-  {
-    id: 5,
-    slug: 'dial-tone',
-    title: 'Dial Tone',
-    epigraph: 'The last call of the shift. Nobody is speaking.',
-    conversations: [
-      { id: 'A', label: 'the caller', color: COLOR_A, icon: 'caller' },
-      { id: 'B', label: 'the dispatcher', color: COLOR_B, icon: 'dispatcher' },
-    ],
-    lines: [
-      { id: 1, text: 'Please — please, there\u2019s been —', owner: 'A' },
-      {
-        id: 2,
-        text: 'Ma\u2019am, I need you to take a breath and tell me the address.',
-        owner: 'B',
-      },
-      { id: 3, text: 'Forty-two Maple. The kitchen. He —', owner: 'A' },
-      {
-        id: 4,
-        text: 'Stay on the line. An ambulance is leaving the station now.',
-        owner: 'B',
-      },
-      {
-        id: 5,
-        text: 'I thought he had gone. I thought it was Thursday.',
+        text: 'A whistle, a saucepan, AND a thrown glove.',
         owner: 'A',
       },
       {
         id: 6,
-        text: 'You\u2019re doing fine. Keep talking to me.',
+        text: 'My husband signed the postcard. He thought it was tuna.',
         owner: 'B',
       },
       {
         id: 7,
-        text: 'There\u2019s so much blood. It isn\u2019t mine. It isn\u2019t mine.',
+        text: 'It looked at us. It did NOT faint.',
         owner: 'A',
       },
-      {
-        id: 8,
-        text: 'Help is three minutes away. Can you tell me your name?',
-        owner: 'B',
-      },
-      { id: 9, text: 'Ellen. Ellen Whitaker.', owner: 'A' },
-      {
-        id: 10,
-        text: 'Ellen, I\u2019m Ruth. I\u2019m not going anywhere. Stay with me.',
-        owner: 'B',
-      },
+      { id: 8, text: 'Just stop sending them. Please.', owner: 'B' },
+      { id: 9, text: 'I want the full refund. With the postage.', owner: 'A' },
+      { id: 10, text: "I'm BEGGING.", owner: 'B' },
     ],
-    postamble:
-      'The operator is Ruth. The operator has been Ruth all along. This is the shift where Ellen Whitaker\u2019s name stops being just a name on the board.\n\nEvery shift has a last call. Some of them pass through you and leave no mark. This one will not.',
+  },
+  {
+    id: 5,
+    slug: 'last-call',
+    title: 'Last Call',
+    conversations: [
+      { id: 'A', label: 'the wedding cake', color: COLOR_A, icon: 'grocer' },
+      { id: 'B', label: 'the stolen mailbox', color: COLOR_B, icon: 'law' },
+    ],
+    lines: [
+      { id: 1, text: 'The groom said three tiers, not four.', owner: 'A' },
+      { id: 2, text: 'Someone stole my mailbox.', owner: 'B' },
+      { id: 3, text: 'Yes, the fourth tier is in the van.', owner: 'A' },
+      { id: 4, text: 'No, the whole post too.', owner: 'B' },
+      { id: 5, text: 'We cannot simply un-bake it.', owner: 'A' },
+      { id: 6, text: 'Yes, I checked the hedge. Twice.', owner: 'B' },
+      {
+        id: 7,
+        text: "Tell her we'll knock off ten dollars.",
+        owner: 'A',
+      },
+      { id: 8, text: "I don't have enemies. I don't THINK.", owner: 'B' },
+      { id: 9, text: 'And a box for the extra tier.', owner: 'A' },
+      { id: 10, text: 'Just come look at the hole.', owner: 'B' },
+    ],
   },
 ];
 
 export const END_CARD = {
-  top: 'Thank you for taking the shift.',
-  bottom: '— CROSSED WIRES, LD59',
+  top: "That's the night.",
+  bottom: 'CROSSED WIRES \u00B7 LD59',
 };

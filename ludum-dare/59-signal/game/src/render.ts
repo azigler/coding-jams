@@ -139,14 +139,10 @@ export function renderMenu(
         ],
       });
 
-  const title = h('h1', { class: 'display-title', text: 'Crossed Wires' });
+  const title = h('h1', { class: 'display-title', text: 'CROSSED WIRES' });
   const sub = h('p', {
     class: 'display-sub',
-    text: 'A switchboard puzzle · LD59',
-  });
-  const epigraph = h('p', {
-    class: 'menu-epigraph',
-    text: 'You are Ruth. Every call passes through you tonight.',
+    text: 'One shift. Five calls. Most of them crossed.',
   });
 
   const startBtn = h('button', {
@@ -156,7 +152,7 @@ export function renderMenu(
   });
   startBtn.addEventListener('click', opts.onStart);
 
-  card.append(titleImg, title, sub, epigraph, startBtn);
+  card.append(titleImg, title, sub, startBtn);
 
   const footer = h('footer', {
     class: 'menu-footer',
@@ -172,7 +168,7 @@ export function renderMenu(
 // --- Level -------------------------------------------------------------
 
 type LevelHandlers = {
-  onCycle: (lineId: number) => void;
+  onAssign: (lineId: number, conv: ConversationId | null) => void;
   onConnect: () => void;
   onAdvance: () => void;
   onMuteToggle: () => void;
@@ -344,36 +340,42 @@ function renderTranscript(
   });
   for (const line of level.lines) {
     const assigned = state.assignments.get(line.id) ?? null;
-    const li = h('li', { class: 'transcript-item' });
-    const btn = h('button', {
-      class: `line-row ${
-        assigned
-          ? `line-row--${assigned.toLowerCase()}`
-          : 'line-row--unassigned'
-      }`,
-      attrs: {
-        type: 'button',
-        'aria-label': `Line ${line.id}. Click to cycle conversation.`,
-        'data-line-id': String(line.id),
-      },
+    const li = h('li', {
+      class: `line-item${assigned ? ` line-item--${assigned.toLowerCase()}` : ''}`,
+      attrs: { 'data-line-id': String(line.id) },
     });
-    const dot = h('span', {
-      class: 'line-dot',
-      attrs: { 'aria-hidden': 'true' },
+
+    // Picker: one jack-plug button per conversation, plus an unplug.
+    const picker = h('div', {
+      class: 'picker',
+      attrs: { role: 'group', 'aria-label': `Assign line ${line.id}` },
     });
-    dot.style.setProperty(
-      '--dot',
-      assigned ? `var(--conv-${assigned.toLowerCase()})` : 'var(--unassigned)',
-    );
-    const text = h('span', { class: 'line-text', text: line.text });
-    const badge = h('span', {
-      class: 'line-badge',
-      text: assigned ?? '\u2014',
-      attrs: { 'aria-hidden': 'true' },
-    });
-    btn.append(dot, text, badge);
-    btn.addEventListener('click', () => handlers.onCycle(line.id));
-    li.appendChild(btn);
+    for (const conv of level.conversations) {
+      const isOn = assigned === conv.id;
+      const pick = h('button', {
+        class: `pick pick--${conv.id.toLowerCase()}${isOn ? ' is-on' : ''}`,
+        text: conv.id,
+        attrs: {
+          type: 'button',
+          'aria-pressed': isOn ? 'true' : 'false',
+          'aria-label': isOn
+            ? `Unassign from ${conv.label}`
+            : `Assign to ${conv.label}`,
+        },
+      });
+      pick.style.setProperty(
+        '--pick-color',
+        `var(--conv-${conv.id.toLowerCase()})`,
+      );
+      pick.addEventListener('click', () => {
+        handlers.onAssign(line.id, isOn ? null : conv.id);
+      });
+      picker.appendChild(pick);
+    }
+
+    const text = h('p', { class: 'line-text', text: line.text });
+
+    li.append(picker, text);
     list.appendChild(li);
   }
   return list;

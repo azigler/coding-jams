@@ -3,22 +3,23 @@
 /* Palette lifted verbatim from specs/overview.md.                      */
 
 :root {
-  --ink: oklch(20% 0.02 260);
-  --ink-soft: oklch(40% 0.02 260);
-  --paper: oklch(96% 0.03 90);
-  --paper-deep: oklch(92% 0.04 85);
-  --paper-edge: oklch(86% 0.04 80);
-  --unassigned: oklch(60% 0.01 260);
-  --conv-a: oklch(62% 0.17 45);
-  --conv-b: oklch(52% 0.15 240);
-  --conv-c: oklch(60% 0.09 140);
-  --wrong: oklch(55% 0.18 20);
-  --right: oklch(65% 0.14 150);
+  /* Aged-paper + typewriter palette, tuned to sit alongside chunky pixel art. */
+  --ink: oklch(22% 0.025 55);
+  --ink-soft: oklch(42% 0.03 55);
+  --paper: oklch(92% 0.05 80);
+  --paper-deep: oklch(87% 0.06 75);
+  --paper-edge: oklch(80% 0.06 70);
+  --unassigned: oklch(62% 0.02 75);
+  --conv-a: oklch(58% 0.14 40);
+  --conv-b: oklch(48% 0.12 235);
+  --conv-c: oklch(55% 0.08 135);
+  --wrong: oklch(52% 0.17 25);
+  --right: oklch(60% 0.13 140);
 
-  --font-body:
-    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-display: "Playfair Display", "Times New Roman", serif;
+  --font-body: "Special Elite", "Courier Prime", ui-monospace, Menlo, monospace;
+  --font-mono:
+    "Courier Prime", "Special Elite", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Silkscreen", "Special Elite", ui-monospace, monospace;
 
   --radius-sm: 3px;
   --radius-md: 6px;
@@ -725,4 +726,124 @@ button {
     transition-duration: 60ms !important;
   }
   /* biome-ignore-end lint/complexity/noImportantStyles: accessibility override */
+}
+
+/* --------------------------------------------------------------------- */
+/* Line items with explicit A/B/C picker buttons (replaces click-cycle). */
+
+.transcript {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.line-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--paper-deep);
+  border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+  border-radius: var(--radius-md);
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.line-item--a {
+  border-color: color-mix(in oklab, var(--conv-a) 55%, transparent);
+  background: color-mix(in oklab, var(--conv-a) 10%, var(--paper-deep));
+}
+.line-item--b {
+  border-color: color-mix(in oklab, var(--conv-b) 55%, transparent);
+  background: color-mix(in oklab, var(--conv-b) 10%, var(--paper-deep));
+}
+.line-item--c {
+  border-color: color-mix(in oklab, var(--conv-c) 55%, transparent);
+  background: color-mix(in oklab, var(--conv-c) 10%, var(--paper-deep));
+}
+
+.line-item .line-text {
+  margin: 0;
+  padding: 0.25rem 0 0 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.picker {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+}
+
+.pick {
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid color-mix(in oklab, var(--ink) 28%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    transform 80ms ease,
+    box-shadow 120ms ease;
+  image-rendering: pixelated;
+  box-shadow: 0 1px 0 0 color-mix(in oklab, var(--ink) 18%, transparent);
+}
+
+.pick:hover {
+  border-color: var(--pick-color, var(--ink));
+  transform: translateY(-1px);
+}
+
+.pick:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.pick:focus-visible {
+  outline: 2px solid var(--pick-color, var(--ink));
+  outline-offset: 2px;
+}
+
+.pick.is-on {
+  background: var(--pick-color);
+  color: var(--paper);
+  border-color: var(--pick-color);
+  box-shadow: inset 0 2px 0 0 color-mix(in oklab, black 18%, transparent);
+}
+
+/* Wrong-flash on the new .line-item */
+@keyframes wrong-pulse-item {
+  0%, 100% { background: var(--paper-deep); border-color: color-mix(in oklab, var(--ink) 12%, transparent); }
+  50% { background: color-mix(in oklab, var(--wrong) 22%, var(--paper-deep)); border-color: var(--wrong); }
+}
+.line-item.is-wrong {
+  animation: wrong-pulse-item 80ms ease 3;
+}
+
+@media (max-width: 560px) {
+  .line-item {
+    grid-template-columns: 1fr;
+  }
+  .picker {
+    order: 2;
+  }
+  .line-item .line-text {
+    order: 1;
+    padding-top: 0;
+  }
 }
