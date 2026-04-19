@@ -120,6 +120,9 @@ win" screen together form a MINI ESSAY. Make every line specific. "Level 1:
 Tutorial" is dead. "Level 1: The First Whisper" is alive.
 
 Follow `/zig-voice` for tone when writing for an Andrew-solo jam entry.
+Use `/manifesto` for major creative-decision documents (direction locks,
+pivots, devlog posts) — it forces taste into the open by requiring
+explicit rejections, not just "here's what I chose."
 
 ## Rule 9: Audio is taste, not polish
 
