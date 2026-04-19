@@ -1,8 +1,8 @@
 import type { Level } from './types';
 
-const COLOR_A = 'oklch(58% 0.14 40)';
-const COLOR_B = 'oklch(48% 0.12 235)';
-const COLOR_C = 'oklch(55% 0.08 135)';
+const COLOR_A = 'oklch(65% 0.18 40)';
+const COLOR_B = 'oklch(55% 0.16 245)';
+const COLOR_C = 'oklch(65% 0.13 150)';
 
 export const LEVELS: Level[] = [
   {
@@ -16,7 +16,7 @@ export const LEVELS: Level[] = [
     lines: [
       { id: 1, text: 'There is a goat on my lawn.', owner: 'A' },
       { id: 2, text: "Where's the Brighton shipment?", owner: 'B' },
-      { id: 3, text: "No, it's not MY goat.", owner: 'A' },
+      { id: 3, text: 'I do NOT own a goat.', owner: 'A' },
       { id: 4, text: 'Nobody signed for it.', owner: 'B' },
       { id: 5, text: "It's eating the rhododendrons.", owner: 'A' },
       { id: 6, text: 'Check the loading dock, not receiving.', owner: 'B' },
@@ -29,24 +29,28 @@ export const LEVELS: Level[] = [
     slug: 'wednesday',
     title: 'Wednesday',
     conversations: [
-      { id: 'A', label: 'the theater', color: COLOR_A, icon: 'letter' },
-      { id: 'B', label: 'the taxidermist', color: COLOR_B, icon: 'grocer' },
+      { id: 'A', label: 'the goat refund', color: COLOR_A, icon: 'insurance' },
+      { id: 'B', label: 'ferret pamphlets', color: COLOR_B, icon: 'letter' },
     ],
     lines: [
-      { id: 1, text: 'I need the chimpanzee for Saturday.', owner: 'A' },
-      { id: 2, text: 'The moose came in Thursday.', owner: 'B' },
-      { id: 3, text: 'Tails, yes. With a bow tie.', owner: 'A' },
-      { id: 4, text: 'No, the hunter lost the antlers.', owner: 'B' },
-      { id: 5, text: "He doesn't have to talk. Just sit.", owner: 'A' },
+      { id: 1, text: "The fainting goat didn't faint.", owner: 'A' },
+      { id: 2, text: 'I never signed up for the ferret series.', owner: 'B' },
+      { id: 3, text: 'We startled it three times already.', owner: 'A' },
+      { id: 4, text: 'Volumes one THROUGH eleven.', owner: 'B' },
+      {
+        id: 5,
+        text: 'A whistle, a saucepan, AND a thrown glove.',
+        owner: 'A',
+      },
       {
         id: 6,
-        text: 'We can mount it with a surprised expression.',
+        text: 'My husband thought it was a tuna subscription.',
         owner: 'B',
       },
-      { id: 7, text: 'Tell Boris: still no makeup.', owner: 'A' },
-      { id: 8, text: 'Pickup is cash only.', owner: 'B' },
-      { id: 9, text: "And he's allergic to bananas now.", owner: 'A' },
-      { id: 10, text: "Don't ask about the raccoon again.", owner: 'B' },
+      { id: 7, text: 'It stared at us like we were morons.', owner: 'A' },
+      { id: 8, text: "I'm being harassed by CONTENT.", owner: 'B' },
+      { id: 9, text: 'I want the full refund, with postage.', owner: 'A' },
+      { id: 10, text: "I'm BEGGING you.", owner: 'B' },
     ],
   },
   {
@@ -56,26 +60,38 @@ export const LEVELS: Level[] = [
     conversations: [
       {
         id: 'A',
-        label: 'the radio producer',
+        label: 'the radio play',
         color: COLOR_A,
         icon: 'dispatcher',
       },
-      { id: 'B', label: 'the parakeet', color: COLOR_B, icon: 'mother' },
-      { id: 'C', label: 'the laundry', color: COLOR_C, icon: 'neighbor' },
+      { id: 'B', label: 'the chimp act', color: COLOR_B, icon: 'mother' },
+      { id: 'C', label: 'the taxidermist', color: COLOR_C, icon: 'neighbor' },
     ],
     lines: [
       { id: 1, text: 'Cue the gunshot at scene two.', owner: 'A' },
-      { id: 2, text: 'Since Tuesday. Non-stop.', owner: 'B' },
-      { id: 3, text: "I didn't even EAT beets that week.", owner: 'C' },
+      { id: 2, text: 'I need the chimpanzee by Saturday.', owner: 'B' },
+      { id: 3, text: 'The moose came in on Thursday.', owner: 'C' },
       { id: 4, text: 'Not during the kiss. Please.', owner: 'A' },
-      { id: 5, text: "No, it doesn't speak words.", owner: 'B' },
-      { id: 6, text: 'The shirt was navy when it came in.', owner: 'C' },
-      { id: 7, text: 'Villain gets shot, falls, THEN door slams.', owner: 'A' },
-      { id: 8, text: 'It just whistles the same tune.', owner: 'B' },
-      { id: 9, text: 'Are you saying the stain is structural?', owner: 'C' },
+      { id: 5, text: 'Tails. With a bow tie.', owner: 'B' },
+      { id: 6, text: 'The hunter lost the antlers somewhere.', owner: 'C' },
+      {
+        id: 7,
+        text: 'Villain gets shot, falls, THEN the door slams.',
+        owner: 'A',
+      },
+      {
+        id: 8,
+        text: "He doesn't have to talk. He just has to sit.",
+        owner: 'B',
+      },
+      {
+        id: 9,
+        text: 'Mount it with a surprised expression.',
+        owner: 'C',
+      },
       { id: 10, text: 'Try to sound more surprised this time.', owner: 'A' },
-      { id: 11, text: "I think it's \u201CClair de Lune.\u201D", owner: 'B' },
-      { id: 12, text: 'Forget it. Keep the shirt.', owner: 'C' },
+      { id: 11, text: "And he's allergic to bananas now.", owner: 'B' },
+      { id: 12, text: "Don't ask about the raccoon again.", owner: 'C' },
     ],
   },
   {
@@ -83,32 +99,36 @@ export const LEVELS: Level[] = [
     slug: 'thursday',
     title: 'Thursday',
     conversations: [
-      { id: 'A', label: 'the goat refund', color: COLOR_A, icon: 'insurance' },
-      { id: 'B', label: 'the ferret pamphlet', color: COLOR_B, icon: 'letter' },
+      { id: 'A', label: 'the UFO report', color: COLOR_A, icon: 'dispatcher' },
+      { id: 'B', label: 'the gnomes', color: COLOR_B, icon: 'neighbor' },
     ],
     lines: [
-      { id: 1, text: "The fainting goat didn't faint.", owner: 'A' },
-      { id: 2, text: 'I never signed up for the ferret series.', owner: 'B' },
-      { id: 3, text: 'We startled it three separate times.', owner: 'A' },
-      { id: 4, text: 'Volumes one THROUGH eleven.', owner: 'B' },
+      { id: 1, text: 'Lights. Over the barn. Around two a.m.', owner: 'A' },
       {
-        id: 5,
-        text: 'A whistle, a saucepan, AND a thrown glove.',
-        owner: 'A',
-      },
-      {
-        id: 6,
-        text: 'My husband signed the postcard. He thought it was tuna.',
+        id: 2,
+        text: 'The gnome was facing north yesterday.',
         owner: 'B',
       },
+      { id: 3, text: 'They hovered. Then they were gone.', owner: 'A' },
+      { id: 4, text: 'Now he is facing the pond.', owner: 'B' },
       {
-        id: 7,
-        text: 'It looked at us. It did NOT faint.',
+        id: 5,
+        text: "I'm not crazy. Come and look.",
         owner: 'A',
       },
-      { id: 8, text: 'Just stop sending them. Please.', owner: 'B' },
-      { id: 9, text: 'I want the full refund. With the postage.', owner: 'A' },
-      { id: 10, text: "I'm BEGGING.", owner: 'B' },
+      { id: 6, text: 'There are SEVEN of them. SEVEN.', owner: 'B' },
+      {
+        id: 7,
+        text: 'The cows stopped chewing. All at once.',
+        owner: 'A',
+      },
+      {
+        id: 8,
+        text: 'My wife refuses to go out back anymore.',
+        owner: 'B',
+      },
+      { id: 9, text: 'I have photographs. Blurry ones.', owner: 'A' },
+      { id: 10, text: 'One is wearing a different HAT now.', owner: 'B' },
     ],
   },
   {
@@ -117,23 +137,31 @@ export const LEVELS: Level[] = [
     title: 'Last Call',
     conversations: [
       { id: 'A', label: 'the wedding cake', color: COLOR_A, icon: 'grocer' },
-      { id: 'B', label: 'the stolen mailbox', color: COLOR_B, icon: 'law' },
+      { id: 'B', label: "nugget's funeral", color: COLOR_B, icon: 'law' },
     ],
     lines: [
       { id: 1, text: 'The groom said three tiers, not four.', owner: 'A' },
-      { id: 2, text: 'Someone stole my mailbox.', owner: 'B' },
-      { id: 3, text: 'Yes, the fourth tier is in the van.', owner: 'A' },
-      { id: 4, text: 'No, the whole post too.', owner: 'B' },
-      { id: 5, text: 'We cannot simply un-bake it.', owner: 'A' },
-      { id: 6, text: 'Yes, I checked the hedge. Twice.', owner: 'B' },
+      { id: 2, text: 'His name was Nugget. He was a hamster.', owner: 'B' },
+      { id: 3, text: 'Fondant. Not buttercream.', owner: 'A' },
+      { id: 4, text: 'Closed casket, obviously.', owner: 'B' },
+      { id: 5, text: 'Just the family. She was adamant.', owner: 'A' },
       {
-        id: 7,
-        text: "Tell her we'll knock off ten dollars.",
+        id: 6,
+        text: 'Can we use his wheel as a centerpiece?',
+        owner: 'B',
+      },
+      { id: 7, text: 'Sixty guests, approximately.', owner: 'A' },
+      { id: 8, text: 'He loved cheese. Specifically cheddar.', owner: 'B' },
+      {
+        id: 9,
+        text: 'Lilies or roses. Definitely not both.',
         owner: 'A',
       },
-      { id: 8, text: "I don't have enemies. I don't THINK.", owner: 'B' },
-      { id: 9, text: 'And a box for the extra tier.', owner: 'A' },
-      { id: 10, text: 'Just come look at the hole.', owner: 'B' },
+      {
+        id: 10,
+        text: 'We want a single lit candle. For dignity.',
+        owner: 'B',
+      },
     ],
   },
 ];

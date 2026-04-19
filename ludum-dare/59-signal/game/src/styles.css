@@ -987,3 +987,345 @@ button {
     animation: none !important;
   }
 }
+
+/* ===================================================================== */
+/* Cooking-Mama-era pixel overhaul — colorful moving background,         */
+/* big tactile pixel Connect button, z-index layering so C-items zip    */
+/* BENEATH the button.                                                   */
+/* ===================================================================== */
+
+:root {
+  /* Brighter, playful accent layer on top of the aged base palette. */
+  --bg-peach: #ffd9b3;
+  --bg-pink: #ffb7c5;
+  --bg-sky: #c9e8ff;
+  --bg-mint: #d2f0da;
+  --connect-on: #ff5c8a;
+  --connect-on-dark: #b53768;
+  --connect-off: #cfcfcf;
+  --connect-off-dark: #8a8a8a;
+  --pixel-outline: #2a1a12;
+}
+
+body {
+  background:
+    linear-gradient(
+      160deg,
+      var(--bg-peach) 0%,
+      var(--bg-pink) 40%,
+      var(--bg-sky) 100%
+    );
+  background-attachment: fixed;
+  background-image:
+    linear-gradient(
+      160deg,
+      var(--bg-peach) 0%,
+      var(--bg-pink) 40%,
+      var(--bg-sky) 100%
+    );
+}
+
+/* Moving cross-hatch pattern layer — gentle drift for retro vibe. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -10vmax;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0 30px,
+      rgba(255, 255, 255, 0.08) 30px 32px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 60px,
+      rgba(255, 200, 180, 0.14) 60px 64px
+    );
+  background-size: 42px 42px, 84px 84px;
+  animation: bg-drift 28s linear infinite;
+  image-rendering: pixelated;
+}
+
+/* Floating pixel shapes — slow orbit gives that Cooking Mama menu feel. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 5px at 12% 18%, #fff08a 0 4px, transparent 6px),
+    radial-gradient(circle 5px at 78% 22%, #ff9ec2 0 4px, transparent 6px),
+    radial-gradient(circle 5px at 38% 70%, #9ad5ff 0 4px, transparent 6px),
+    radial-gradient(circle 5px at 88% 68%, #b6f0b6 0 4px, transparent 6px),
+    radial-gradient(circle 5px at 18% 82%, #ffd27a 0 4px, transparent 6px),
+    radial-gradient(circle 5px at 58% 14%, #c9a7ff 0 4px, transparent 6px);
+  animation: sparkle-float 14s ease-in-out infinite alternate;
+  image-rendering: pixelated;
+}
+
+@keyframes bg-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(42px, 42px);
+  }
+}
+
+@keyframes sparkle-float {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-14px, -10px);
+  }
+}
+
+/* A slow rotating pixel diamond behind the card — our "tesseract" stand-in. */
+#app::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  z-index: -1;
+  pointer-events: none;
+  border: 6px solid rgba(255, 92, 138, 0.18);
+  box-shadow:
+    inset 0 0 0 14px transparent,
+    inset 0 0 0 18px rgba(154, 213, 255, 0.16);
+  animation: cube-rotate 22s linear infinite;
+  image-rendering: pixelated;
+}
+
+@keyframes cube-rotate {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.15);
+  }
+  to {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------- */
+/* Floating card feel for transcript — slight drop shadow so items look   */
+/* like they're hovering above the colorful background.                  */
+
+.line-item {
+  box-shadow:
+    0 2px 0 0 rgba(42, 26, 18, 0.18),
+    0 6px 18px rgba(42, 26, 18, 0.08);
+  position: relative;
+  z-index: 2;
+}
+
+.transcript {
+  position: relative;
+  z-index: 2;
+}
+
+/* Level actions (Connect button container) lives above the transcript. */
+.level-actions {
+  position: sticky;
+  bottom: 16px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+  z-index: 20;
+}
+
+/* --------------------------------------------------------------------- */
+/* BIG PIXEL CONNECT BUTTON — chunky, playful, with real depth.          */
+
+.btn-connect {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 4vw, 30px);
+  letter-spacing: 0.06em;
+  padding: 20px 44px;
+  min-height: 72px;
+  color: #fff;
+  background: var(--connect-on);
+  border: 4px solid var(--pixel-outline);
+  border-radius: 0;
+  text-transform: uppercase;
+  cursor: pointer;
+  image-rendering: pixelated;
+  /* Depth: dark "underside" gives it a physical 3D press feel. */
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 10px 0 0 var(--connect-on-dark),
+    0 10px 0 4px var(--pixel-outline),
+    0 18px 22px rgba(0, 0, 0, 0.15);
+  transition:
+    transform 80ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 80ms cubic-bezier(0.2, 0.9, 0.3, 1),
+    background 120ms ease;
+  text-shadow: 0 2px 0 var(--connect-on-dark);
+}
+
+.btn-connect:hover:not(:disabled) {
+  background: #ff77a0;
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 13px 0 0 var(--connect-on-dark),
+    0 13px 0 4px var(--pixel-outline),
+    0 22px 28px rgba(0, 0, 0, 0.18);
+}
+
+.btn-connect:active:not(:disabled) {
+  transform: translateY(6px);
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 2px 0 0 var(--connect-on-dark),
+    0 2px 0 4px var(--pixel-outline),
+    0 4px 6px rgba(0, 0, 0, 0.12);
+  text-shadow: none;
+}
+
+.btn-connect:disabled {
+  background: var(--connect-off);
+  color: #6a6a6a;
+  text-shadow: 0 2px 0 var(--connect-off-dark);
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 6px 0 0 var(--connect-off-dark),
+    0 6px 0 4px var(--pixel-outline);
+  cursor: not-allowed;
+}
+
+.btn-connect:focus-visible {
+  outline: 3px dashed #fff;
+  outline-offset: -10px;
+}
+
+/* Nudge "Next shift" CTA to share the pixel language (smaller variant). */
+.btn-next {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 3vw, 22px);
+  letter-spacing: 0.05em;
+  padding: 14px 28px;
+  background: #6fd27a;
+  color: #fff;
+  border: 4px solid var(--pixel-outline);
+  border-radius: 0;
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 8px 0 0 #3b9f4a,
+    0 8px 0 4px var(--pixel-outline);
+  text-shadow: 0 2px 0 #3b9f4a;
+  cursor: pointer;
+  image-rendering: pixelated;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.btn-next:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 10px 0 0 #3b9f4a,
+    0 10px 0 4px var(--pixel-outline);
+}
+
+.btn-next:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 2px 0 0 #3b9f4a,
+    0 2px 0 4px var(--pixel-outline);
+}
+
+/* Menu card gets the same floating / pixel-edge treatment. */
+.menu-card {
+  border: 4px solid var(--pixel-outline);
+  border-radius: 0;
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 12px 0 0 rgba(42, 26, 18, 0.22),
+    0 24px 48px rgba(42, 26, 18, 0.22);
+  background: #fff4dc;
+}
+
+.btn-start {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 3vw, 22px);
+  padding: 16px 36px;
+  background: var(--connect-on);
+  color: #fff;
+  border: 4px solid var(--pixel-outline);
+  border-radius: 0;
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 8px 0 0 var(--connect-on-dark),
+    0 8px 0 4px var(--pixel-outline);
+  text-shadow: 0 2px 0 var(--connect-on-dark);
+  image-rendering: pixelated;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.btn-start:hover {
+  transform: translateY(-2px);
+  background: #ff77a0;
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 10px 0 0 var(--connect-on-dark),
+    0 10px 0 4px var(--pixel-outline);
+}
+
+.btn-start:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 0 0 4px var(--pixel-outline),
+    0 2px 0 0 var(--connect-on-dark),
+    0 2px 0 4px var(--pixel-outline);
+}
+
+/* Picker buttons get a hint of pixel depth too. */
+.pick {
+  border-width: 3px;
+  border-radius: 0;
+  box-shadow: 0 3px 0 0 rgba(42, 26, 18, 0.3);
+  image-rendering: pixelated;
+}
+
+.pick:hover {
+  box-shadow: 0 4px 0 0 rgba(42, 26, 18, 0.35);
+}
+
+.pick.is-on {
+  box-shadow:
+    0 0 0 2px var(--pixel-outline),
+    inset 0 3px 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.pick:active {
+  box-shadow: 0 1px 0 0 rgba(42, 26, 18, 0.3);
+}
+
+/* Adjust C-zip trajectory so items pass BEHIND the sticky Connect. */
+.line-item--zip-c {
+  z-index: 1;
+}
+
+/* On solve, grouped view rises above background but below Connect. */
+.grouped {
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after,
+  #app::before {
+    animation: none !important;
+  }
+}
