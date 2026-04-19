@@ -1,3 +1,11 @@
+// Self-hosted fonts — no external requests (LD embed sandbox bans them).
+import '@fontsource/silkscreen/400.css';
+import '@fontsource/silkscreen/700.css';
+import '@fontsource/special-elite/400.css';
+import '@fontsource/courier-prime/400.css';
+import '@fontsource/courier-prime/400-italic.css';
+import '@fontsource/courier-prime/700.css';
+
 import { audio } from './audio';
 import { LEVELS } from './levels';
 import {

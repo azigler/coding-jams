@@ -135,13 +135,30 @@ const PRESETS: Record<Cue, ReturnType<typeof makeParams>> = {
   page: PAGE,
 };
 
+// localStorage is unavailable in the LD embed sandbox — wrap access so
+// the game degrades to in-memory-only mute state rather than crashing.
+function lsGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function lsSet(key: string, val: string): void {
+  try {
+    localStorage.setItem(key, val);
+  } catch {
+    // no-op: embed sandbox, private-browsing, etc.
+  }
+}
+
 class AudioBank {
   private sounds: Partial<Record<Cue, Sound>> = {};
   private _muted = false;
   private ready = false;
 
   constructor() {
-    this._muted = localStorage.getItem('ld59-muted') === '1';
+    this._muted = lsGet('ld59-muted') === '1';
   }
 
   init() {
@@ -182,7 +199,7 @@ class AudioBank {
 
   toggleMute(): boolean {
     this._muted = !this._muted;
-    localStorage.setItem('ld59-muted', this._muted ? '1' : '0');
+    lsSet('ld59-muted', this._muted ? '1' : '0');
     return this._muted;
   }
 }

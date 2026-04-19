@@ -163,7 +163,46 @@ Submission deadline: check `jam-state.sh` for the current `event-end` value.
 
 ---
 
-## 6. Optional: first devlog post
+## 6. Embed upload (for the "play here" iframe on the jam page)
+
+Ludum Dare supports [embedded play](https://ludumdare.com/resources/guides/embedding/) via an iframe in the game listing. A pre-built embed ZIP is ready at:
+
+> **`submission/ld59-crossed-wires-embed.zip`** (about 770 KB)
+
+Upload it via the **Embedding** section of your game page on ldjam.com. What the jam form needs:
+
+- ZIP with `index.html` at the root — ✓ (verified)
+- Max 256 MB — ✓ (770 KB)
+- Renders cleanly at **948 × 533** (LD's fixed embed resolution, 16:9) — should work; layout is responsive
+- **No external network requests** — ✓ (all three Google Fonts are now self-hosted via `@fontsource/` packages bundled into `assets/`; no `fetch` / XHR anywhere)
+- **No localStorage / sessionStorage / IndexedDB** — ✓ (only use is the mute-state persistence, which now uses a `try/catch` wrapper and degrades silently to in-memory)
+- No re-embedding on other sites — ✓ (no such logic)
+
+### How the embed build differs from the GH Pages build
+
+Same code, different Vite base + output dir:
+
+```bash
+# Hosted full-site build (GH Pages, absolute subpath)
+bun run build
+
+# Embed ZIP-compatible build (relative paths, sandbox-safe)
+bun run build:embed
+```
+
+The embed build has `base: './'` so every asset reference is relative to `index.html` — LD's iframe will serve correctly regardless of the internal URL path they choose.
+
+### If you re-generate the ZIP later
+
+From `ludum-dare/59-signal/game/`:
+
+```bash
+bun run build:embed
+cd dist-embed
+zip -rq ../../submission/ld59-crossed-wires-embed.zip .
+```
+
+## 7. Optional: first devlog post
 
 If you want to post a launch devlog at the same time, the `bd-1l9` close-the-loop is still open — manually post one test on your profile while I capture the `POST /vx/node/add` request from DevTools, and I'll wire `publish-post.sh` to push future devlogs from the repo automatically. See `.claude/skills/ldjam/SKILL.md` and the `devlog/README.md` warning for the protocol.
 

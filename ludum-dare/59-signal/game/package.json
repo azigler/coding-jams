@@ -7,9 +7,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:embed": "tsc && vite build --base ./ --outDir dist-embed",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/courier-prime": "^5.2.8",
+    "@fontsource/silkscreen": "^5.2.8",
+    "@fontsource/special-elite": "^5.2.8",
     "jsfxr": "^1.2.1"
   },
   "devDependencies": {
