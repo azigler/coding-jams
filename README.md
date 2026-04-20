@@ -6,7 +6,7 @@
 
 ### [Ludum Dare 59 — CROSSED WIRES](https://github.com/azigler/coding-jams/tree/main/ludum-dare/59-signal/README.md)
 
-> April 18–21, 2026 (72 hours) — theme: Signal
+> April 17–19, 2026 (~72 hours) — theme: Signal
 
 ![CROSSED WIRES — a small-town switchboard puzzle](https://static.jam.host/content/160/61/z/70500.png.320x256.fit.jpg)
 
@@ -14,7 +14,7 @@ A small-town switchboard operator's shift. Every call is tangled. You sort.
 
 Two callers arrive on the same phone line. You assign each of their utterances back to the right conversation. Early calls are easy — the goat lady does not sound like the shipping clerk. Later calls have static eating the words on the wire, and you sort by **how each caller talks** — all-caps outbursts versus two-word dispatches, grief versus directive. Voice recognition as puzzle.
 
-Five levels, ~10 minutes. Built solo over the Ludum Dare 59 jam weekend with a handcrafted Claude Code agentic harness (skills for spec / impl / review / commit / manifesto / indie-game-taste / impeccable design) and pair-coded with Claude Opus 4.7.
+Built solo over the Ludum Dare 59 jam weekend with a handcrafted [Claude Code](https://claude.com/claude-code) agentic harness and pair-coded with Claude Opus 4.7. The harness pulls in [Impeccable](https://impeccable.style/) design skills and a cross-engine [game-dev agent team](https://github.com/Logos-Liber/Atlas-Agent-Teams), alongside project-local skills for [spec](./ludum-dare/59-signal/.claude/skills/spec/SKILL.md), [impl](./ludum-dare/59-signal/.claude/skills/impl/SKILL.md), [review](./ludum-dare/59-signal/.claude/skills/review/SKILL.md), [commit](./ludum-dare/59-signal/.claude/skills/commit/SKILL.md), [manifesto](./ludum-dare/59-signal/.claude/skills/manifesto/SKILL.md) and [indie-game-taste](./ludum-dare/59-signal/.claude/skills/indie-game-taste/SKILL.md).
 
 - **Play:** [Open CROSSED WIRES](https://azigler.github.io/coding-jams/ld59/)
 - **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/ludum-dare/59-signal)

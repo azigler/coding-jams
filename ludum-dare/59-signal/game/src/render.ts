@@ -280,11 +280,14 @@ function renderLegend(level: Level, state: GameState): El {
         class: 'legend-icon',
         attrs: { 'aria-hidden': 'true' },
       });
-      icon.style.setProperty('--icon', `url('${withBase(iconPath)}')`);
-      icon.style.setProperty(
-        '--icon-color',
-        `var(--conv-${c.id.toLowerCase()})`,
-      );
+      // IMPORTANT: set mask-image inline (not via a CSS custom property)
+      // so the url() resolves relative to the document, not the CSS file.
+      // The CSS-file-relative resolution double-prefixes `assets/` inside
+      // the LD embed sandbox where paths are served via ./ base.
+      const iconUrl = withBase(iconPath);
+      icon.style.maskImage = `url('${iconUrl}')`;
+      icon.style.webkitMaskImage = `url('${iconUrl}')`;
+      icon.style.backgroundColor = `var(--conv-${c.id.toLowerCase()})`;
       li.append(icon, h('span', { text: c.label }));
     } else {
       li.append(swatch, h('span', { text: c.label }));
@@ -375,10 +378,12 @@ function renderTranscript(
           class: 'pick-icon',
           attrs: { 'aria-hidden': 'true' },
         });
-        iconSpan.style.setProperty(
-          '--icon-url',
-          `url('${withBase(iconPath)}')`,
-        );
+        // mask-image inline (not CSS var) so the url() resolves
+        // relative to the document, not the CSS file — avoids the
+        // duplicate-assets/ path bug in LD's embed sandbox.
+        const pickUrl = withBase(iconPath);
+        iconSpan.style.maskImage = `url('${pickUrl}')`;
+        iconSpan.style.webkitMaskImage = `url('${pickUrl}')`;
         pick.appendChild(iconSpan);
         pick.appendChild(h('span', { class: 'sr-only', text: conv.id }));
       } else {
@@ -449,11 +454,10 @@ export function renderEnd(
         attrs: { 'aria-hidden': 'true' },
       });
   if (hasOrnament) {
-    ornament.style.setProperty(
-      '--icon',
-      `url('${withBase('assets/end-ornament.png')}')`,
-    );
-    ornament.style.setProperty('--icon-color', 'var(--ink)');
+    const ornamentUrl = withBase('assets/end-ornament.png');
+    ornament.style.maskImage = `url('${ornamentUrl}')`;
+    ornament.style.webkitMaskImage = `url('${ornamentUrl}')`;
+    ornament.style.backgroundColor = 'var(--ink)';
   }
 
   // Level 5 postamble, then end card.
