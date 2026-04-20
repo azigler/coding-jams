@@ -19,7 +19,7 @@ That's it. No subtitle. The title does more work when it stands alone.
 Paste the markdown below verbatim into the description editor. Replace `<PLAY URL>` and `<COVER URL>` after you've uploaded the build and the cover image.
 
 ```markdown
-![Crossed Wires — a switchboard puzzle](<COVER URL>)
+![Crossed Wires — a small-town switchboard puzzle](https://static.jam.host/content/160/61/z/70500.png.320x256.fit.jpg)
 
 A small-town switchboard operator's shift. Every call is tangled.
 You sort them.

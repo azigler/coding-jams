@@ -4,6 +4,24 @@
 
 ## Projects
 
+### [Ludum Dare 59 — CROSSED WIRES](https://github.com/azigler/coding-jams/tree/main/ludum-dare/59-signal/README.md)
+
+> April 18–21, 2026 (72 hours) — theme: Signal
+
+![CROSSED WIRES — a small-town switchboard puzzle](https://static.jam.host/content/160/61/z/70500.png.320x256.fit.jpg)
+
+A small-town switchboard operator's shift. Every call is tangled. You sort.
+
+Two callers arrive on the same phone line. You assign each of their utterances back to the right conversation. Early calls are easy — the goat lady does not sound like the shipping clerk. Later calls have static eating the words on the wire, and you sort by **how each caller talks** — all-caps outbursts versus two-word dispatches, grief versus directive. Voice recognition as puzzle.
+
+Five levels, ~10 minutes. Built solo over the Ludum Dare 59 jam weekend with a handcrafted Claude Code agentic harness (skills for spec / impl / review / commit / manifesto / indie-game-taste / impeccable design) and pair-coded with Claude Opus 4.7.
+
+- **Play:** [Open CROSSED WIRES](https://azigler.github.io/coding-jams/ld59/)
+- **Source:** [Read the source code](https://github.com/azigler/coding-jams/tree/main/ludum-dare/59-signal)
+- **Entry page:** [LD59 submission (zigtalk)](https://ldjam.com/events/ludum-dare/59)
+
+---
+
 ### [Building future AI news experiences with The Atlantic and Infactory](https://github.com/azigler/hackathon-infactory/blob/main/README.md)
 
 > January 31, 2026 (1 day)
