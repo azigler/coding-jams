@@ -14,3 +14,9 @@
 	path = the-atlantic/hackathon-infactory
 	url = https://github.com/azigler/hackathon-infactory
 	branch = main
+[submodule "intrinsic/aic"]
+	path = intrinsic/aic
+	url = https://github.com/azigler/aic
+[submodule "google/hackathon-gemma"]
+	path = google/hackathon-gemma
+	url = https://github.com/azigler/hackathon-gemma
