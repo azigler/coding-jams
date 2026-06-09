@@ -105,9 +105,18 @@ the jam. The jam stays put; `/cfp` references it as source material.
   worth productionizing, that's a new project elsewhere, not a refactor of
   the jam repo.
 
-## Templates (TODO)
+## Templates
 
-Future work: `~/coding-jams/.claude/templates/new-jam/` with a stub
-`CLAUDE.md`, a stub `.beads/` config, and a checklist of jam-setup beads to
-create. Defer until the next jam fires; templates designed in the abstract
-tend to be wrong.
+`.claude/templates/new-jam/CLAUDE.md` (added 2026-06-09) is the stub
+for a fresh jam: clock, deliverables table, inherited conventions, and
+a jam-setup checklist that converts into beads. Bootstrap with:
+
+```bash
+mkdir -p <host>/<jam-slug>
+cp ~/coding-jams/.claude/templates/new-jam/CLAUDE.md <host>/<jam-slug>/CLAUDE.md
+```
+
+Fill the placeholders in the first session, convert the checklist into
+beads, then delete the checklist section. (The original deferral —
+"templates designed in the abstract tend to be wrong" — still applies
+to its CONTENT: revise the template after the first jam that uses it.)
