@@ -135,7 +135,7 @@ A multiplayer marble game using phone tilt controls as an unconventional interfa
 
 > April 4–7, 2025 (72 hours)
 
-![Depths gameplay](https://github.com/user-attachments/assets/456ba902-92a7-4820-abc9-54fcf6148ca5)
+![Depths gameplay](https://github.com/user-attachments/assets/af421942-3979-4651-baba-426fda31e910)
 
 A game about navigating deep folder structures under time pressure. Players take on the role of an office worker who must find a specific file in a chaotic company server within a strict time limit.
 
