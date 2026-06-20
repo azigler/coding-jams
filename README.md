@@ -8,7 +8,7 @@
 
 > April 17–19, 2026 (~72 hours) — theme: Signal
 
-![CROSSED WIRES — a small-town switchboard puzzle](https://static.jam.host/content/160/61/z/70500.png.320x256.fit.jpg)
+![CROSSED WIRES — a small-town switchboard puzzle](https://azigler.github.io/coding-jams/ld59/assets/title.png)
 
 A small-town switchboard operator's shift. Every call is tangled. You sort.
 
