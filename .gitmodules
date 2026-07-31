@@ -20,3 +20,6 @@
 [submodule "google/hackathon-gemma"]
 	path = google/hackathon-gemma
 	url = https://github.com/azigler/hackathon-gemma
+[submodule "ifcomp/2026"]
+	path = ifcomp/2026
+	url = https://github.com/azigler/ifcompd

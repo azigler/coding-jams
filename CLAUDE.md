@@ -27,6 +27,7 @@ Organized as `<host-org>/<event-or-track>/<repo>`:
 | `codetv/web-dev-challenge/unconventional-interfaces` | CodeTV | Web dev challenge |
 | `genuary/` | Genuary org | Generative-art prompts (January) |
 | `google/hackathon-gemma` | Google | Gemma hackathon (model + app + paper + video + spec) |
+| `ifcomp/2026` | IFComp | Interactive fiction competition — `ifcompd`, a headless Inform 7 build/test harness (agent codes, human writes) |
 | `intrinsic/aic` | Intrinsic Dev | AI Challenge hackathon |
 | `ludum-dare/59-signal` | Ludum Dare org | 48hr game jam |
 | `the-atlantic/hackathon-infactory` | The Atlantic | Hackathon → article drafts → VibeX paper (`~/cfp/mise/`) |
