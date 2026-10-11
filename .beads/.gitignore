@@ -46,3 +46,7 @@ redirect
 .bv.lock
 *.db-fsqlite-*
 .write.lock
+
+# br schema-migration and fsqlite gate leftovers (studio weekly pass, 2026-10-11)
+.beads.db.schema-migration-*
+*.fsqlite-migration-state
