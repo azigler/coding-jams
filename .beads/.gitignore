@@ -50,3 +50,10 @@ redirect
 # br schema-migration and fsqlite gate leftovers (studio weekly pass, 2026-10-11)
 .beads.db.schema-migration-*
 *.fsqlite-migration-state
+
+# aligned with demesne/.beads/.gitignore (studio weekly, 2026-10-11)
+*.db-fsqlite-ns-*
+.br-wal-index-*/
+*.db-wal-cert
+*.db-wal-cert-head
+.*.db.schema-migration-*
